@@ -30,9 +30,6 @@
     <ClInclude Include="my_pair_test.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="tuple_element.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include "tuple_element.h"
 
 namespace kkli {
 
@@ -19,39 +18,43 @@ namespace kkli {
 
 		// my_pair
 		my_pair() {
-			cout << "my_pair()" << endl;
+			std::cout << "my_pair()" << std::endl;
 		}
 
 		template<typename K1, typename K2>
 		my_pair(const K1& f, const K2& s) :first(f), second(s) {
-			cout << "my_pair(const K1&, const K2&)" << endl;
+			std::cout << "my_pair(const K1&, const K2&)" << std::endl;
 		}
 
 		template<typename K1, typename K2>
 		my_pair(K1&& f, K2&& s) : first(std::move(f)), second(std::move(s)) {
-			cout << "my_pair(K1&&, K2&&)" << endl;
+			std::cout << "my_pair(K1&&, K2&&)" << std::endl;
 		}
 
 		template<typename K1, typename K2>
 		my_pair(const my_pair<K1, K2>& mp) : first(mp.first), second(mp.second) {
-			cout << "my_pair(const my_pair<K1, K2>&)" << endl;
+			std::cout << "my_pair(const my_pair<K1, K2>&)" << std::endl;
 		}
 
 		template<typename K1, typename K2>
 		my_pair(my_pair<K1, K2>&& mp) : first(std::move(mp.first)), second(std::move(mp.second)) {
-			cout << "my_pair(my_pair<K1, K2>&&)" << endl;
+			std::cout << "my_pair(my_pair<K1, K2>&&)" << std::endl;
 		}
 
 		// operator =
 		template<typename K1, typename K2>
 		my_pair& operator=(const my_pair<K1, K2>& mp) {
+			std::cout << "operator=(const my_pair<K1,K2>&)" << endl;
+
 			first = mp.first;
 			second = mp.second;
 			return *this;
 		}
 
 		template<typename K1, typename K2>
-		my_pair& operator=(my_pair&& mp) {
+		my_pair& operator=(my_pair<K1,K2>&& mp) {
+			std::cout << "operator=(my_pair<K1,K2>&&)" << endl;
+
 			first = std::move(mp.first);
 			second = std::move(mp.second);
 			return *this;
@@ -60,6 +63,8 @@ namespace kkli {
 		// swap
 		template<typename K1, typename K2>
 		void swap(my_pair<K1, K2>& mp) {
+			std::cout << "swap(my_pair<K1,K2>&)" << endl;
+
 			std::swap(first, mp.first);
 			std::swap(second, mp.second);
 		}
@@ -70,11 +75,13 @@ namespace kkli {
 	// make_pair
 	template<typename T1, typename T2>
 	my_pair<T1, T2> make_pair(const T1& f, const T2& s) {
+		std::cout << "make_pair(const T1&, const T2&)" << endl;
 		return my_pair(f, s);
 	}
 
 	template<typename T1, typename T2>
 	my_pair<T1, T2> make_pair(T1&& f, T2&& s) {
+		std::cout << "make_pair(T1&&, T2&&)" << endl;
 		return my_pair(f, s);
 	}
 
@@ -126,8 +133,8 @@ namespace kkli {
 namespace kkli{
 
 	//tuple_element<N,my_pair<T1,T2>>
-	template<size_t N, typename T1, typename T2>
-	class tuple_element {};
+	template<size_t N, typename T>
+	class tuple_element;
 
 	//Ä£°åÆ«ÌØ»¯
 	template<typename T1, typename T2>
@@ -145,18 +152,20 @@ namespace kkli{
 
 	// get
 	template<size_t N,typename T1,typename T2>
-	typename tuple_element<N,my_pair<T1,T2>>::type& get(const my_pair<T1,T2>& mp) {
+	typename tuple_element<N,my_pair<T1,T2>>::type& get(my_pair<T1,T2>& mp) {
 		return get(mp, typename tuple_element<N, my_pair<T1, T2>>::type());
 	}
 
-	template<size_t N,typename T1,typename T2>
-	typename my_pair<T1,T2>::first_type& get(const my_pair<T1, T2>& mp,typename tuple_element<0,my_pair<T1,T2>>::type()) {
-		return first;
+	template<typename T1,typename T2>
+	typename my_pair<T1, T2>::first_type& get(my_pair<T1, T2>& mp, 
+		typename tuple_element<0, my_pair<T1, T2>>::type) {
+		return mp.first;
 	}
 
-	template<size_t N,typename T1,typename T2>
-	typename my_pair<T1,T2>::second_type& get<1>(const my_pair<T1, T2>& mp, typename tuple_element<1, my_pair<T1, T2>>::type()) {
-		return second;
+	template<typename T1,typename T2>
+	typename my_pair<T1,T2>::second_type& get(my_pair<T1, T2>& mp, 
+		typename tuple_element<1, my_pair<T1, T2>>::type) {
+		return mp.second;
 	}
 
 	//OVER
