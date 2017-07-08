@@ -43,23 +43,32 @@ namespace test {
 			cout << "\ntest_constructor()" << endl;
 
 			//my_pair()
+			cout << "mp1: ";
 			my_pair<int, int> mp1;
 
 			//my_pair<const T1&, const T2&>
 
 			//WRONG: 为何运行后全部都是my_pair<T1&&, T2&&> ???
-			WRONG !!!!!!;
+			//WRONG !!!!!!;
 
 			int ival = 1;
 			string sval = "C++";
-			my_pair<int, string> mp2(ival, ref(sval));
+			cout << "mp2: ";
+			my_pair<int, string> mp2(ival, sval);
+			cout << "mp3: ";
 			my_pair<int, string> mp3 = mp2;
 
 			//my_pair<T1&&, T2&&>
+			cout << "mp4: ";
 			my_pair<int, int> mp4(1, 2);
+			cout << "mp5: ";
 			my_pair<int, string> mp5(1, "mp3");
+			cout << "mp6: ";
 			my_pair<string, int> mp6("mp4", 2);
+			cout << "mp7: ";
 			my_pair<int, string> mp7(std::move(ival), std::move(sval));
+			cout << "mp8: ";
+			my_pair<int, string> mp8(std::move(mp7));
 		}
 
 		//测试 first_type/second_type/first/second

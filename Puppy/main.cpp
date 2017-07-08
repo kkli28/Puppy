@@ -3,10 +3,8 @@
 
 #include "stdafx.h"
 #include "my_pair_test.h"
-
-void func(int&& i) {
-	++i;
-}
+#include "my_pair.h"
+using namespace std;
 
 int main(){
 	test::my_pair_test::test();
