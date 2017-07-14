@@ -15,60 +15,54 @@ namespace kkli {
 		typedef T2 second_type;
 
 		// my_pair
-		my_pair() {
-			std::cout << "my_pair()" << std::endl;
-		}
+		my_pair() {}
 
 		template<typename K1, typename K2>
-		my_pair(const K1& f, const K2& s) :first(f), second(s) {
-			std::cout << "my_pair(const K1&, const K2&)" << std::endl;
-		}
+		my_pair(const K1& f, const K2& s) :first(f), second(s) {}
 
 		template<typename K1, typename K2>
-		my_pair(K1&& f, K2&& s) : first(f), second(s) {
-			std::cout << "my_pair(K1&&, K2&&)" << std::endl;
-		}
+		my_pair(K1&& f, K2&& s) : first(f), second(s) {}
 
 		template<typename K1, typename K2>
-		my_pair(const my_pair<K1, K2>& mp) : first(mp.first), second(mp.second) {
-			std::cout << "my_pair(const my_pair<K1, K2>&)" << std::endl;
-		}
+		my_pair(const my_pair<K1, K2>& mp) : first(mp.first), second(mp.second) {}
 
 		template<typename K1, typename K2>
-		my_pair(my_pair<K1, K2>&& mp) : first(std::move(mp.first)), second(std::move(mp.second)) {
-			std::cout << "my_pair(my_pair<K1, K2>&&)" << std::endl;
-		}
+		my_pair(my_pair<K1, K2>&& mp) : first(std::move(mp.first)), second(std::move(mp.second)) {}
 
 		// operator =
 		template<typename K1, typename K2>
-		my_pair& operator=(const my_pair<K1, K2>& mp) {
-			std::cout << "operator=(const my_pair<K1,K2>&)" << std::endl;
-
-			first = mp.first;
-			second = mp.second;
-			return *this;
-		}
+		my_pair& operator=(const my_pair<K1, K2>& mp);
 
 		template<typename K1, typename K2>
-		my_pair& operator=(my_pair<K1,K2>&& mp) {
-			std::cout << "operator=(my_pair<K1,K2>&&)" << std::endl;
-
-			first = std::move(mp.first);
-			second = std::move(mp.second);
-			return *this;
-		}
+		my_pair& operator=(my_pair<K1, K2>&& mp);
 
 		// swap
 		template<typename K1, typename K2>
-		void swap(my_pair<K1, K2>& mp) {
-			std::cout << "swap(my_pair<K1,K2>&)" << std::endl;
-
-			std::swap(first, mp.first);
-			std::swap(second, mp.second);
-		}
+		void swap(my_pair<K1, K2>& mp);
 	};
 
-	
+	template<typename T1, typename T2>
+	template<typename K1, typename K2>
+	my_pair<T1,T2>& my_pair<T1, T2>::operator=(const my_pair<K1, K2>& mp) {
+		first = mp.first;
+		second = mp.second;
+		return *this;
+	}
+
+	template<typename T1,typename T2>
+	template<typename K1, typename K2>
+	my_pair<T1, T2>& my_pair<T1, T2>::operator=(my_pair<K1, K2>&& mp) {
+		first = std::move(mp.first);
+		second = std::move(mp.second);
+		return *this;
+	}
+
+	template<typename T1,typename T2>
+	template<typename K1, typename K2>
+	void my_pair<T1, T2>::swap(my_pair<K1, K2>& mp) {
+		std::swap(first, mp.first);
+		std::swap(second, mp.second);
+	}
 }
 
 // ********** non-member functions **********
@@ -77,13 +71,11 @@ namespace kkli{
 	// make_pair
 	template<typename T1, typename T2>
 	my_pair<T1, T2> make_pair(const T1& f, const T2& s) {
-		std::cout << "make_pair(const T1&, const T2&)" << std::endl;
 		return my_pair(f, s);
 	}
 
 	template<typename T1, typename T2>
 	my_pair<T1, T2> make_pair(T1&& f, T2&& s) {
-		std::cout << "make_pair(T1&&, T2&&)" << std::endl;
 		return my_pair<T1,T2>(f, s);
 	}
 

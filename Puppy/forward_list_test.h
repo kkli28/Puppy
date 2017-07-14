@@ -17,19 +17,19 @@ namespace test {
 		void test_iterator();
 		void test_typedefs();
 		void test_ops();
-		void test_pointer_ops();
-		void test_begin_end();
+		//void test_stl();			//测试与stl的兼容性，暂时无法兼容，iterator没有搞定
 
 		//整体测试
 		void test() {
-			cout << "========== test: forward_list ==========" << endl;
+			cout << "\n========================================" << endl;
+			cout << "          test: forward_list " << endl;
+			cout << "========================================" << endl;
 
 			test_constructors();
 			test_iterator();
 			test_typedefs();
 			test_ops();
-			test_pointer_ops();
-			test_begin_end();
+			//test_stl();
 		}
 
 		//测试 constructor
@@ -49,9 +49,9 @@ namespace test {
 		//测试 iterator
 		void test_iterator() {
 			cout << "========== test: constructor ==========" << endl;
+
 			forward_list<int> fl1{ 0,1,2,3 };
 			cout << *(fl1.begin()) << endl;
-			cout << *(fl1.end()) << endl;
 			for (auto begin=fl1.begin(); begin != fl1.end(); ++begin) {
 				cout << *begin << " ";
 			}
@@ -60,19 +60,8 @@ namespace test {
 
 		//测试 typedefs
 		void test_typedefs() {
-			//typedefs
-			/*
-			typedef T					value_type;
-			typedef std::size_t			size_type;
-			typedef std::ptrdiff_t		difference_type;
-			typedef value_type&			reference;
-			typedef const value_type&	const_reference;
-			typedef Node<T>*			pointer;
-			typedef const Node<T>*		const_pointer;
+			cout << "========== test: typedefs ==========" << endl;
 
-			typedef Iter				iterator;
-			typedef const iterator		const_iterator;
-			*/
 			//value_type / size_type / difference_type
 			cout << forward_list<int>::value_type(1) << endl;
 			cout << forward_list<int>::size_type(1) << endl;
@@ -99,9 +88,31 @@ namespace test {
 		}
 
 		//测试 operator++ / operator++(int) / operator== / operator!= / operator= / operator*
-
 		void test_ops() {
+			cout << "========== test: ops ==========" << endl;
 
+			//operator++
+			forward_list<int> fl{ 1,2,3,4 };
+			for (auto iter = fl.begin(); iter != fl.end(); ++iter) {
+				cout << *iter << " ";
+			}
+			cout << endl;
+
+			//operator++(int)
+			auto iter1 = fl.begin();
+			cout << *(iter1++) << endl;
+
+			//operator== / operator!=
+			auto iter2 = fl.begin();
+			if (iter1 == iter2) cout << "iter1==iter2" << endl;
+			else if (iter1 != iter2) cout << "iter1!=iter2" << endl;
+			else cout << "iter1 ?? iter2" << endl;
+
+			//operator=
+			iter2 = iter1;
+
+			//opertor*
+			cout << *iter2 << endl;
 		}
 	}
 }

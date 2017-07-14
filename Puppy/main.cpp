@@ -3,15 +3,12 @@
 
 #include "stdafx.h"
 #include "my_pair_test.h"
-#include "my_pair.h"
-//#include "forward_list.h"
-#include <forward_list>
+#include "forward_list_test.h"
 using namespace std;
 
 int main(){
 	test::my_pair_test::test();
-	forward_list<int> fl{ 1,2,3,4 };
-	auto begin = fl.begin();
+	test::forward_list_test::test();
 	system("pause");
     return 0;
 }
