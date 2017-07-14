@@ -1,77 +1,90 @@
 #pragma once
+
 #include "stdafx.h"
 
+//Node<T>
 namespace kkli {
 
 	//Node<T>
 	template<typename T>
-	struct Node {
+	class Node {
+	public:
+
+		//data
 		T info;
 		Node* next;
-		Node() :T(), next(nullptr) {}
-		Node(const T& i) :info(i), next(nullptr) {}
-		Node(T&& i) :info(i), next(nullptr) {}
+
+		//constructors
+		Node() : T(), next(nullptr) {}
+		Node(const T& i) : info(i), next(nullptr) {}
+		Node(const Node& node) : info(node.info), next(node.next) {}
+		Node(Node&& node) : info(node.info), next(node.next) {}
+
+		//operator==
 		bool operator==(const Node& node) {
 			return (info == node.info && next == node.next);
 		}
 	};
+}
 
-	//iterator
+//Iter<T>
+namespace kkli{
+
+	//Iter<T>
 	template<typename T>
 	class Iter {
 	private:
 		Node<T>* iter;
-		Iter(Node<T>* ptr) :iter(ptr) {}
-	public:
-		/*
-		暂时不能与STL兼容
-		typedef std::forward_iterator_tag	iterator_category;
-		typedef T					value_type;
-		typedef T*					pointer;
-		typedef T&					reference;
-		typedef const reference		const_refernece;
-		typedef std::size_t			size_type;
-		typedef std::ptrdiff_t		difference_type;
-		*/
 
-		//Iter
-		Iter() :iter(nullptr) {}
-		Iter(const T& t) :iter(new Node<T>(t)) {}
+		//不允许误用，故为private
+		Iter(Node<T>* ptr) : iter(ptr) {}
+
+	public:
+		//constructors
+		Iter() : iter(nullptr) {}
+		Iter(const T& t) : iter(new Node<T>(t)) {}
 		Iter(const Iter& it) :iter(it.iter) {}
 
-		//operator =
+		//get
+		Node<T>* get()const { return iter; }
+
+		//operator=
 		Iter& operator=(const Iter& it) {
 			iter = it.iter;
 			return *this;
 		}
 
-		//operator ++
+		//operator++
 		Iter& operator++() {
 			iter = iter->next;
 			return *this;
 		}
 
-		//operator ++(int)
+		//operator++(int)
 		Iter operator++(int) {
 			Iter it = iter;
 			iter = iter->next;
 			return it;
 		}
 
-		Node<T>* get()const { return iter; }
+		//operator==
+		bool operator==(const Iter& it) {
+			return iter == it.iter;
+		}
 
-		//operator ==
-		bool operator==(const Iter& it) { return iter == it.iter; }
+		//operator!=
+		bool operator!=(const Iter& it) {
+			return !(*this == it);
+		}
 
-		//operator !=
-		bool operator!=(const Iter& it) { return !(*this == it); }
-
-		//operator *
-		T& operator*() { return (*iter).info; }
-
-		//operator *, for const iterator
-		T operator*() const { return (*iter).info; }
+		//operator*
+		T& operator*() { return iter->info; }
+		T operator*()const { return iter->info; }
 	};
+}
+
+//forward_list<T>
+namespace kkli {
 
 	//forward_list<T>
 	template<typename T>
@@ -79,74 +92,88 @@ namespace kkli {
 	public:
 
 		//typedefs
-		typedef T					value_type;
-		typedef std::size_t			size_type;
-		typedef std::ptrdiff_t		difference_type;
-		typedef value_type&			reference;
-		typedef const value_type&	const_reference;
-
-		//TODO: pointer? const_pointer?
-		typedef Node<T>*			pointer;
-		typedef const Node<T>*		const_pointer;
-
-		typedef Iter<T>				iterator;
-		typedef const iterator		const_iterator;
+		typedef T						value_type;
+		typedef std::size_t				size_type;
+		typedef std::ptrdiff_t			difference_type;
+		typedef value_type&				reference;
+		typedef const value_type&		const_reference;
+		typedef Node<T>*				pointer;
+		typedef const Node<T>*			const_pointer;
+		typedef Iter<T>					iterator;
+		typedef const iterator			const_iterator;
+		typedef std::forward_iterator_tag	iterator_category;
 
 	private:
-
-		//head iterator
+		//forward_list's head
 		iterator head;
 
 	public:
-		forward_list() : head() {}
-		forward_list(const forward_list& fl);
-		forward_list(std::initializer_list<T> il);
 
-		//begin
-		Iter<T> begin() const { return head; }
+		//constructors
+		forward_list() :head() {}									//空
+		forward_list(const forward_list& fl);						//复制构造
+		forward_list(forward_list&& fl);							//移动构造
+		forward_list(std::initializer_list<T> il);					//初始列构造
+		forward_list(int n);										//n个默认初始化的元素
+		forward_list(int n, const T& elem);							//n个用t初始化的元素
+		forward_list(const iterator& beg, const iterator& end);		//通过迭代器范围构造
+		~forward_list();											//析构
 
-		//end
-		Iter<T> end() const { return Iter<T>(); }
+		//begin / cbegin
+		iterator begin()const { return head; }
+		const_iterator cbegin()const { return head; }
 
-		//TEST: print
+		//end / cend
+		iterator end() const { return iterator(); }
+		const_iterator cend()const { return iterator(); }
+
+		//push_front / pop_front
+		void push_front(const T& elem);
+		void pop_front();
+
+		//insert_after
+		iterator insert_after(int pos, const T& elem);
+		iterator insert_after(int pos, int n, const T& elem);
+		iterator insert_after(int pos, const iterator& beg, const iterator& end);
+		iterator insert_after(int pos, std::initializer_list<T> elems);
+
+		//erase_after
+		void erase_after(int pos);
+		void erase_after(const iterator& beg, const iterator& end);
+
+		//remove
+		void remove(const T& elem);
+
+		//remove_if
+		void remove_if(bool(*op)(const T& elem));
+
+		//resize
+		void resize(int n);
+		void resize(int n, const T& elem);
+
+		//clear
+		void clear();
+
+		//empty
+		bool empty()const { return head.get()->next == nullptr; }
+
+		//operator==
+		//operator!=
+		//operator<
+		//operator>
+		//operator<=
+		//operator>=
+
+		//assign(n,t)，将n个t赋予当前forward_list
+		//assign(beg,end)，将[beg,end)范围的元素赋予当前forward_list
+		//swap
+		//swap, non-member function
+
+		//TEST: print all elements
 		void print()const;
 	};
 
-	//constructor
-	template<typename T>
-	forward_list<T>::forward_list(const forward_list& fl) {
-		if (fl.begin() == fl.end()) return;
-		Iter<T> it = *(fl.begin());
-		head = it;
-		Iter<T> iter = ++fl.begin();
-		//TODO: 如何让forward_list支持范围for语句？
-		for (; iter != fl.end(); ++iter) {
-			it.get()->next = new Node<T>(*iter);
-			++it;
-		}
-	}
+	//forward_list 的实现文件
+#include "forward_list_impl.h"
 
-	template<typename T>
-	forward_list<T>::forward_list(std::initializer_list<T> il) {
-		int size = il.size();
-		if (size == 0) return;
-		Iter<T> it = *(il.begin());
-		head = it;
-
-		auto iter = il.begin();
-		++iter;
-		for (; iter != il.end(); ++iter) {
-			it.get()->next = new Node<T>(*iter);
-			++it;
-		}
-	}
-
-	//print
-	template<typename T>
-	void forward_list<T>::print()const {
-		for (Iter<T> iter = head; iter != Iter<T>(); ++iter) {
-			cout << *iter << " ";
-		}
-		cout << endl;
-	}
 }

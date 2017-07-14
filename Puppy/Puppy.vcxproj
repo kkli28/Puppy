@@ -139,7 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="forward_list.h" />
-    <ClInclude Include="forward_list_test.h" />
+    <ClInclude Include="forward_list_impl.h" />
     <ClInclude Include="my_pair.h" />
     <ClInclude Include="my_pair_test.h" />
     <ClInclude Include="stdafx.h" />

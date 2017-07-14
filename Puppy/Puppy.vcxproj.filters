@@ -16,6 +16,9 @@
     <Filter Include="头文件\test">
       <UniqueIdentifier>{06518b76-49c5-4bf2-a65f-9fdb79dbed1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\impl">
+      <UniqueIdentifier>{dd95940e-5ab9-4442-87f7-4f5426189aa6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -30,14 +33,14 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="forward_list.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="my_pair_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
-    <ClInclude Include="forward_list_test.h">
-      <Filter>头文件\test</Filter>
+    <ClInclude Include="forward_list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="forward_list_impl.h">
+      <Filter>头文件\impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
