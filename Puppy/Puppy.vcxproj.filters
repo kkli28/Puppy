@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\test">
+      <UniqueIdentifier>{06518b76-49c5-4bf2-a65f-9fdb79dbed1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -21,14 +24,20 @@
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="my_pair.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="my_pair_test.h">
+    <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="forward_list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="my_pair_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+    <ClInclude Include="forward_list_test.h">
+      <Filter>头文件\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
