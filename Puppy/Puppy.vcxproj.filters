@@ -42,6 +42,9 @@
     <ClInclude Include="forward_list_impl.h">
       <Filter>头文件\impl</Filter>
     </ClInclude>
+    <ClInclude Include="forward_list_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

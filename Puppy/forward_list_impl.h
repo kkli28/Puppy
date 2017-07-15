@@ -69,7 +69,7 @@ namespace kkli {
 
 	//通过迭代器范围构造
 	template<typename T>
-	forward_list<T>::forward_list(const iterator& beg, const iterator& end) {
+	forward_list<T>::forward_list(const_iterator& beg, const_iterator& end) {
 		if (beg == end) return;
 
 		//构造head
@@ -110,7 +110,7 @@ namespace kkli {
 	//将beg为首节点，end为尾节点的链表插入到pos后
 	template<typename T>
 	void forward_list<T>::__insert(
-		int pos, const iterator& beg, const iterator& end) {
+		int pos, const_iterator& beg, const_iterator& end) {
 		//找到插入点
 		int count = 0;
 		auto iter = head;
@@ -149,7 +149,7 @@ namespace kkli {
 	//将[beg,end)中的元素插入到pos位置后
 	template<typename T>
 	forward_list<T>::iterator forward_list<T>::insert_after(
-		int pos, const iterator& beg, const iterator& end) {
+		int pos, const_iterator& beg, const_iterator& end) {
 		if (beg == end) return;
 		iterator temp_beg = *beg;				//临时链表首节点迭代器
 		iterator temp_end = temp_beg;			//临时链表尾节点迭代器
@@ -209,7 +209,7 @@ namespace kkli {
 
 	//移除[beg,end)标识范围的节点
 	template<typename T>
-	void forward_list<T>::erase_after(const iterator& beg, const iterator& end) {
+	void forward_list<T>::erase_after(const_iterator& beg, const_iterator& end) {
 		if (head == beg) {
 			head.get() = end.get();
 		}
@@ -348,6 +348,116 @@ namespace kkli {
 		}
 	}
 
+	//operator==
+	template<typename T>
+	bool forward_list<T>::operator==(const forward_list<T>& fl)const {
+		auto beg = head;
+		auto end = end();
+		auto fl_beg = fl.head;
+
+		//两个都不为空
+		while (beg != end && fl_beg != end) {
+			if (*beg != *fl_beg) return false;
+			++beg;
+			++fl_beg;
+		}
+
+		if (beg == end && fl_beg == end) return true;
+		else return false;
+	}
+
+	//operator!=
+	template<typename T>
+	bool forward_list<T>::operator!=(const forward_list<T>& fl)const {
+		return !operator==(fl);
+	}
+
+	//operator<
+	template<typename T>
+	bool forward_list<T>::operator<(const forward_list<T>& fl)const {
+		auto beg = head;
+		auto end = end();
+		auto fl_beg = fl.head;
+
+		while (beg != end && fl_beg != end) {
+			if (*beg >= *fl_beg) return false;
+			++beg;
+			++fl_beg;
+		}
+
+		if (beg == end) return true;
+		else return false;
+	}
+
+	//operator>
+	template<typename T>
+	bool forward_list<T>::operator>(const forward_list<T>& fl)const {
+		auto beg = head;
+		auto end = end();
+		auto fl_beg = fl.head;
+
+		while (beg != end && fl_beg != end) {
+			if (*beg <= *fl_beg) return false;
+			++beg;
+			++fl_beg;
+		}
+
+		if (fl_beg == end) return true;
+		else return false;
+	}
+
+	//operator<=
+	template<typename T>
+	bool forward_list<T>::operator<=(const forward_list<T>& fl)const {
+		return !(operator>(fl));
+	}
+
+	//operator>=
+	template<typename T>
+	bool forward_list<T>::operator>=(const forward_list<T>& fl)const {
+		return !(operator<(fl));
+	}
+
+	//assign
+	template<typename T>
+	void forward_list<T>::assign(int n, const T& elem) {
+		clear();
+		if (n <= 0) return;
+		iterator iter = elem;
+		head = iter;
+
+		int count = 1;
+		while (count < n) {
+			iter.get()->next = new Node<T>(elem);
+			++iter;
+			++count;
+		}
+	}
+
+	//assign
+	template<typename T>
+	void forward_list<T>::assign(const_iterator& beg, const_iterator& end){
+		if (beg == end) return;
+		iterator iter = elem;
+		head = iter;
+
+		auto it = beg;
+		++it;
+		while (it != end) {
+			iter.get()->next = new Node<T>(*it);
+			++iter;
+			++it;
+		}
+	}
+
+	//swap
+	template<typename T>
+	void forward_list<T>::swap(const forward_list<T>& fl) {
+		auto iter = head;
+		head = fl.head;
+		fl.head = iter;
+	}
+
 	//测试用：输出链表信息
 	template<typename T>
 	void forward_list<T>::print()const {
@@ -356,5 +466,11 @@ namespace kkli {
 			cout << *iter << " ";
 		}
 		cout << endl;
+	}
+
+	//swap，非成员函数
+	template<typename T>
+	void swap(const forward_list<T>& lhs, const forward_list<T>& rhs) {
+		lhs.swap(rhs);
 	}
 }

@@ -108,7 +108,7 @@ namespace kkli {
 		iterator head;
 
 		//将beg为首节点，end为尾节点的链表插入到pos后
-		void __insert(int pos, const iterator& beg, const iterator& end);
+		void __insert(int pos, const_iterator& beg, const_iterator& end);
 	public:
 
 		//constructors
@@ -118,7 +118,7 @@ namespace kkli {
 		forward_list(std::initializer_list<T> il);					//初始列构造
 		forward_list(int n);										//n个默认初始化的元素
 		forward_list(int n, const T& elem);							//n个用t初始化的元素
-		forward_list(const iterator& beg, const iterator& end);		//通过迭代器范围构造
+		forward_list(const_iterator& beg, const_iterator& end);		//通过迭代器范围构造
 		~forward_list();											//析构
 
 		//begin / cbegin
@@ -137,12 +137,12 @@ namespace kkli {
 		//insert_after
 		iterator insert_after(int pos, const T& elem);
 		iterator insert_after(int pos, int n, const T& elem);
-		iterator insert_after(int pos, const iterator& beg, const iterator& end);
+		iterator insert_after(int pos, const_iterator& beg, const_iterator& end);
 		iterator insert_after(int pos, std::initializer_list<T> elems);
 
 		//erase_after
 		void erase_after(int pos);
-		void erase_after(const iterator& beg, const iterator& end);
+		void erase_after(const_iterator& beg, const_iterator& end);
 
 		//remove
 		void remove(const T& elem);
@@ -160,21 +160,28 @@ namespace kkli {
 		//empty
 		bool empty()const { return head.get()->next == nullptr; }
 
-		//operator==
-		//operator!=
-		//operator<
-		//operator>
-		//operator<=
-		//operator>=
+		//operators
+		bool operator==	(const forward_list<T>& fl)const;
+		bool operator!=	(const forward_list<T>& fl)const;
+		bool operator<	(const forward_list<T>& fl)const;
+		bool operator>	(const forward_list<T>& fl)const;
+		bool operator<=	(const forward_list<T>& fl)const;
+		bool operator>=	(const forward_list<T>& fl)const;
 
-		//assign(n,t)，将n个t赋予当前forward_list
-		//assign(beg,end)，将[beg,end)范围的元素赋予当前forward_list
+		//assign
+		void assign(int n, const T& elem);
+		void assign(const_iterator& beg, const_iterator& end);
+
 		//swap
-		//swap, non-member function
+		void swap(const forward_list<T>& fl);
 
 		//TEST: print all elements
 		void print()const;
 	};
+
+	//swap，非成员函数
+	template<typename T>
+	void swap(const forward_list<T>& lhs, const forward_list<T>& rhs);
 
 	//forward_list 的实现文件
 #include "forward_list_impl.h"
