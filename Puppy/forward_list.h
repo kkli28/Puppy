@@ -107,6 +107,8 @@ namespace kkli {
 		//forward_list's head
 		iterator head;
 
+		//将beg为首节点，end为尾节点的链表插入到pos后
+		void __insert(int pos, const iterator& beg, const iterator& end);
 	public:
 
 		//constructors
@@ -131,6 +133,7 @@ namespace kkli {
 		void push_front(const T& elem);
 		void pop_front();
 
+		
 		//insert_after
 		iterator insert_after(int pos, const T& elem);
 		iterator insert_after(int pos, int n, const T& elem);
