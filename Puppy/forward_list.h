@@ -450,9 +450,34 @@ namespace kkli {
 	//移除所有值为elem的节点
 	template<typename T>
 	void forward_list<T>::remove(const T& elem) {
-		remove_if(
-			[=](const T& e) -> bool {return e == elem; }
-		);
+		if (head == iterator()) return;
+
+		//删除首部所有满足条件的节点
+		auto end = iterator();
+		while (head != end && *head == elem) {
+			auto del = head;
+			++head;
+			delete del.get();
+		}
+
+		auto prev_iter = head;				//循环迭代器的前一个迭代器
+		auto iter = head;					//循环迭代器
+		++iter;
+		while (iter != end) {
+
+			//找到满足条件的节点
+			if (*iter == elem) {
+				auto del = iter;
+				prev_iter.get()->next = iter.get()->next;
+				++iter;						//不递增prev_iter
+				delete del.get();
+			}
+			else {
+				//递增两个迭代器
+				++iter;
+				++prev_iter;
+			}
+		}
 	}
 
 	//重置大小
@@ -462,6 +487,11 @@ namespace kkli {
 		if (n == 0) {
 			clear();
 			return;
+		}
+
+		//原本为空时，需要更改head
+		if (head == iterator()) {
+			head = iterator(elem);
 		}
 
 		int count = 0;
@@ -498,11 +528,16 @@ namespace kkli {
 
 											//元素个数大于n个
 			else {
-				while (iter != end) {
-					auto del = iter;
-					++iter;
+				//删除后续的节点
+				auto it = iter;
+				++it;						//跳过链表有效末尾节点
+				while (it != end) {
+					auto del = it;
+					++it;
 					delete del.get();
 				}
+				//更新最后节点的next域
+				iter.get()->next = nullptr;
 			}
 		}
 	}
