@@ -43,13 +43,11 @@ namespace test {
 			test_pop_front();
 			test_insert_after();
 			test_erase_after();
-			test_remove();
+			//test_remove();
 			test_resize();
-			/*
 			test_operator();
 			test_assign();
 			test_swap();
-			*/
 		}
 
 		//²âÊÔ µü´úÆ÷
@@ -145,7 +143,7 @@ namespace test {
 			}
 
 			//runtime_error
-			fl.pop_front();
+			//fl.pop_front();
 		}
 
 		//²âÊÔ insert_after
@@ -196,7 +194,7 @@ namespace test {
 
 			forward_list<int> fl1{ 1,2,3,4,5,6 };
 			//È¥µôÆæÊı
-			fl1.remove_if([](const int& elem) { return elem % 2; });
+			fl1.remove_if([](const int& elem) -> bool { return elem % 2; });
 			fl1.print();
 		}
 
@@ -225,6 +223,8 @@ namespace test {
 
 		//²âÊÔ operators
 		void test_operator() {
+			cout << "\ntest_operator()" << endl;
+			
 			forward_list<int> fl1;
 			forward_list<int> fl2;
 			forward_list<int> fl3{ 1,2,3,4 };
@@ -235,11 +235,67 @@ namespace test {
 			forward_list<int> fl8{ 1,2,3,4,5,6,7,8 };
 
 			//operator== / !=
+			cout << "operator == / !=" << endl;
 			cout << (fl1 == fl2 ? "==" : "!=") << endl;
 			cout << (fl1 == fl3 ? "==" : "!=") << endl;
-			cout << (fl3 == fl4) ? "==" : "!=") << endl;
-			//TODO: 
-			//
+			cout << (fl3 == fl4 ? "==" : "!=") << endl;
+			cout << (fl3 == fl5 ? "==" : "!=") << endl;
+
+			//operator < >=
+			cout << "operator < / >=" << endl;
+			cout << (fl1 < fl2 ? "<" : ">=") << endl;
+			cout << (fl1 < fl3 ? "<" : ">=") << endl;
+			cout << (fl3 < fl4 ? "<" : ">=") << endl;
+			cout << (fl4 < fl5 ? "<" : ">=") << endl;
+			cout << (fl5 < fl6 ? "<" : ">=") << endl;
+			cout << (fl3 < fl7 ? "<" : ">=") << endl;
+			cout << (fl3 < fl8 ? "<" : ">=") << endl;
+
+			//operator > <=
+			cout << "operator > / <=" << endl;
+			cout << (fl1 > fl2 ? ">" : "<=") << endl;
+			cout << (fl1 > fl3 ? ">" : "<=") << endl;
+			cout << (fl3 > fl4 ? ">" : "<=") << endl;
+			cout << (fl4 > fl5 ? ">" : "<=") << endl;
+			cout << (fl5 > fl6 ? ">" : "<=") << endl;
+			cout << (fl3 > fl7 ? ">" : "<=") << endl;
+			cout << (fl3 > fl8 ? ">" : "<=") << endl;
+		}
+
+		//²âÊÔ assign
+		void test_assign() {
+			cout << "\ntest_assign()" << endl;
+
+			forward_list<int> fl{ 1,2,3,4 };
+			fl.assign(4, 1);
+			fl.print();
+			fl.assign(0, 10);
+			fl.print();
+			forward_list<int> fl1{ 1,2,3,4 };
+			fl.assign(fl1.begin(), fl1.end());
+			fl.print();
+		}
+
+		//²âÊÔ swap
+		void test_swap() {
+			cout << "\ntest_swap()" << endl;
+
+			forward_list<int> fl1{ 1,2,3,4 };
+			forward_list<int> fl2(fl1);
+			forward_list<int> fl3{ 5,6,7,8 };
+			fl1.print();
+			fl2.print();
+
+			cout << "fl1.swap(fl2)" << endl;
+			fl1.swap(fl2);
+			fl1.print();
+			fl2.print();
+
+			cout << "swap(fl1,fl3)" << endl;
+			swap(fl1, fl3);
+			fl1.print();
+			fl2.print();
+			fl3.print();
 		}
 	}
 }

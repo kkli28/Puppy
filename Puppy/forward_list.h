@@ -109,6 +109,7 @@ namespace kkli {
 
 		//将beg为首节点，end为尾节点的链表插入到pos后
 		void __insert(int pos, const_iterator& beg, const_iterator& end);
+
 	public:
 
 		//constructors
@@ -174,7 +175,7 @@ namespace kkli {
 		void assign(const_iterator& beg, const_iterator& end);
 
 		//swap
-		void swap(const forward_list<T>& fl);
+		void swap(forward_list<T>& fl);
 
 		//TEST: print all elements
 		void print()const;
@@ -182,7 +183,7 @@ namespace kkli {
 
 	//swap，非成员函数
 	template<typename T>
-	void swap(const forward_list<T>& lhs, const forward_list<T>& rhs);
+	void swap(forward_list<T>& lhs, forward_list<T>& rhs);
 
 	//复制构造函数
 	template<typename T>
@@ -210,7 +211,7 @@ namespace kkli {
 	//初始化列表构造
 	template<typename T>
 	forward_list<T>::forward_list(std::initializer_list<T> il) {
-		int size = il.size();
+		auto size = il.size();
 		if (size == 0) return;
 
 		//构造head
@@ -301,17 +302,16 @@ namespace kkli {
 		//将临时链表插入pos位置
 		end.get()->next = iter.get()->next;
 		iter.get()->next = beg.get();
-		return beg;
 	}
 
 	//插入n个elem到第pos位置后
 	template<typename T>
 	Iter<T> forward_list<T>::insert_after(int pos, int n, const T& elem) {
-		if (n <= 0) return;
+		if (n <= 0) return iterator();
 		iterator temp_beg = elem;					//临时链表首节点迭代器
 		iterator temp_end = temp_beg;				//临时链表尾节点迭代器
 		for (int i = 1; i < n; ++i) {
-			temp_end.get()->next = new Node(elem);
+			temp_end.get()->next = new Node<T>(elem);
 			++temp_end;
 		}
 
@@ -329,27 +329,27 @@ namespace kkli {
 	template<typename T>
 	Iter<T> forward_list<T>::insert_after(
 		int pos, const_iterator& beg, const_iterator& end) {
-		if (beg == end) return;
+		if (beg == end) return beg;
 		iterator temp_beg = *beg;				//临时链表首节点迭代器
 		iterator temp_end = temp_beg;			//临时链表尾节点迭代器
 
 												//通过[beg,end)构造临时链表
 		auto begin = beg;
 		while (++begin != end) {
-			temp_end.get()->next() = new Node<T>(*begin);
+			temp_end.get()->next = new Node<T>(*begin);
 			++temp_end;
 		}
 
 		__insert(pos, temp_beg, temp_end);
-		return it;
+		return temp_beg;
 	}
 
 	//将initializer_list中的元素插入到pos位置后
 	template<typename T>
 	Iter<T> forward_list<T>::insert_after(
 		int pos, std::initializer_list<T> elems) {
-		int size = elems.size();
-		if (size == 0) return;
+		auto size = elems.size();
+		if (size == 0) return iterator();
 
 		//先构造临时链表首元素
 		iterator temp_beg = *(elems.begin());
@@ -416,7 +416,7 @@ namespace kkli {
 
 	//移除满足条件的元素
 	template<typename T>
-	void forward_list<T>::remove_if(bool(*op)(const T& elem)) {
+	void forward_list<T>::remove_if(bool(*op)(const T& e)) {
 		if (head == iterator()) return;
 
 		//删除首部所有满足条件的节点
@@ -451,7 +451,7 @@ namespace kkli {
 	template<typename T>
 	void forward_list<T>::remove(const T& elem) {
 		remove_if(
-			[&elem](const T& e) -> bool {return elem == e; }
+			[=](const T& e) -> bool {return e == elem; }
 		);
 	}
 
@@ -617,7 +617,7 @@ namespace kkli {
 	template<typename T>
 	void forward_list<T>::assign(const_iterator& beg, const_iterator& end) {
 		if (beg == end) return;
-		iterator iter = elem;
+		iterator iter = *beg;
 		head = iter;
 
 		auto it = beg;
@@ -631,7 +631,7 @@ namespace kkli {
 
 	//swap
 	template<typename T>
-	void forward_list<T>::swap(const forward_list<T>& fl) {
+	void forward_list<T>::swap(forward_list<T>& fl) {
 		auto iter = head;
 		head = fl.head;
 		fl.head = iter;
@@ -649,7 +649,7 @@ namespace kkli {
 
 	//swap，非成员函数
 	template<typename T>
-	void swap(const forward_list<T>& lhs, const forward_list<T>& rhs) {
+	void swap(forward_list<T>& lhs, forward_list<T>& rhs) {
 		lhs.swap(rhs);
 	}
 }

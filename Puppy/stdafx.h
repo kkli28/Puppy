@@ -16,3 +16,4 @@
 #include <string>
 #include <initializer_list>
 #include <algorithm>
+#include <functional>
