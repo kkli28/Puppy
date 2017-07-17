@@ -2,7 +2,11 @@
 
 #include "stdafx.h"
 
-//Node<T>
+
+////////////////////////////////////////////////////////////////////////////////
+// Node<T> 类定义
+////////////////////////////////////////////////////////////////////////////////
+
 namespace kkli {
 
 	//Node<T>
@@ -27,68 +31,69 @@ namespace kkli {
 	};
 }
 
-//Iter<T>
-namespace kkli{
+////////////////////////////////////////////////////////////////////////////////
+// forward_list<T> 类定义
+////////////////////////////////////////////////////////////////////////////////
 
-	//Iter<T>
-	template<typename T>
-	class Iter {
-	private:
-		Node<T>* iter;
-
-		//不允许误用，故为private
-		Iter(Node<T>* ptr) : iter(ptr) {}
-
-	public:
-		//constructors
-		Iter() : iter(nullptr) {}
-		Iter(const T& t) : iter(new Node<T>(t)) {}
-		Iter(const Iter& it) :iter(it.iter) {}
-
-		//get
-		Node<T>* get()const { return iter; }
-
-		//operator=
-		Iter& operator=(const Iter& it) {
-			iter = it.iter;
-			return *this;
-		}
-
-		//operator++
-		Iter& operator++() {
-			iter = iter->next;
-			return *this;
-		}
-
-		//operator++(int)
-		Iter operator++(int) {
-			Iter it = iter;
-			iter = iter->next;
-			return it;
-		}
-
-		//operator==
-		bool operator==(const Iter& it)const {
-			return iter == it.iter;
-		}
-
-		//operator!=
-		bool operator!=(const Iter& it)const {
-			return !(*this == it);
-		}
-
-		//operator*
-		T& operator*() { return iter->info; }
-		T operator*()const { return iter->info; }
-	};
-}
-
-//forward_list<T>
 namespace kkli {
 
 	//forward_list<T>
 	template<typename T>
 	class forward_list {
+	private:
+
+		//iterator: Iter<T>
+		template<typename T>
+		class Iter {
+		private:
+			Node<T>* iter;
+
+			//不允许误用，故为private
+			Iter(Node<T>* ptr) : iter(ptr) {}
+
+		public:
+			//constructors
+			Iter() : iter(nullptr) {}
+			Iter(const T& t) : iter(new Node<T>(t)) {}
+			Iter(const Iter& it) :iter(it.iter) {}
+
+			//get
+			Node<T>* get()const { return iter; }
+
+			//operator=
+			Iter& operator=(const Iter& it) {
+				iter = it.iter;
+				return *this;
+			}
+
+			//operator++
+			Iter& operator++() {
+				iter = iter->next;
+				return *this;
+			}
+
+			//operator++(int)
+			Iter operator++(int) {
+				Iter it = iter;
+				iter = iter->next;
+				return it;
+			}
+
+			//operator==
+			bool operator==(const Iter& it)const {
+				return iter == it.iter;
+			}
+
+			//operator!=
+			bool operator!=(const Iter& it)const {
+				return !(*this == it);
+			}
+
+			//operator*
+			T& operator*() { return iter->info; }
+			T operator*()const { return iter->info; }
+		};
+
 	public:
 
 		//typedefs
@@ -120,7 +125,7 @@ namespace kkli {
 		forward_list(int n);										//n个默认初始化的元素
 		forward_list(int n, const T& elem);							//n个用t初始化的元素
 		forward_list(const_iterator& beg, const_iterator& end);		//通过迭代器范围构造
-		
+
 		~forward_list();											//析构
 
 		//begin / cbegin
@@ -135,7 +140,7 @@ namespace kkli {
 		void push_front(const T& elem);
 		void pop_front();
 
-		
+
 		//insert_after
 		iterator insert_after(int pos, const T& elem);
 		iterator insert_after(int pos, int n, const T& elem);
@@ -184,6 +189,14 @@ namespace kkli {
 	//swap，非成员函数
 	template<typename T>
 	void swap(forward_list<T>& lhs, forward_list<T>& rhs);
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// forward_list<T> 函数定义
+////////////////////////////////////////////////////////////////////////////////
+
+namespace kkli{
 
 	//复制构造函数
 	template<typename T>
@@ -306,7 +319,7 @@ namespace kkli {
 
 	//插入n个elem到第pos位置后
 	template<typename T>
-	Iter<T> forward_list<T>::insert_after(int pos, int n, const T& elem) {
+	typename forward_list<T>::iterator forward_list<T>::insert_after(int pos, int n, const T& elem) {
 		if (n <= 0) return iterator();
 		iterator temp_beg = elem;					//临时链表首节点迭代器
 		iterator temp_end = temp_beg;				//临时链表尾节点迭代器
@@ -321,13 +334,13 @@ namespace kkli {
 
 	//插入1个elem到第pos位置节点后，调用insert_after(pos,n,elem)
 	template<typename T>
-	Iter<T> forward_list<T>::insert_after(int pos, const T& elem) {
+	typename forward_list<T>::iterator forward_list<T>::insert_after(int pos, const T& elem) {
 		return insert_after(pos, 1, elem);
 	}
 
 	//将[beg,end)中的元素插入到pos位置后
 	template<typename T>
-	Iter<T> forward_list<T>::insert_after(
+	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		int pos, const_iterator& beg, const_iterator& end) {
 		if (beg == end) return beg;
 		iterator temp_beg = *beg;				//临时链表首节点迭代器
@@ -346,7 +359,7 @@ namespace kkli {
 
 	//将initializer_list中的元素插入到pos位置后
 	template<typename T>
-	Iter<T> forward_list<T>::insert_after(
+	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		int pos, std::initializer_list<T> elems) {
 		auto size = elems.size();
 		if (size == 0) return iterator();

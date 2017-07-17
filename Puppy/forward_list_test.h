@@ -10,7 +10,6 @@ namespace test {
 		using std::string;
 
 		using kkli::forward_list;
-		using kkli::Iter;
 		using kkli::Node;
 		using kkli::swap;
 
@@ -55,9 +54,9 @@ namespace test {
 			cout << "\ntest_iter()" << endl;
 
 			//constructors
-			Iter<int> it1 = 1;
+			forward_list<int>::iterator it1 = 1;
 			cout << *it1 << endl;			//operator*
-			Iter<int> it2 = it1;
+			forward_list<int>::iterator it2 = it1;
 			cout << *it2 << endl;
 
 			//operators
@@ -65,7 +64,7 @@ namespace test {
 			cout << *it1 << "  " << *it2 << endl;
 			cout << *(it1++) << endl;		//operator++(int)
 			//cout << *(++it2) << endl;		//operator++
-			it1 = Iter<int>(1);
+			it1 = forward_list<int>::iterator(1);
 			it2 = it1;
 			if (it1 == it2) cout << "it1==it2" << endl;
 			else if(it1!=it2) cout << "it1!=it2" << endl;

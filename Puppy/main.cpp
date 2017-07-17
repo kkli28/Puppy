@@ -13,8 +13,7 @@ double pow(int n, int p) {
 
 int main() {
 	//test::my_pair_test::test();
-	//test::forward_list_test::test();
-	cout << pow(99999999, 9999999) << endl;
+	test::forward_list_test::test();
 	system("pause");
     return 0;
 }
