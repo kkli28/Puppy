@@ -13,7 +13,7 @@ double pow(int n, int p) {
 
 int main() {
 	//test::my_pair_test::test();
-	test::forward_list_test::test();
+	//test::forward_list_test::test();
 	system("pause");
     return 0;
 }

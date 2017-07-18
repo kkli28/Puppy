@@ -105,6 +105,10 @@ namespace kkli {
 		typedef Node<T>*				pointer;
 		typedef const Node<T>*			const_pointer;
 		typedef Iter<T>					iterator;
+
+		//************************************************************
+		// WRONG! const_iterator应该实现为指向常量的指针，而不是常量指针
+		//************************************************************
 		typedef const iterator			const_iterator;
 		typedef std::forward_iterator_tag	iterator_category;
 
@@ -463,6 +467,10 @@ namespace kkli{
 	//移除所有值为elem的节点
 	template<typename T>
 	void forward_list<T>::remove(const T& elem) {
+		//************************************************************
+		// 本想重用remove_if()的，但是其无法接受lambda表达式，故再实现一遍
+		// 期望：remove_if([=](const T& e) -> bool {return e==elem;});
+		//************************************************************
 		if (head == iterator()) return;
 
 		//删除首部所有满足条件的节点
