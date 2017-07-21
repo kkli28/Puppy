@@ -72,14 +72,15 @@ namespace kkli {
 	private:
 		avl_node<T>* root;			//树根节点
 
-		static void clear(avl_node<T>* const nd);			//删除以nd为根的树
-		void rotate_left(avl_node<T>* const nd);			//左旋转
-		void rotate_right(avl_node<T>* const nd);			//右旋转
-		avl_node<T>* get_insert_pos(const T& elem)const;	//找到插入点
-		avl_node<T>* get_balance_node(avl_node<T>* const nd);		//从nd到root，找到需要平衡的节点
-		void balance(avl_node<T>* const nd);			//平衡节点
+		static void clear(avl_node<T>* const nd);				//删除以nd为根的树
+		void rotate_left(avl_node<T>* const nd);				//左旋转
+		void rotate_right(avl_node<T>* const nd);				//右旋转
+		avl_node<T>* get_insert_pos(const T& elem)const;		//找到插入点
+		avl_node<T>* get_delete_parent_pos(const T& elem)const;		//找到删除点的父节点
+		avl_node<T>* get_balance_node(avl_node<T>* const nd);	//从nd到root，找到需要平衡的节点
+		void balance(avl_node<T>* const nd);					//平衡节点
 
-														//TEST: 前序/中序 遍历输出
+		//TEST: 前序/中序 遍历输出
 		void pre_print(const avl_node<T>* const nd) const;
 		void in_print(const avl_node<T>* const nd) const;
 	public:
@@ -213,8 +214,8 @@ namespace kkli {
 		if (!is_root) avl_node<T>::update_height(ptr_rightchild->parent);
 
 		//log
-		cout << "avl_tree:" << endl;
-		print();
+		//cout << "avl_tree:" << endl;
+		//print();
 	}
 
 	//rotate_right
@@ -280,8 +281,8 @@ namespace kkli {
 		if (!is_root) avl_node<T>::update_height(nd->parent);
 
 		//log
-		cout << "avl_tree:" << endl;
-		print();
+		//cout << "avl_tree:" << endl;
+		//print();
 	}
 
 	//get_insert_pos
@@ -289,13 +290,13 @@ namespace kkli {
 	avl_node<T>* avl_tree<T>::get_insert_pos(const T& elem)const {
 		avl_node<T>* ptr = root;				//插入位置
 		avl_node<T>* ptr_parent = root;			//插入节点的父节点
-		if (elem < ptr->value) ptr = ptr->left_child;
+		if (elem <= ptr->value) ptr = ptr->left_child;
 		else ptr = ptr->right_child;
 
 		//ptr_parent指向待插入位置的父节点
 		while (ptr != nullptr) {
 			ptr_parent = ptr;
-			if (elem < ptr->value) ptr = ptr->left_child;
+			if (elem <= ptr->value) ptr = ptr->left_child;
 			else ptr = ptr->right_child;
 		}
 
@@ -303,6 +304,29 @@ namespace kkli {
 		//cout << "insert_pos: " << ptr_parent->value << endl;
 
 		return ptr_parent;
+	}
+
+	//get_delete_pos
+	template<typename T>
+	avl_node<T>* avl_tree<T>::get_delete_parent_pos(const T& elem)const {
+		//空树
+		if (root == nullptr) return nullptr;
+
+		avl_node<T>* ptr = root;				//待删除的节点
+		avl_node<T>* ptr_parent = root;			//待删除节点的父节点
+		if (elem < ptr->value) ptr = ptr->left_child;
+		else ptr = ptr->right_child;
+
+		//ptr_parent指向待插入位置的父节点
+		while (ptr != nullptr && ptr->value != elem) {
+			ptr_parent = ptr;
+			if (elem <= ptr->value) ptr = ptr->left_child;
+			else ptr = ptr->right_child;
+		}
+
+		//没有找到值为elem的节点
+		if (ptr == nullptr) return nullptr;
+		else return ptr_parent;
 	}
 
 	//get_balance_node
@@ -388,10 +412,11 @@ namespace kkli {
 	template<typename T>
 	void avl_tree<T>::pre_print(const avl_node<T>* const nd)const {
 		if (nd == nullptr) return;
-		cout << "value: " << nd->value << "    height: " << nd->height << "    parent: ";
-		cout << (nd->parent == nullptr ? -1 : nd->parent->value);
-		cout << "    left: " << (nd->left_child == nullptr ? -1 : nd->left_child->value);
-		cout << "    right: " << (nd->right_child == nullptr ? -1 : nd->right_child->value) << endl;
+		cout << "值" << nd->value;
+		//cout << "    高" << nd->height;
+		cout << "    父" << (nd->parent == nullptr ? -1 : nd->parent->value);
+		cout << "    左子" << (nd->left_child == nullptr ? -1 : nd->left_child->value);
+		cout << "    右子" << (nd->right_child == nullptr ? -1 : nd->right_child->value) << endl;
 		pre_print(nd->left_child);
 		pre_print(nd->right_child);
 	}
@@ -400,11 +425,11 @@ namespace kkli {
 	template<typename T>
 	void avl_tree<T>::in_print(const avl_node<T>* const nd)const {
 		if (nd == nullptr) return;
-		in_print(nd->left_child);
-		cout << "value: " << nd->value << "    height: " << nd->height << "    parent: ";
-		cout << (nd->parent == nullptr ? -1 : nd->parent->value);
-		cout << "    left: " << (nd->left_child == nullptr ? -1 : nd->left_child->value);
-		cout << "    right: " << (nd->right_child == nullptr ? -1 : nd->right_child->value) << endl;
+		cout << "值" << nd->value;
+		//cout << "    高" << nd->height;
+		cout << "    父" << (nd->parent == nullptr ? -1 : nd->parent->value);
+		cout << "    左子" << (nd->left_child == nullptr ? -1 : nd->left_child->value);
+		cout << "    右子" << (nd->right_child == nullptr ? -1 : nd->right_child->value) << endl;
 		in_print(nd->right_child);
 	}
 
@@ -468,11 +493,6 @@ namespace kkli {
 
 			balance(ptr);
 		}
-
-		//log
-		else {
-			//cout << "不需要平衡节点" << endl;
-		}
 	}
 
 	//delete
@@ -482,32 +502,65 @@ namespace kkli {
 		//log
 		cout << "删除: " << elem << endl;
 
-		avl_node<T>* ptr = root;				//待删除的节点
-		avl_node<T>* ptr_parent = root;			//待删除节点的父节点
-		if (elem < ptr->value) ptr = ptr->left_child;
-		else ptr = ptr->right_child;
+		avl_node<T>* ptr_parent = get_delete_parent_pos(elem);
+		if (ptr_parent == nullptr) return;				//没有值为elem的节点
 
-		//ptr_parent指向待插入位置的父节点
-		while (ptr != nullptr && ptr->value != elem) {
-			ptr_parent = ptr;
-			if (elem < ptr->value) ptr = ptr->left_child;
-			else ptr = ptr->right_child;
+		//确定待删除节点是左子节点还是右子节点
+		avl_node<T>* ptr = ptr_parent->left_child;
+		if (ptr == nullptr || ptr->value != elem) ptr = ptr_parent->right_child;
+
+		//需要平衡的节点
+		avl_node<T>* balance_ptr = nullptr;
+
+		//待删除节点没有左子树
+		if (ptr->left_child == nullptr) {
+			if (ptr_parent->left_child == ptr) ptr_parent->left_child = ptr->right_child;
+			else ptr_parent->right_child = ptr->right_child;
+			delete ptr;
+
+			//更新ptr_parent到root节点的高度值，并找到需要平衡的节点
+			balance_ptr = get_balance_node(ptr_parent);
 		}
 
-		//没有找到值为elem的点
-		if (ptr == nullptr) return;
+		//待删除节点不是叶节点
+		else {
+			//找到替换节点
+			avl_node<T>* replace_ptr = ptr->left_child;
 
-		//Yeah~ 找到了
-		if (ptr_parent->left_child == ptr) ptr_parent->left_child = nullptr;
-		else ptr_parent->right_child = nullptr;
-		delete ptr;
+			//ptr左子节点没有右子树，即其左子节点最大
+			if (replace_ptr ->right_child== nullptr) {
+				ptr->value = replace_ptr->value;
+				ptr->left_child = replace_ptr->left_child;
+				
+				if (replace_ptr->left_child != nullptr) replace_ptr->left_child->parent = ptr;
+				delete replace_ptr;
 
-		//找到 删除节点父节点 到 根节点 路径中需要平衡的节点
-		ptr = get_balance_node(ptr_parent);
-		if (ptr != nullptr) balance(ptr);
+				//更新ptr到root节点的高度值，并找到需要平衡的节点
+				balance_ptr = get_balance_node(ptr);
+			}
+			else {
+				//找到ptr的左子树中的最右节点（最大）
+				while (replace_ptr->right_child!= nullptr) {
+					replace_ptr = replace_ptr->right_child;
+				}
+
+				//更新ptr->value的值为其左子树中节点的最大值（最右节点的值）
+				ptr->value = replace_ptr->value;
+
+				//最右节点的父节点的右子指针指向最右节点的左子节点，并更新parent指针
+				replace_ptr->parent->right_child = replace_ptr->left_child;
+				if (replace_ptr->left_child != nullptr) replace_ptr->left_child->parent = replace_ptr->parent;
+
+				balance_ptr = get_balance_node(replace_ptr->parent);
+				delete replace_ptr;
+			}
+		}
+
+		//平衡节点
+		if (balance_ptr != nullptr) balance(balance_ptr);
 
 		//log
-		cout << "avl_tree: ";
+		cout << "avl_tree: " << endl;
 		print();
 	}
 }

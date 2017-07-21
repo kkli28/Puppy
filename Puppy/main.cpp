@@ -11,7 +11,13 @@ using namespace std;
 int main() {
 	//test::my_pair_test::test();
 	//test::forward_list_test::test();
-	//kkli::avl_tree<int> at{ 1,5,8,2,9,10,6,7,8,4 };
+	kkli::avl_tree<int> at;
+	for (int i = 1; i < 21; ++i) {
+		at.insert_elem(i);
+		at.print();
+	}
+	for (int i = 0; i < 22; ++i) at.delete_elem(i);
+	
 	system("pause");
     return 0;
 }
