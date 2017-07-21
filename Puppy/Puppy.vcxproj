@@ -139,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="avl_tree.h" />
+    <ClInclude Include="avl_tree_test.h" />
     <ClInclude Include="forward_list.h" />
     <ClInclude Include="forward_list_test.h" />
     <ClInclude Include="my_pair.h" />
