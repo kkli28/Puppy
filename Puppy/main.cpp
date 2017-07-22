@@ -9,8 +9,8 @@ using namespace std;
 
 int main() {
 	//test::my_pair_test::test();
-	//test::forward_list_test::test();
-	test::avl_tree_test::test();
+	test::forward_list_test::test();
+	//test::avl_tree_test::test();
 	system("pause");
     return 0;
 }

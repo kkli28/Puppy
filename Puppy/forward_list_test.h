@@ -42,7 +42,7 @@ namespace test {
 			test_pop_front();
 			test_insert_after();
 			test_erase_after();
-			//test_remove();
+			test_remove();
 			test_resize();
 			test_operator();
 			test_assign();
@@ -185,6 +185,8 @@ namespace test {
 
 		//²âÊÔ remove
 		void test_remove() {
+			cout << "\ntest_remove()" << endl;
+
 			forward_list<int> fl{ 1,2,3,4,1,2,3,4 };
 			fl.remove(1);
 			fl.print();

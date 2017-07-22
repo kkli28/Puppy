@@ -159,7 +159,8 @@ namespace kkli {
 		void remove(const T& elem);
 
 		//remove_if
-		void remove_if(bool(*op)(const T& elem));
+		template<typename E=std::equal<T>>
+		void remove_if(const E& e);
 
 		//resize
 		void resize(int n);
@@ -433,7 +434,8 @@ namespace kkli{
 
 	//移除满足条件的元素
 	template<typename T>
-	void forward_list<T>::remove_if(bool(*op)(const T& e)) {
+	template<typename E=std::equal<T>>
+	void forward_list<T>::remove_if(const E& op) {
 		if (head == iterator()) return;
 
 		//删除首部所有满足条件的节点
@@ -467,10 +469,12 @@ namespace kkli{
 	//移除所有值为elem的节点
 	template<typename T>
 	void forward_list<T>::remove(const T& elem) {
-		//************************************************************
-		// 本想重用remove_if()的，但是其无法接受lambda表达式，故再实现一遍
-		// 期望：remove_if([=](const T& e) -> bool {return e==elem;});
-		//************************************************************
+
+		//log
+		cout << "call remove(" << elem << ")" << endl;
+
+		return remove_if([=](const T& e) -> bool {return e == elem; });
+
 		if (head == iterator()) return;
 
 		//删除首部所有满足条件的节点
