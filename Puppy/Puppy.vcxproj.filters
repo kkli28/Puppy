@@ -45,6 +45,12 @@
     <ClInclude Include="avl_tree_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="array.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="array_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
