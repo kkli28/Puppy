@@ -25,34 +25,46 @@ namespace kkli {
 		value_type __data[N];
 
 		//constructors
-		array() {}
+		array();
 		array(std::initializer_list<T> il);
 
+		//复制构造
+		array(const array&) = delete;
+
 		//member funciton
-		reference at(size_t index)const;
-		reference front()const;
-		reference back()const;
-		pointer data()const { return __data; }
-		iterator begin()const { return __data; }
-		iterator end()const { return __data+N; }
-		const_iterator cbegin() { return  __data; }
-		const_iterator cend() { return __data + N; }
+		reference at(size_t index);
+		reference front();
+		reference back();
+		pointer data() { return __data; }
+		iterator begin() { return __data; }
+		iterator end() { return __data+N; }
+		const_iterator cbegin()const { return  __data; }
+		const_iterator cend()const { return __data + N; }
 		bool empty()const { return N == 0; }
 		size_type size()const { return N; }
 		size_type max_size()const { return std::numeric_limits<size_type>::max(); }
 		void fill(const value_type& T);
-		void swap(const array& rhs);
+		void swap(array& rhs);
 		array& operator=(const array& rhs);
 		reference operator[](size_type index) { return __data[index]; }
+		const_reference operator[](size_type index) const { return __data[index]; }
+		void print()const;
 	};
 
 	//================================================================================
 	// member function
 	//================================================================================
 
+	//array
+	template<typename T,size_t N>
+	array<T, N>::array() {
+		for (size_t i = 0; i < N; ++i)
+			__data[i] = value_type();
+	}
+
 	//array(initializer_list)
-	template<typename T>
-	array<T>::array(std::initializer_list<T> il) {
+	template<typename T,size_t N>
+	array<T,N>::array(std::initializer_list<T> il) {
 		if (il.size() > N) throw std::runtime_error("初始化列表中元素个数太多!");
 		auto beg = il.begin();
 		auto end = il.end();
@@ -62,25 +74,29 @@ namespace kkli {
 			++index;
 			++beg;
 		}
+		while (index != N) {
+			__data[index] = value_type();
+			++index;
+		}
 	}
 
 	//at
 	template<typename T,size_t N>
-	typename array<T,N>::reference array<T,N>::at(size_t index)const {
+	typename array<T,N>::reference array<T,N>::at(size_t index) {
 		if (index < 0 || index >= N) throw runtime_error("下标越界!");
 		return __data[index];
 	}
 
 	//front
 	template<typename T, size_t N>
-	typename array<T, N>::reference array<T, N>::front()const {
+	typename array<T, N>::reference array<T, N>::front() {
 		if (empty()) throw runtime_error("array为空!");
 		return __data[0];
 	}
 
 	//back
 	template<typename T, size_t N>
-	typename array<T, N>::reference array<T, N>::back()const {
+	typename array<T, N>::reference array<T, N>::back() {
 		if (empty()) throw runtime_error("array为空!");
 		return __data[N - 1];
 	}
@@ -94,19 +110,28 @@ namespace kkli {
 
 	//swap
 	template<typename T,size_t N>
-	void array<T, N>::swap(const array<T,N>& rhs) {
+	void array<T, N>::swap(array<T,N>& rhs) {
 		for (size_t i = 0; i < N; ++i) {
 			value_type val = __data[i];
 			__data[i] = rhs[i];
-			rhs[i] = __val;
+			rhs[i] = val;
 		}
 	}
 
 	//operator =
 	template<typename T,size_t N>
-	array<T, N>& operator=(const array<T,N>& rhs) {
+	array<T, N>& array<T,N>::operator=(const array<T,N>& rhs) {
 		for (size_t i = 0; i < N; ++i)
 			__data[i] = rhs[i];
+		return *this;
+	}
+
+	//print
+	template<typename T,size_t N>
+	void array<T, N>::print()const {
+		for (size_t i = 0; i < N; ++i)
+			cout << __data[i] << " ";
+		cout << endl;
 	}
 
 	//================================================================================
@@ -163,13 +188,16 @@ namespace kkli {
 
 	//swap
 	template<typename T,size_t N>
-	void swap(const array<T, N>& lhs, const array<T, N>& rhs) {
+	void swap(array<T, N>& lhs, array<T, N>& rhs) {
 		lhs.swap(rhs);
 	}
 
 	//tuple_size
+	template<typename T>
+	class tuple_size;
+
 	template<typename T,size_t N>
-	class tuple_size<const array<T, N>& arr> {
+	class tuple_size<const array<T, N>&> {
 	public:
 		constexpr static size_t value = N;
 	};
