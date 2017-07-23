@@ -36,6 +36,9 @@ namespace kkli {
 
 		//重置内部迭代器
 		void reset_iterators() { __start = __end = __capacity = iterator(); }
+
+		//重新申请内存，并将原有元素复制到新内存中
+		void reallocate_and_copy(size_type new_cap);
 	public:
 
 		//constructors
@@ -90,7 +93,7 @@ namespace kkli {
 		size_type size()const { return __end - __start; }
 		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
 
-		void reverse(size_type new_cap);
+		void reserve(size_type new_cap);
 		size_type capacity()const { return __capacity - __start; }
 		void shrink_to_fit();
 		void clear();
@@ -106,27 +109,28 @@ namespace kkli {
 			return insert(pos, std::initializer_list<T>(first, last));
 		}
 
-		template< class... Args >
-		iterator emplace(const_iterator pos, Args&&... args);
-
-		iterator erase(const_iterator pos);
+		//emplace没有实现
 		iterator erase(const_iterator first, const_iterator last);
+		iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
-		void push_back(const T& value);
-		void push_back(T&& value);
-		void pop_back();
+		void push_back(const value_type& value);
+		void push_back(value_type&& value);
+		void pop_back() { __alloc.destroy(--__end); }
+
+		/*
+		void emplace(const value& value);
 
 		template< class... Args >
 		void emplace_back(Args&&... args);
 
 		template< class... Args >
 		reference emplace_back(Args&&... args);
+		*/
 
-		void resize(size_type count, T value = T());
-		void resize(size_type count);
 		void resize(size_type count, const value_type& value);
+		void resize(size_type count) { resize(count, value_type()); }
 
-		void swap(vector& other);		//remember non-member function swap
+		void swap(vector& rhs);
 
 		bool operator==(const vector& rhs);
 		bool operator!=(const vector& rhs) { return !operator==(rhs); }
@@ -159,14 +163,13 @@ namespace kkli {
 	template<typename InputIterator>
 	vector<T, Allocator>::vector(InputIterator first, InputIterator last)
 		:__alloc(alloc) {
-		size_type size = last - first;
-		__start = __alloc.allocate(size);
+		__start = __alloc.allocate(last-first);
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
 			__alloc.construct(__start[index], *iter);
 			++index;
 		}
-		__end = __start + size;
+		__end = __start + index;
 		__capacity = _end;
 	}
 
@@ -185,6 +188,25 @@ namespace kkli {
 	vector<T, Allocator>::~vector() {
 		deallocate();
 		reset_iterators();
+	}
+
+	//reallocate
+	template<typename T,typename Allocator>
+	void vector<T, Allocator>::reallocate_and_copy(size_type new_cap) {
+		auto start = __start;						//原容器内存开始位置
+		size_type old_cap = capacity();
+		__start = __alloc.allocate(new_cap);
+
+		//复制原容器元素到新容器
+		size_type index = 0;
+		for (auto iter = start; iter != __end; ++iter) {
+			__alloc.construct(__start[index], *iter);
+			++index;
+		}
+
+		__alloc.deallocate(start, old_cap);			//释放原有内存
+		__end = __start + index;
+		__capacity = __start + new_cap;
 	}
 
 	//operator =
@@ -244,7 +266,7 @@ namespace kkli {
 		__start = __alloc.allocate(count);
 		size_type index = 0;
 		while (index != count) {
-			__alloc.construct(__start[index]);
+			__alloc.construct(__start[index], value);
 			++index;
 		}
 		__end = __start + count;
@@ -260,7 +282,7 @@ namespace kkli {
 		__start = __alloc.allocate(size);
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
-			__alloc.construct(__start[index]);
+			__alloc.construct(__start[index], *iter);
 			++index;
 		}
 
@@ -283,23 +305,9 @@ namespace kkli {
 
 	//reverse
 	template<typename T, typename Allocator>
-	void vector<T, Allocator>::reverse(size_type new_cap) {
-		if (new_cap > max_size()) throw std::runtime_error("新容量过大!");
-		if (new_cap <= size()) return;			//空间大小不变
-		iterator start = __start;				//保存之前元素的指针
-		__start = __alloc.allocate(new_cap);	//创建新的内存空间
-
-												//将旧元素复制到新内存空间
-		size_type index = 0;
-		for (auto iter = start; iter != __end; ++iter) {
-			__alloc.construct(__start[index]);
-			++index;
-		}
-
-		//释放原有内存，并更新指针
-		__alloc.deallocate(start, __capacity - start);
-		__end = __start + index;
-		__capacity = __start + new_cap;
+	void vector<T, Allocator>::reserve(size_type new_cap) {
+		if (new_cap <= capacity()) return;		//空间大小不变
+		reallocate_and_copy(new_cap);
 	}
 
 	//shrink_to_fit
@@ -422,5 +430,114 @@ namespace kkli {
 		if (size > rhs.size()) return true;			//比rhs长，则所有元素相等都可以
 		if (greater) return true;					//两者一样长，则至少有一个元素大于rhs才行
 		else return false;							//两者一样长，元素也完全相等，则*this不大于rhs
+	}
+
+	//erase
+	template<typename T,typename Allocator>
+	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
+		size_type size = last - first;
+		//将后续元素往前移，覆盖掉[first,last)
+		for (auto iter = last; iter != __end; ++iter) {
+			*(iter - size) = *iter;
+		}
+		//将末尾size个元素析构
+		for (size_type i = 0; i < size; ++i) {
+			__alloc.destroy(--__end);
+		}
+		return pos;
+	}
+
+	//push_back
+	template<typename T,typename Allocator>
+	void vector<T, Allocator>::push_back(const value_type& value) {
+		//容器未满
+		if (__end != __capacity) {
+			__alloc.construct(__end, value);
+			++__end;
+		}
+		//容器已满
+		else {
+			size_type old_cap=capacity();				//原容器容量大小
+			size_type new_cap = old_cap * 2;			//容器的新容量大小
+			if (new_cap == 0) new_cap = 2;
+			reallocate_and_copy(new_cap);				//重新分配内存，并将原有元素移动到新内存中
+
+			//插入元素
+			__alloc.construct(++__end, value);
+		}
+	}
+
+	//push_back
+	//和push_back(const value_type&)如何区分？代码完全一样
+	template<typename T, typename Allocator>
+	void vector<T, Allocator>::push_back(value_type&& value) {
+		//容器未满
+		if (__end != __capacity) {
+			__alloc.construct(__end, value);
+			++__end;
+		}
+		//容器已满
+		else {
+			size_type old_cap = capacity();				//原容器容量大小
+			size_type new_cap = old_cap * 2;			//容器的新容量大小
+			if (new_cap == 0) new_cap = 2;
+			reallocate_and_copy(new_cap);				//重新分配内存，并将原有元素移动到新内存中
+
+														//插入元素
+			__alloc.construct(++__end, value);
+		}
+	}
+
+	//resize
+	template<typename T, typename Allocator>
+	void vector<T, Allocator>::resize(size_type count, const value_type& value) {
+		if (count <= size()) return;
+
+		//不用申请内存
+		if (count <= capacity()) {		//将末尾共count-size个未构造内存初始化为value
+			size_type index = size();
+			while (index != count) {
+				__alloc.construct(__start[index], value);
+			}
+			__end = __start + count;
+		}
+		//需要申请内存
+		else {
+			size_type size = size();
+			reallocate_and_copy(count);
+
+			//将末尾未构造元素用value构造
+			while (size != count) {
+				__alloc.construt(++__end, value);
+				++size;
+			}
+		}
+	}
+
+	//swap
+	template<typename T,typename Allocator>
+	void vector<T, Allocator>::swap(vector& rhs) {
+		//swap __start
+		auto temp = __start;
+		__start = rhs.__start;
+		rhs.__start = temp;
+
+		//swap __end
+		temp = __end;
+		__end = rhs.__end;
+		rhs.__end = temp;
+
+		//swap __capacity
+		temp = __capacity;
+		__capacity = rhs.__capacity;
+		rhs.__capacity = temp;
+
+		//swap __alloc: 不需要
+	}
+
+	//non-member swap
+	template<typename T,typename Allocator>
+	void swap(vector<T, Allocator>& lhs, vector<T, Allocator>& rhs) {
+		lhs.swap(rhs);
 	}
 }
