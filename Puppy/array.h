@@ -182,7 +182,8 @@ namespace kkli {
 
 	//get
 	template<size_t INDEX, typename T,size_t N>
-	inline typename array<T,N>::reference get(const array<T, N>& arr) {
+	inline typename array<T,N>::value_type get(const array<T, N>& arr) {
+		if (INDEX >= N) throw runtime_error("参数越界!");
 		return arr[INDEX];
 	}
 
@@ -197,14 +198,19 @@ namespace kkli {
 	class tuple_size;
 
 	template<typename T,size_t N>
-	class tuple_size<const array<T, N>&> {
+	class tuple_size<array<T, N>> {
 	public:
-		constexpr static size_t value = N;
+		typedef std::size_t value_type;
+		constexpr static value_type value = N;
 	};
 
 	//tuple_elem
+	template<size_t INDEX, typename T>
+	class tuple_element;
+
 	template<size_t INDEX, typename T,size_t N>
 	class tuple_element<INDEX, array<T, N>> {
+	public:
 		typedef T type;
 	};
 }

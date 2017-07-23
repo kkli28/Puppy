@@ -18,8 +18,14 @@ namespace test {
 		void test_begin_and_end();
 		void test_fill();
 		void test_swap();
-		void test_assign();				//operator =
+		void test_assign();					//operator =
 		void test_op_square_bracket();		//operator []
+		void test_op_equal();				//operator == / !=
+		void test_op_less();				//operator <  / >=
+		void test_op_greater();				//operator >  / <=
+		void test_get();					//get
+		void test_tuple_size();				//tuple_size
+		void test_tuple_element();			//tuple_element
 
 		//ÕûÌå²âÊÔ
 		void test() {
@@ -36,6 +42,12 @@ namespace test {
 			test_swap();
 			test_assign();
 			test_op_square_bracket();
+			test_op_equal();
+			test_op_less();
+			test_op_greater();
+			test_get();
+			test_tuple_size();
+			test_tuple_element();
 		}
 
 		//²âÊÔ ¹¹Ôìº¯Êı
@@ -136,7 +148,7 @@ namespace test {
 			arr1.print();
 			arr2.print();
 
-			swap(arr1, arr2);
+			kkli::swap(arr1, arr2);
 			arr1.print();
 			arr2.print();
 		}
@@ -150,7 +162,7 @@ namespace test {
 			arr1.print();
 		}
 
-		//²âÊÔ operator[]
+		//²âÊÔ operator []
 		void test_op_square_bracket() {
 			cout << "\ntest_op_square_bracket()" << endl;
 
@@ -158,6 +170,105 @@ namespace test {
 			for (int i = 0; i < 4; ++i)
 				cout << arr[i] << " ";
 			cout << endl;
+		}
+
+		//²âÊÔ operator == / !=
+		void test_op_equal() {
+			cout << "\ntest_op_equal()" << endl;
+
+			array<int, 4> arr1;
+			array<int, 4> arr2{};
+			array<int, 4> arr3{ 1,2,3,4 };
+			array<int, 4> arr4{ 1,2,3,4 };
+			array<int, 5> arr5;
+
+			if (arr1 == arr2)
+				cout << "arr1 == arr2" << endl;
+			else cout << "arr1 != arr2" << endl;
+
+			if (arr3 == arr4)
+				cout << "arr3 == arr4" << endl;
+			else cout << "arr3 != arr4" << endl;
+
+			if (arr1 == arr3)
+				cout << "arr1 == arr3" << endl;
+			else cout << "arr1 != arr3" << endl;
+		}
+
+		//²âÊÔ operator < / >=
+		void test_op_less() {
+			cout << "\ntest_op_less()" << endl;
+
+			array<int, 4> arr1;
+			array<int, 4> arr2{};
+			array<int, 4> arr3{ 1,2,3,4 };
+			array<int, 4> arr4{ 1,3,4,5 };
+			if (arr1 < arr2)
+				cout << "arr1 <  arr2" << endl;
+			else cout << "arr1 >= arr2" << endl;
+
+			if (arr3 < arr4)
+				cout << "arr3 <  arr4" << endl;
+			else cout << "arr3 >= arr4" << endl;
+
+			if (arr1 < arr3)
+				cout << "arr1 <  arr3" << endl;
+			else cout << "arr1 >= arr3" << endl;
+		}
+
+		//²âÊÔ operator > / <=
+		void test_op_greater() {
+			cout << "\ntest_op_greater()" << endl;
+
+			array<int, 4> arr1;
+			array<int, 4> arr2{};
+			array<int, 4> arr3{ 1,2,3,4 };
+			array<int, 4> arr4{ 1,3,4,5 };
+			if (arr1 > arr2)
+				cout << "arr1 >  arr2" << endl;
+			else cout << "arr1 <= arr2" << endl;
+
+			if (arr4 > arr3)
+				cout << "arr4 >  arr3" << endl;
+			else cout << "arr4 <= arr3" << endl;
+
+			if (arr3 > arr1)
+				cout << "arr3 >  arr1" << endl;
+			else cout << "arr3 <= arr1" << endl;
+		}
+
+		//²âÊÔ get
+		void test_get() {
+			cout << "\ntest_get()" << endl;
+
+			using kkli::get;
+			array<int, 4> arr{ 1,2,3,4 };
+
+			cout << get<0>(arr) << endl;
+			cout << get<1>(arr) << endl;
+			cout << get<2>(arr) << endl;
+			cout << get<3>(arr) << endl;
+			try {
+				cout << get<4>(arr) << endl;
+			}
+			catch (const std::runtime_error& e) {
+				cout << e.what() << endl;
+			}
+		}
+
+		//²âÊÔ tuple_size
+		void test_tuple_size() {
+			cout << "\ntest_tuple_size()" << endl;
+
+			cout << kkli::tuple_size<array<int, 4>>::value << endl;
+		}
+
+		//²âÊÔ tuple_element
+		void test_tuple_element() {
+			cout << "\ntest_tuple_element()" << endl;
+
+			kkli::tuple_element<0, array<int, 4>>::type t1 = 1;
+			cout << t1 << endl;
 		}
 	}
 }

@@ -66,7 +66,7 @@ namespace kkli {
 }
 
 // ********** non-member functions **********
-namespace kkli{
+namespace kkli {
 
 	// make_pair
 	template<typename T1, typename T2>
@@ -76,7 +76,7 @@ namespace kkli{
 
 	template<typename T1, typename T2>
 	my_pair<T1, T2> make_pair(T1&& f, T2&& s) {
-		return my_pair<T1,T2>(f, s);
+		return my_pair<T1, T2>(f, s);
 	}
 
 	// operator ==
@@ -122,6 +122,17 @@ namespace kkli{
 	void swap(const my_pair<T1, T2>& lhs, const my_pair<T1, T2>& rhs) {
 		lhs.swap(rhs);
 	}
+
+	//tuple_size
+	template<typename T>
+	class tuple_size;
+
+	template<typename T1, typename T2>
+	class tuple_size<my_pair<T1, T2>> {
+	public:
+		typedef std::size_t value_type;
+		static constexpr value_type value = 2;
+	};
 
 	// get函数模板 与其有关的tuple_element的定义
 

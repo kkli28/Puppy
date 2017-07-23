@@ -10,6 +10,7 @@ namespace test {
 		using std::string;
 
 		using kkli::my_pair;
+		using kkli::swap;
 		using kkli::get;
 		using kkli::make_pair;
 
@@ -24,6 +25,8 @@ namespace test {
 		void test_make_pair();
 		void test_op_logical();
 		void test_get();
+		void test_tuple_size();
+		void test_tuple_element();
 
 		//ÕûÌå²âÊÔ
 		void test() {
@@ -38,6 +41,8 @@ namespace test {
 			test_make_pair();
 			test_op_logical();
 			test_get();
+			test_tuple_size();
+			test_tuple_element();
 		}
 
 		//²âÊÔ my_pair
@@ -183,6 +188,22 @@ namespace test {
 			my_pair<int, string> mp(i, str);
 			cout << "get<0>: " << get<0>(mp) << endl;
 			cout << "get<1>: " << get<1>(mp) << endl;
+		}
+
+		//²âÊÔ tuple_size
+		void test_tuple_size() {
+			cout << "\ntest_tuple_size()" << endl;
+
+			cout << kkli::tuple_size<my_pair<int, string>>::value << endl;
+		}
+
+		//²âÊÔ tuple_elememt
+		void test_tuple_element() {
+			cout << "\ntest_tuple_element()" << endl;
+
+			kkli::tuple_element<0, my_pair<int, string>>::type t1 = 1;
+			kkli::tuple_element<1, my_pair<int, string>>::type t2 = "C++";
+			cout << t1 << " " << t2 << endl;
 		}
 	}
 }
