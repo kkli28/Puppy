@@ -30,7 +30,7 @@ namespace kkli {
 
 		//construct
 		void construct(value_type* ptr, const value_type& val) {
-			new(ptr)(val);
+			new (ptr) value_type(val);
 		}
 
 		//destroy

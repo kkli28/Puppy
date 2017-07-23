@@ -110,7 +110,7 @@ namespace kkli {
 		// WRONG! const_iterator应该实现为指向常量的指针，而不是常量指针
 		//************************************************************
 		//typedef const iterator			const_iterator;
-		typedef Iter<const T>				const_iterator;
+		typedef const Iter<T>				const_iterator;
 		typedef std::forward_iterator_tag	iterator_category;
 
 	private:

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "stdafx.h"
+#include "allocator.h"
 
 //================================================================================
 // vector<T> 类定义
 //================================================================================
 namespace kkli {
 
-	template<typename T,typename Allocator=std::allocator<T>>
+	template<typename T,typename Allocator=kkli::allocator<T>>
 	class vector {
 	public:
 		//typedefs
@@ -153,7 +154,7 @@ namespace kkli {
 		:__alloc(alloc) {
 		__start = __alloc.allocate(count);
 		for (size_type i = 0; i < count; ++i)
-			__alloc.construct(__start[i], value);
+			__alloc.construct(__start + i, value);
 		__end = __start + count;
 		__capacity = __end;
 	}
@@ -162,15 +163,15 @@ namespace kkli {
 	template<typename T, typename Allocator>
 	template<typename InputIterator>
 	vector<T, Allocator>::vector(InputIterator first, InputIterator last)
-		:__alloc(alloc) {
-		__start = __alloc.allocate(last-first);
+		:__alloc(Allocator()) {
+		__start = __alloc.allocate(last - first);
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
-			__alloc.construct(__start[index], *iter);
+			__alloc.construct(__start + index, *iter);
 			++index;
 		}
 		__end = __start + index;
-		__capacity = _end;
+		__capacity = __end;
 	}
 
 	//vector(vector&&)
@@ -191,7 +192,7 @@ namespace kkli {
 	}
 
 	//reallocate
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	void vector<T, Allocator>::reallocate_and_copy(size_type new_cap) {
 		auto start = __start;						//原容器内存开始位置
 		size_type old_cap = capacity();
@@ -200,7 +201,7 @@ namespace kkli {
 		//复制原容器元素到新容器
 		size_type index = 0;
 		for (auto iter = start; iter != __end; ++iter) {
-			__alloc.construct(__start[index], *iter);
+			__alloc.construct(__start + index, *iter);
 			++index;
 		}
 
@@ -220,7 +221,7 @@ namespace kkli {
 
 		size_type index = 0;
 		for (auto iter = rhs.begin(); iter != rhs.end(); ++iter) {
-			__alloc.construct(__start[index], *iter);
+			__alloc.construct(__start + index, *iter);
 			++index;
 		}
 
@@ -237,7 +238,7 @@ namespace kkli {
 		__start = __alloc.allocate(size);
 		size_type index = 0;
 		for (auto iter = il.begin(); iter != il.end(); ++iter) {
-			__alloc.construct(__start[index], *iter);
+			__alloc.construct(__start + index, *iter);
 			++index;
 		}
 		__end = __start + size;
@@ -266,7 +267,7 @@ namespace kkli {
 		__start = __alloc.allocate(count);
 		size_type index = 0;
 		while (index != count) {
-			__alloc.construct(__start[index], value);
+			__alloc.construct(__start + index, value);
 			++index;
 		}
 		__end = __start + count;
@@ -282,7 +283,7 @@ namespace kkli {
 		__start = __alloc.allocate(size);
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
-			__alloc.construct(__start[index], *iter);
+			__alloc.construct(__start + index, *iter);
 			++index;
 		}
 
@@ -298,7 +299,7 @@ namespace kkli {
 	}
 
 	template<typename T, typename Allocator>
-	typename vector<T, Allocator>::reference vector<T, Allocator>::at(size_type pos) const {
+	typename vector<T, Allocator>::const_reference vector<T, Allocator>::at(size_type pos) const {
 		if (pos >= size()) throw std::out_of_range("下标越界!");
 		return __start[pos];
 	}
@@ -321,14 +322,14 @@ namespace kkli {
 	}
 
 	//clear
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	void vector<T, Allocator>::clear() {
 		deallocate();
 		reset_iterators();
 	}
 
 	//insert(pos, initializer_list)
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(
 		const_iterator pos, std::initializer_list<T> il) {
 		size_type count = il.size();
@@ -365,21 +366,21 @@ namespace kkli {
 
 			//将原内存start到pos的元素构造到新内存中
 			size_type index = 0;
-			for (auto iter = start; iter<pos; ++iter) {
-				__alloc.construct(__start[index], *iter);
+			for (auto iter = start; iter < pos; ++iter) {
+				__alloc.construct(__start + index, *iter);
 				++index;
 			}
 			auto result = __start + index;			//返回值
 
 			//插入值
-			for (auto beg_iter = il.begin(); beg_iter != il.end();++beg_iter) {
-				__alloc.construct(__start[index], *beg_iter);
+			for (auto beg_iter = il.begin(); beg_iter != il.end(); ++beg_iter) {
+				__alloc.construct(__start + index, *beg_iter);
 				++index;
 			}
 
 			//将原内存pos到__end的元素构造到新内存中
 			while (iter != __end) {
-				__alloc.construct(__start[index], *iter);
+				__alloc.construct(__start + index, *iter);
 				++iter;
 				++index;
 			}
@@ -433,7 +434,7 @@ namespace kkli {
 	}
 
 	//erase
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
 		size_type size = last - first;
 		//将后续元素往前移，覆盖掉[first,last)
@@ -448,7 +449,7 @@ namespace kkli {
 	}
 
 	//push_back
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	void vector<T, Allocator>::push_back(const value_type& value) {
 		//容器未满
 		if (__end != __capacity) {
@@ -457,7 +458,7 @@ namespace kkli {
 		}
 		//容器已满
 		else {
-			size_type old_cap=capacity();				//原容器容量大小
+			size_type old_cap = capacity();				//原容器容量大小
 			size_type new_cap = old_cap * 2;			//容器的新容量大小
 			if (new_cap == 0) new_cap = 2;
 			reallocate_and_copy(new_cap);				//重新分配内存，并将原有元素移动到新内存中
@@ -497,7 +498,7 @@ namespace kkli {
 		if (count <= capacity()) {		//将末尾共count-size个未构造内存初始化为value
 			size_type index = size();
 			while (index != count) {
-				__alloc.construct(__start[index], value);
+				__alloc.construct(__start + index, value);
 			}
 			__end = __start + count;
 		}
@@ -515,7 +516,7 @@ namespace kkli {
 	}
 
 	//swap
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	void vector<T, Allocator>::swap(vector& rhs) {
 		//swap __start
 		auto temp = __start;
@@ -536,7 +537,7 @@ namespace kkli {
 	}
 
 	//non-member swap
-	template<typename T,typename Allocator>
+	template<typename T, typename Allocator>
 	void swap(vector<T, Allocator>& lhs, vector<T, Allocator>& rhs) {
 		lhs.swap(rhs);
 	}
