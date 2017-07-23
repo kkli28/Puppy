@@ -51,6 +51,12 @@
     <ClInclude Include="array_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="allocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
