@@ -53,9 +53,9 @@ namespace test {
 			test_shrink_to_fit();
 			test_clear();
 			test_insert();
-			//test_erase();
-			//test_push_back();
-			//test_pop_back();
+			test_erase();
+			test_push_back();
+			test_pop_back();
 			//test_resize();
 			//test_swap();
 			//test_op_compare();
@@ -253,6 +253,56 @@ namespace test {
 			//insert(pos, val);
 			vec.insert(vec.begin(), 4);
 			vec.print("vec: ");
+		}
+
+		//≤‚ ‘ erase
+		void test_erase() {
+			cout << "\ntest_erase()" << endl;
+
+			vector<int> vec{ 1,2,3,4 };
+			vec.erase(vec.begin(), vec.begin() + 2);
+			vec.print("vec: ");
+			vec.erase(vec.begin(), vec.end());
+			vec.print("vec: ");
+		}
+
+		//≤‚ ‘ push_back
+		void test_push_back() {
+			cout << "\ntset_push_back()" << endl;
+
+			vector<int> vec;
+			vec.print("vec: ");
+
+			vec.push_back(1);
+			vec.print("vec: ");
+			
+			vec.push_back(2);
+			vec.print("vec: ");
+			
+			for (int i = 3; i < 9; ++i)
+				vec.push_back(i);
+			vec.print("vec: ");
+
+			vec.push_back(9);
+			vec.print("vec: ");
+		}
+
+		//≤‚ ‘ pop_back
+		void test_pop_back() {
+			cout << "\ntest_pop_back()" << endl;
+
+			vector<int> vec{ 1,2,3,4 };
+			for (int i = 0; i < 4; ++i) {
+				vec.pop_back();
+				vec.print("vec: ");
+			}
+		}
+
+		//≤‚ ‘ resize
+		void test_resize() {
+			cout << "\ntest_resize()" << endl;
+
+			//TODO: 
 		}
 	}
 }
