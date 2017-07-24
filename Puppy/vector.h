@@ -346,21 +346,22 @@ namespace kkli {
 			//后count个元素需要构造在[__end,__end+count)指向的内存中
 			auto iter = __end;
 			for (int i = 0; i < count; ++i) {
-				__alloc.construct(iter + count, *(iter - count));
+				__alloc.construct(iter, *(iter - count));
 				++iter;
 			}
-			__end += count;
 
 			//将[pos,__end-count)的元素放入[pos+count,__end)中
 			//back_iter标示元素放入点，iter表示元素提供点
-			for (auto back_iter = __end - 1; iter >= pos; --iter, --back_iter) {
+			auto back_iter = __end - 1;
+			iter = back_iter - count;
+			for (; iter >= pos; --iter, --back_iter) {
 				*back_iter = std::move(*iter);
 			}
+			__end += count;
 
-			//将初始列表中的元素放入[pos,pos+count)中
-			auto il_iter = il.begin();
+			//将initalizer_list中的元素放入[pos,pos+count)中
 			iter = __start + (pos - __start);
-			for (; iter != pos + count; ++iter, ++il_iter) {
+			for (auto il_iter=il.begin(); il_iter!=il.end(); ++iter, ++il_iter) {
 				*iter = *il_iter;
 			}
 			return __start + (pos - __start);
