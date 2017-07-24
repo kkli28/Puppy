@@ -6,7 +6,7 @@
 #include "forward_list_test.h"
 #include "avl_tree_test.h"
 #include "array_test.h"
-#include "vector.h"
+#include "vector_test.h"
 using namespace std;
 
 int main() {
@@ -14,9 +14,7 @@ int main() {
 	//test::forward_list_test::test();
 	//test::avl_tree_test::test();
 	//test::array_test::test();
-	kkli::vector<int> vec{ 1,2,3,4 };
-	for (auto v : vec) cout << v << " ";
-	cout << endl;
+	test::vector_test::test();
 	system("pause");
     return 0;
 }

@@ -49,7 +49,7 @@ namespace test {
 			test_swap();
 		}
 
-		//²âÊÔ µü´úÆ÷
+		//²âÊÔ iterator
 		void test_iter() {
 			cout << "\ntest_iter()" << endl;
 
@@ -71,7 +71,7 @@ namespace test {
 			else cout << "WRONG!" << endl;
 		}
 
-		//²âÊÔ ¹¹Ôìº¯Êı
+		//²âÊÔ constructor
 		void test_constructor(){
 			cout << "\ntest_constructor()" << endl;
 
@@ -103,7 +103,7 @@ namespace test {
 			fl7.print();
 		}
 
-		//²âÊÔ Îö¹¹º¯Êı
+		//²âÊÔ destructor
 		void test_destructor() {
 			cout << "\ntest_destructor()" << endl;
 

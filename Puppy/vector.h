@@ -11,6 +11,7 @@ namespace kkli {
 	template<typename T,typename Allocator=kkli::allocator<T>>
 	class vector {
 	public:
+
 		//typedefs
 		typedef	T							value_type;
 		typedef Allocator					allocator_type;
@@ -44,27 +45,31 @@ namespace kkli {
 
 		//constructors
 		vector() :__start(nullptr), __end(nullptr), __capacity(nullptr) {}
-		vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator());
+		vector(size_type count, const value_type& value = value_type(), const Allocator& alloc = Allocator());
 
-		template<typename InputIterator>
-		vector(InputIterator first, InputIterator last);
-		vector(const vector& rhs) :vector(rhs.begin(), rhs.end()) {}
+		//解决本函数覆盖上方函数vector(size_type,const value_type&,const Allocator&)，需要使用SFINAE，然而我不会，so不定义这个函数
+		//以后升级了再来，先刷刷小怪
+		//template<typename InputIterator>
+		//vector(InputIterator first, InputIterator last, int);
+
+		vector(const vector& rhs);
 		vector(vector&& rhs);
-		vector(std::initializer_list<T> il) :vector(il.begin(), il.end()) {}
+		vector(std::initializer_list<value_type> il);
 
 		//destructor
 		~vector();
 
 		//operator =
 		vector& operator=(const vector& rhs);
-		vector& operator=(std::initializer_list<T> il);
+		vector& operator=(std::initializer_list<value_type> il);
 		vector& operator=(vector&& rhs);
 
 		//assign
-		void assign(size_type count, const T& value);
-		void assign(std::initializer_list<T> il) { this->operator=(il); }
-		template<typename InputIterator>
-		void assign(InputIterator first, InputIterator last);
+		void assign(size_type count, const value_type& value);
+		void assign(std::initializer_list<value_type> il) { this->operator=(il); }
+
+		//template<typename InputIterator>	-- 不会！！！
+		//void assign(InputIterator first, InputIterator last);
 
 		//at
 		reference at(size_type pos);
@@ -90,7 +95,7 @@ namespace kkli {
 		iterator data() { return __start; }
 		const_iterator data()const { return __start; }
 
-		bool empty()const { return __start == iterator(); }
+		bool empty()const { return __start == __end; }
 		size_type size()const { return __end - __start; }
 		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
 
@@ -99,16 +104,18 @@ namespace kkli {
 		void shrink_to_fit();
 		void clear();
 
-		iterator insert(const_iterator pos, std::initializer_list<T> il);
+		iterator insert(const_iterator pos, std::initializer_list<value_type> il);
 		iterator insert(const_iterator pos, size_type count, const value_type& value) {
-			//如果下面的语句失败，则通过构造vector，然后再构造initializer_list来实现n个value的列表
-			return insert(pos, std::initializer_list<T>(count, value));
+			std::vector<value_type> vec(count, value);
+			std::initializer_list<value_type> il(vec.data(), vec.data() + vec.size());
+			return insert(pos, il);
 		}
 		iterator insert(const_iterator pos, const value_type& value) { return insert(pos, { value }); }
-		template<typename InputIterator>
-		iterator insert(const_iterator pos, InputIterator first, InputIterator last) {
-			return insert(pos, std::initializer_list<T>(first, last));
-		}
+		
+		//template<typename InputIterator>
+		//iterator insert(const_iterator pos, InputIterator first, InputIterator last) {
+		//    return insert(pos, std::initializer_list<T>(first, last));
+		//}
 
 		//emplace没有实现
 		iterator erase(const_iterator first, const_iterator last);
@@ -117,7 +124,7 @@ namespace kkli {
 		void push_back(const value_type& value);
 		void push_back(value_type&& value);
 		void pop_back() { __alloc.destroy(--__end); }
-
+		
 		/*
 		void emplace(const value& value);
 
@@ -139,6 +146,8 @@ namespace kkli {
 		bool operator> (const vector& rhs);
 		bool operator<=(const vector& rhs) { return !operator>(rhs); }
 		bool operator>=(const vector& rhs) { return !operator<(rhs); }
+
+		void print(const std::string& prefix)const;
 	};
 }
 
@@ -148,9 +157,8 @@ namespace kkli {
 namespace kkli {
 
 	//vector
-	//构造函数均直接分配刚好够用的内存空间，不准备额外的空间
 	template<typename T, typename Allocator>
-	vector<T, Allocator>::vector(size_type count, const T& value = T(), const Allocator& alloc = Allocator())
+	vector<T, Allocator>::vector(size_type count, const value_type& value = value_type(), const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__start = __alloc.allocate(count);
 		for (size_type i = 0; i < count; ++i)
@@ -159,29 +167,42 @@ namespace kkli {
 		__capacity = __end;
 	}
 
-	//vector(InputIterator,InputIterator)
-	template<typename T, typename Allocator>
-	template<typename InputIterator>
-	vector<T, Allocator>::vector(InputIterator first, InputIterator last)
-		:__alloc(Allocator()) {
-		__start = __alloc.allocate(last - first);
+	//vector(const vecotr&)
+	template<typename T,typename Allocator>
+	vector<T, Allocator>::vector(const vector& rhs):__alloc(rhs.get_allocator()) {
+		//只申请足够放已有元素存放的空间(size)，rhs的空余空间不算在内
+		size_type cap = rhs.size();
+		__start = __alloc.allocate(cap);
 		size_type index = 0;
-		for (auto iter = first; iter != last; ++iter) {
+		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter) {
 			__alloc.construct(__start + index, *iter);
 			++index;
 		}
-		__end = __start + index;
+		__end = __start + cap;
 		__capacity = __end;
 	}
 
 	//vector(vector&&)
 	template<typename T, typename Allocator>
 	vector<T, Allocator>::vector(vector&& rhs) :__alloc(rhs.__alloc) {
-		deallocate();				//释放原有内存
 		__start = rhs.__start;		//更新内部迭代器
 		__end = rhs.__end;
 		__capacity = rhs.__capacity;
 		rhs.reset_iterators();		//重置rhs的内部迭代器
+	}
+
+	//vector(initializer_list)
+	template<typename T, typename Allocator>
+	vector<T,Allocator>::vector(std::initializer_list<value_type> il)
+		:__alloc(Allocator()) {
+		__start = __alloc.allocate(il.end()-il.begin());
+		size_type index = 0;
+		for (auto iter = il.begin(); iter != il.end(); ++iter) {
+			__alloc.construct(__start + index, *iter);
+			++index;
+		}
+		__end = __start + index;
+		__capacity = __end;
 	}
 
 	//~vector
@@ -217,10 +238,10 @@ namespace kkli {
 
 		__alloc = rhs.__alloc;
 		size_type size = rhs.size();
-		__size = __alloc.allocate(size);
+		__start = __alloc.allocate(size);
 
 		size_type index = 0;
-		for (auto iter = rhs.begin(); iter != rhs.end(); ++iter) {
+		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter) {
 			__alloc.construct(__start + index, *iter);
 			++index;
 		}
@@ -231,7 +252,7 @@ namespace kkli {
 	}
 
 	template<typename T, typename Allocator>
-	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> il) {
+	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<value_type> il) {
 		deallocate();			//释放原有内存
 
 		size_type size = il.size();
@@ -248,8 +269,6 @@ namespace kkli {
 
 	template<typename T, typename Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(vector&& rhs) {
-		deallocate();		//释放原有内存
-
 		__alloc = rhs.__alloc;
 		__start = rhs.__start;
 		__end = rhs.__end;
@@ -261,7 +280,7 @@ namespace kkli {
 
 	//assign
 	template<typename T, typename Allocator>
-	void vector<T, Allocator>::assign(size_type count, const T& value) {
+	void vector<T, Allocator>::assign(size_type count, const value_type& value) {
 		deallocate();		//释放原有内存
 
 		__start = __alloc.allocate(count);
@@ -271,23 +290,6 @@ namespace kkli {
 			++index;
 		}
 		__end = __start + count;
-		__capacity = __end;
-	}
-
-	template<typename T, typename Allocator>
-	template<typename InputIterator>
-	void vector<T, Allocator>::assign(InputIterator first, InputIterator last) {
-		deallocate();			//释放原有内存
-
-		size_type size = last - first;
-		__start = __alloc.allocate(size);
-		size_type index = 0;
-		for (auto iter = first; iter != last; ++iter) {
-			__alloc.construct(__start + index, *iter);
-			++index;
-		}
-
-		__end = __start + size;
 		__capacity = __end;
 	}
 
@@ -314,11 +316,15 @@ namespace kkli {
 	//shrink_to_fit
 	template<typename T, typename Allocator>
 	void vector<T, Allocator>::shrink_to_fit() {
+		//暂时没法实现将已分配的部分内存回收，因此该函数没有任何效果
+		return;
+		/*
 		if (__end == __capacity) return;
 
 		//释放__end到__capacity的内存空间，并更新__capacity
 		__alloc.deallocate(__end, __capacity - __end);
 		__capacity = __end;
+		*/
 	}
 
 	//clear
@@ -328,20 +334,22 @@ namespace kkli {
 		reset_iterators();
 	}
 
+	//TODO: 
 	//insert(pos, initializer_list)
 	template<typename T, typename Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(
-		const_iterator pos, std::initializer_list<T> il) {
+		const_iterator pos, std::initializer_list<value_type> il) {
 		size_type count = il.size();
 		//容量空间足够
 		if (__capacity - __end >= count) {
 
 			//后count个元素需要构造在[__end,__end+count)指向的内存中
-			auto iter = __end - 1;
+			auto iter = __end;
 			for (int i = 0; i < count; ++i) {
-				__alloc.construct(iter + count, *(iter));
-				--iter;
+				__alloc.construct(iter + count, *(iter - count));
+				++iter;
 			}
+			__end += count;
 
 			//将[pos,__end-count)的元素放入[pos+count,__end)中
 			//back_iter标示元素放入点，iter表示元素提供点
@@ -351,22 +359,24 @@ namespace kkli {
 
 			//将初始列表中的元素放入[pos,pos+count)中
 			auto il_iter = il.begin();
-			for (iter = pos; iter != pos + count; ++iter, ++il_iter) {
+			iter = __start + (pos - __start);
+			for (; iter != pos + count; ++iter, ++il_iter) {
 				*iter = *il_iter;
 			}
-			return pos;
+			return __start + (pos - __start);
 		}
 
 		//容量空间不够
 		else {
 			auto start = __start;
-			size_type size = size();					//原容器元素个数
+			size_type size = this->size();					//原容器元素个数
 			size_type new_cap = (size + count) * 2;		//容器的新容量
 			__start = __alloc.allocate(new_cap);
 
 			//将原内存start到pos的元素构造到新内存中
 			size_type index = 0;
-			for (auto iter = start; iter < pos; ++iter) {
+			auto iter = start;
+			for (; iter < pos; ++iter) {
 				__alloc.construct(__start + index, *iter);
 				++index;
 			}
@@ -464,7 +474,8 @@ namespace kkli {
 			reallocate_and_copy(new_cap);				//重新分配内存，并将原有元素移动到新内存中
 
 			//插入元素
-			__alloc.construct(++__end, value);
+			__alloc.construct(__end, value);
+			++__end;
 		}
 	}
 
@@ -485,7 +496,8 @@ namespace kkli {
 			reallocate_and_copy(new_cap);				//重新分配内存，并将原有元素移动到新内存中
 
 														//插入元素
-			__alloc.construct(++__end, value);
+			__alloc.construct(__end, value);
+			++__end;
 		}
 	}
 
@@ -540,5 +552,15 @@ namespace kkli {
 	template<typename T, typename Allocator>
 	void swap(vector<T, Allocator>& lhs, vector<T, Allocator>& rhs) {
 		lhs.swap(rhs);
+	}
+
+	//print
+	template<typename T,typename Allocator>
+	void vector<T, Allocator>::print(const std::string& prefix)const {
+		std::cout << prefix;
+		for (auto iter = __start; iter != __end; ++iter)
+			std::cout << *iter << " ";
+		std::cout << endl << "size: " << size() << std::endl;
+		std::cout << "capacity: " << capacity() << std::endl;
 	}
 }
