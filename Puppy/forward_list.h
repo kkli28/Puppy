@@ -126,12 +126,13 @@ namespace kkli {
 		forward_list() :head() {}									//空
 		forward_list(const forward_list& fl);						//复制构造
 		forward_list(forward_list&& fl);							//移动构造
-		forward_list(std::initializer_list<T> il);					//初始列构造
-		forward_list(int n);										//n个默认初始化的元素
 		forward_list(int n, const T& elem);							//n个用t初始化的元素
+		forward_list(int n) :forward_list(n, T()) {}				//n个默认初始化的元素
 		forward_list(const_iterator& beg, const_iterator& end);		//通过迭代器范围构造
+		forward_list(std::initializer_list<T> il);  				//初始列构造
 
-		~forward_list();											//析构
+		//destructor
+		~forward_list();
 
 		//begin / cbegin
 		iterator begin()const { return head; }
@@ -147,8 +148,8 @@ namespace kkli {
 
 
 		//insert_after
-		iterator insert_after(int pos, const T& elem);
 		iterator insert_after(int pos, int n, const T& elem);
+		iterator insert_after(int pos, const T& elem) { return insert_after(pos, 1, T()); }
 		iterator insert_after(int pos, const_iterator& beg, const_iterator& end);
 		iterator insert_after(int pos, std::initializer_list<T> elems);
 
@@ -227,25 +228,6 @@ namespace kkli{
 		fl.head = iterator();
 	}
 
-	//初始化列表构造
-	template<typename T>
-	forward_list<T>::forward_list(std::initializer_list<T> il) {
-		auto size = il.size();
-		if (size == 0) return;
-
-		//构造head
-		iterator it = *(il.begin());
-		head = it;
-
-		//构造后续节点
-		auto iter = il.begin();
-		++iter;
-		for (; iter != il.end(); ++iter) {
-			it.get()->next = new Node<T>(*iter);
-			++it;
-		}
-	}
-
 	//构造n个elem
 	template<typename T>
 	forward_list<T>::forward_list(int n, const T& elem) {
@@ -262,10 +244,6 @@ namespace kkli{
 		}
 	}
 
-	//调用代理构造函数
-	template<typename T>
-	forward_list<T>::forward_list(int n) :forward_list(n, T()) {}
-
 	//通过迭代器范围构造
 	template<typename T>
 	forward_list<T>::forward_list(const_iterator& beg, const_iterator& end) {
@@ -280,6 +258,25 @@ namespace kkli{
 		++iter;
 		for (; iter != end; ++iter) {
 			it.get()->next = new Node<T>(*iter);
+			++it;
+		}
+	}
+
+	//通过初始列表构造
+	template<typename T>
+	forward_list<T>::forward_list(std::initializer_list<T> il) {
+		auto beg = il.begin();
+		auto end = il.end();
+		if (beg == end) return;
+
+		//构造head
+		iterator it = *beg;
+		head = it;
+
+		//构造后续节点
+		++beg;
+		for (; beg != end; ++beg) {
+			it.get()->next = new Node<T>(*beg);
 			++it;
 		}
 	}
@@ -336,12 +333,6 @@ namespace kkli{
 
 		__insert(pos, temp_beg, temp_end);
 		return temp_beg;
-	}
-
-	//插入1个elem到第pos位置节点后，调用insert_after(pos,n,elem)
-	template<typename T>
-	typename forward_list<T>::iterator forward_list<T>::insert_after(int pos, const T& elem) {
-		return insert_after(pos, 1, elem);
 	}
 
 	//将[beg,end)中的元素插入到pos位置后
