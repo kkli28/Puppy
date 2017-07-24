@@ -56,9 +56,9 @@ namespace test {
 			test_erase();
 			test_push_back();
 			test_pop_back();
-			//test_resize();
-			//test_swap();
-			//test_op_compare();
+			test_resize();
+			test_swap();
+			test_op_compare();
 		}
 
 		//≤‚ ‘ constructor
@@ -302,7 +302,63 @@ namespace test {
 		void test_resize() {
 			cout << "\ntest_resize()" << endl;
 
-			//TODO: 
+			vector<int> vec;
+			vec.resize(4);
+			vec.print("vec: ");
+			vec.resize(2);
+			vec.print("vec: ");
+			vec.resize(8, 1);
+			vec.print("vec: ");
+		}
+
+		//≤‚ ‘ swap
+		void test_swap() {
+			cout << "\ntest_swap()" << endl;
+
+			vector<int> vec1;
+			vector<int> vec2{ 1,2,3,4 };
+			vec1.swap(vec2);
+			vec1.print("vec1: ");
+			vec2.print("vec2: ");
+			kkli::swap(vec1, vec2);
+			vec1.print("vec1: ");
+			vec2.print("vec2: ");
+
+			vector<int> vec3{ 5,6,7,8 };
+			vec2.swap(vec3);
+			vec2.print("vec2: ");
+			vec3.print("vec3: ");
+
+			kkli::swap(vec2, vec3);
+			vec2.print("vec2: ");
+			vec3.print("vec3: ");
+		}
+
+		//≤‚ ‘ compare
+		void test_op_compare() {
+			cout << "\ntest_compare()" << endl;
+
+			vector<int> vec1;
+			vector<int> vec2{ 1,2,3,4 };
+			vector<int> vec3{ 1,3,4,5 };
+			vector<int> vec4{ 1,2,3,4,5 };
+
+			//operator == / !=
+			cout << (vec1 == vec1 ? "==" : "!=") << endl;
+			cout << (vec1 == vec2 ? "==" : "!=") << endl;
+			cout << (vec2 == vec3 ? "==" : "!=") << endl;
+
+			//operator < / >=
+			cout << (vec1 < vec1 ? "< " : ">=") << endl;
+			cout << (vec1 < vec2 ? "< " : ">=") << endl;
+			cout << (vec2 < vec3 ? "< " : ">=") << endl;
+			cout << (vec2 < vec4 ? "< " : ">=") << endl;
+
+			//operator > / <=
+			cout << (vec1 > vec1 ? "> " : "<=") << endl;
+			cout << (vec1 > vec2 ? "> " : "<=") << endl;
+			cout << (vec2 > vec3 ? "> " : "<=") << endl;
+			cout << (vec2 > vec4 ? "> " : "<=") << endl;
 		}
 	}
 }

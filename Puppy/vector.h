@@ -425,7 +425,7 @@ namespace kkli {
 	//operator ==
 	template<typename T, typename Allocator>
 	bool vector<T, Allocator>::operator==(const vector& rhs) {
-		size_type size = size();
+		size_type size = this->size();
 		if (size != rhs.size()) return false;
 		for (size_type i = 0; i < size; ++i) {
 			if (__start[i] != rhs[i]) return false;
@@ -436,7 +436,7 @@ namespace kkli {
 	//operator <
 	template<typename T, typename Allocator>
 	bool vector<T, Allocator>::operator<(const vector& rhs) {
-		size_type size = size();
+		size_type size = this->size();
 		if (size > rhs.size()) return false;
 		bool smaller = false;		//任一元素小于rhs才行
 		for (size_type i = 0; i < size; ++i) {
@@ -452,7 +452,7 @@ namespace kkli {
 	//operator >
 	template<typename T, typename Allocator>
 	bool vector<T, Allocator>::operator>(const vector& rhs) {
-		size_type size = size();
+		size_type size = this->size();
 		if (size < rhs.size()) return false;
 		bool greater = false;		//任一元素大于rhs才行
 		for (size_type i = 0; i < size; ++i) {
@@ -535,7 +535,7 @@ namespace kkli {
 
 		//不用申请内存
 		if (count <= capacity()) {		//将末尾共count-size个未构造内存初始化为value
-			size_type index = size();
+			size_type index = this->size();
 			while (index != count) {
 				__alloc.construct(__start + index, value);
 			}
@@ -543,12 +543,13 @@ namespace kkli {
 		}
 		//需要申请内存
 		else {
-			size_type size = size();
+			size_type size = this->size();
 			reallocate_and_copy(count);
 
 			//将末尾未构造元素用value构造
 			while (size != count) {
-				__alloc.construt(++__end, value);
+				__alloc.construct(__end, value);
+				++__end;
 				++size;
 			}
 		}
