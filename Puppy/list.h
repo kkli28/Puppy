@@ -190,14 +190,24 @@ namespace kkli {
 		void resize(size_type count) { resize(count, value_type()); }
 		void swap(list& rhs);
 
-		void merge(list&& rhs);
-
 		template<typename Compare>
 		void merge(list&& rhs, Compare comp);
+		void merge(list&& rhs) { merge(rhs, std::less<T>()); }
 
-		void splice(const_iterator pos, list&& rhs);
-		void splice(const_iterator pos, list&& rhs, const_iterator it);
-		void splice(const_iterator pos, list&& rhs, const_iterator first, const_iterator last);
+		void splice(iterator pos, const list& rhs, iterator first, iterator last);
+		void splice(iterator pos, const list& rhs, iterator it) {
+			iterator iter(it);
+			++iter;
+			splice(pos, rhs, it, iter);
+		}
+		void splice(iterator pos, const list& rhs) { splice(pos, rhs, begin(), end()); }
+		void splice(iterator pos, list&& rhs, iterator first, iterator last);
+		void splice(iterator pos, list&& rhs, iterator it) {
+			iterator iter(it);
+			++iter;
+			splice(pos, rhs, it, iter);
+		}
+		void splice(iterator pos, list&& rhs) { splice(pos, rhs, begin(), end()); }
 
 		template<typename UnaryPredicate>
 		void remove_if(UnaryPredicate pred);
@@ -459,7 +469,101 @@ namespace kkli {
 	//resize(count, value)
 	template<typename T>
 	void list<T>::resize(size_type count, const value_type& value) {
+		if (count <= __size) return;		//不能减少元素
+		count -= size;
+		for (size_type i = 0; i < count; ++i)
+			push_back(value);
+	}
+
+	//merge(&&rhs)
+	template<typename T>
+	template<typename Compare>
+	void list<T>::merge(list&& rhs,Compare comp) {
+		iterator lhs_beg = this->begin();
+		iterator lhs_end = this->end();
+		iterator rhs_beg = rhs.begin();
+		iterator rhs_end = rhs.end();
+		iterator iter = __head;
+		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (comp(*lhs_beg, *rhs_beg)) {
+				iter->next = lhs_beg.get();
+				iter->next->prev = iter.get();
+				++lhs_beg;
+			}
+			else {
+				iter->next = rhs_beg.get();
+				iter->next->prev = iter.get();
+				++rhs_beg;
+			}
+			++iter;
+		}
+
+		//rhs的末尾节点是否作为最终末尾节点
+		bool tail_rhs = (rhs_beg != rhs_end ? true : false);
+
+		//将剩余节点添加到链表中
+		while (lhs_beg != lhs_end) {
+			iter->next = lhs_beg.get();
+			iter->next->prev = iter.get();
+			++iter;
+		}
+		while (rhs_beg != rhs_end) {
+			iter->next = rhs_beg.get();
+			iter->next->prev = iter.get();
+			++iter;
+		}
+
+		//如果rhs的末尾节点作为最终末尾节点
+		if (tail_rhs) {
+			rhs.__head->prev->next = __head.get();
+			__head->prev = rhs.__head->prev;
+		}
+
+		//更新__size
+		__size = __size + rhs.__size;
+	}
+
+	//*************************** TODO: *****************************
+
+	//splice(pos, rhs, first, last)
+	template<typename T>
+	void list<T>::splice(iterator pos, const list& rhs, iterator first, iterator last) {
 		//TODO: 
+	}
+
+	//splice(pos, &&rhs, first, last)
+	template<typename T>
+	void list<T>::splice(iterator pos, list&& rhs, iterator first, iterator last) {
+		//TODO: 
+	}
+
+	//swap
+	template<typename T>
+	void list<T>::swap(list& rhs) {
+		//保存指向第一个和最后一个节点的迭代器
+		iterator temp_beg = __head->next;
+		iterator temp_end = __head->prev;
+
+		//this头结点next指向rhs的第一个节点
+		__head->next = rhs.__head->next;
+		__head->next->prev = __head.get();
+
+		//this头结点prev指向rhs的最后一个节点
+		__head->prev = rhs.__head->prev;
+		__head->prev->next = __head.get();
+
+		//rhs头节点next指向this第一个节点
+		rhs.__head->next = temp_beg;
+		temp_beg->prev = rhs.__head.get();
+
+		//rhs头结点prev指向this最后一个节点
+		rhs.__head->prev = temp_end;
+		temp_end->next = rhs.__head.get();
+
+		//更新__size
+		size_type temp_size = __size;
+		__size = rhs.__size;
+		rhs.__size = temp_size;
 	}
 
 	//clear()
@@ -490,7 +594,19 @@ namespace kkli {
 	//operator ==
 	template<typename T>
 	bool operator==(const list<T>& lhs, const list<T>& rhs) {
-		//TODO: 
+		auto lhs_beg = lhs.begin();
+		auto rhs_beg = rhs.end();
+		auto lhs_end = lhs.end();
+		auto rhs_end = rhs.end();
+		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (*lhs_beg != *rhs_beg) return false;
+			++lhs_beg;
+			++rhs_beg;
+		}
+		//两者长度不同，则false
+		if (lhs_beg != lhs_end) return false;
+		if (rhs_beg != rhs_end) return false;
+		return true;
 	}
 
 	//operator !=
@@ -502,13 +618,41 @@ namespace kkli {
 	//operator <
 	template<typename T>
 	bool operator< (const list<T>& lhs, const list<T>& rhs) {
-		//TODO: 
+		auto lhs_beg = lhs.begin();
+		auto rhs_beg = rhs.end();
+		auto lhs_end = lhs.end();
+		auto rhs_end = rhs.end();
+		bool smaller = false;
+		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (*lhs_beg > *rhs_beg) return false;
+			else if (*lhs_beg < *rhs_beg) smaller = true;
+			++lhs_beg;
+			++rhs_beg;
+		}
+		if (lhs_beg != lhs_end) return false;		//lhs更长，false
+		if (rhs_beg != rhs_end) return true;		//rhs更长，true
+		if (smaller) return true;					//两者等长，则需要lhs中有元素小于rhs中对应元素
+		return false;
 	}
 
 	//operator >
 	template<typename T>
 	bool operator> (const list<T>& lhs, const list<T>& rhs) {
-		//TODO: 
+		auto lhs_beg = lhs.begin();
+		auto rhs_beg = rhs.end();
+		auto lhs_end = lhs.end();
+		auto rhs_end = rhs.end();
+		bool greater = false;
+		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (*lhs_beg < *rhs_beg) return false;
+			else if (*lhs_beg > *rhs_beg) smaller = true;
+			++lhs_beg;
+			++rhs_beg;
+		}
+		if (lhs_beg != lhs_end) return true;		//lhs更长，true
+		if (rhs_beg != rhs_end) return false;		//rhs更长，false
+		if (greater) return true;					//两者等长，则需要lhs中有元素大于rhs中对应元素
+		return false;
 	}
 
 	//operator <=
