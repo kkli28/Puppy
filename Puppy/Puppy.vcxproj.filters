@@ -60,6 +60,12 @@
     <ClInclude Include="vector_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="deque_uncomplete.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

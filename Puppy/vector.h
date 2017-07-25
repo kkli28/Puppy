@@ -23,8 +23,6 @@ namespace kkli {
 		typedef const value_type*			const_iterator;
 		typedef std::size_t					size_type;
 		typedef std::ptrdiff_t				difference_type;
-		typedef std::reverse_iterator<iterator>			reverse_iterator;
-		typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
 		typedef std::random_access_iterator_tag			iterator_category;
 
 	private:
@@ -327,7 +325,7 @@ namespace kkli {
 		return __start[pos];
 	}
 
-	//reverse
+	//reserve
 	template<typename T, typename Allocator>
 	void vector<T, Allocator>::reserve(size_type new_cap) {
 		if (new_cap <= capacity()) return;		//空间大小不变
