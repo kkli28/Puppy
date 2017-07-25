@@ -201,12 +201,13 @@ namespace kkli {
 
 	//swap，非成员函数
 	template<typename T>
-	void swap(forward_list<T>& lhs, forward_list<T>& rhs);
-
+	void swap(forward_list<T>& lhs, forward_list<T>& rhs) {
+		lhs.swap(rhs);
+	}
 }
 
 //================================================================================
-// forward_list<T> 函数定义
+// forward_list<T> 成员函数定义
 //================================================================================
 namespace kkli{
 
@@ -702,11 +703,5 @@ namespace kkli{
 			cout << *iter << " ";
 		}
 		cout << endl;
-	}
-
-	//swap，非成员函数
-	template<typename T>
-	void swap(forward_list<T>& lhs, forward_list<T>& rhs) {
-		lhs.swap(rhs);
 	}
 }
