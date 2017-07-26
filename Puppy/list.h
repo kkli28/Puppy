@@ -100,7 +100,7 @@ namespace kkli {
 
 			//operator !=
 			bool operator!=(const __iterator& rhs)const {
-				return !(*this == it);
+				return !(*this == rhs);
 			}
 
 			//operator *
@@ -139,6 +139,9 @@ namespace kkli {
 
 		//获取[first, last)指示范围的长度
 		static size_type get_size(iterator first, iterator last);
+
+		//从链表中偷取
+		void cheat_from_rhs(list&& rhs);
 	public:
 		//constructor
 		list() { create_head_node(); }
@@ -166,14 +169,20 @@ namespace kkli {
 		void assign(size_type count, const value_type& value);
 		void assign(std::initializer_list<T> il);
 		reference front() { return __head->next->value; }
-		const_reference front()const { return __head->next->value; }
-		reference back() { return __head->prev->value; }
+		const_reference front()const { 
+			if (__head->next == __head.get()) throw std::runtime_error("链表为空!");
+			return __head->next->value;
+		}
+		reference back() {
+			if (__head->prev == __head.get()) throw std::runtime_error("链表为空!");
+			return __head->prev->value;
+		}
 		const_reference back()const { return __head->prev->value; }
 		iterator begin() { return ++iterator(__head); }
 		const_iterator cbegin()const { return ++iterator(__head); }
 		iterator end() { return __head; }
 		const_iterator cend()const { return __head; }
-		bool empty()const { return __head->next == __head->prev; }
+		bool empty()const { return __size == 0; }
 		size_type size()const { return __size; }
 		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
 		void clear();
@@ -267,6 +276,19 @@ namespace kkli {
 		return size;
 	}
 
+	//cheat_from_rhs(&&rhs)
+	template<typename T>
+	void list<T>::cheat_from_rhs(list&& rhs) {
+		__head->next = rhs.__head->next;
+		__head->next->prev = __head.get();
+		__head->prev = rhs.__head->prev;
+		__head->prev->next = __head.get();
+		__size = rhs.__size;
+		rhs.__head->next = rhs.__head.get();
+		rhs.__head->prev = rhs.__head.get();
+		rhs.__size = 0;
+	}
+
 	// list(count, value)
 	template<typename T>
 	list<T>::list(size_type count, const value_type& value) {
@@ -280,16 +302,15 @@ namespace kkli {
 	template<typename T>
 	list<T>::list(const list& rhs) {
 		create_head_node();
-		for (auto iter = rhs.begin(); iter != rhs.end(); ++iter)
+		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter)
 			push_back(*iter);
 	}
 
 	//list(&&rhs)
 	template<typename T>
 	list<T>::list(list&& rhs) {
-		__head = rhs.__head;
-		__size = rhs.__size;
-		rhs.__head = iterator();
+		create_head_node();
+		cheat_from_rhs(std::move(rhs));
 	}
 
 	//list(il)
@@ -304,6 +325,8 @@ namespace kkli {
 	template<typename T>
 	list<T>::~list() {
 		clear();				//清空有效节点
+		__head->next = nullptr;
+		__head->prev = nullptr;
 		delete __head.get();	//删除头节点
 	}
 
@@ -312,18 +335,15 @@ namespace kkli {
 	list<T>& list<T>::operator=(const list& rhs) {
 		if (this == &rhs) return *this;				//避免自我赋值
 		clear();									//清空原有节点（保留头节点）
-		for (auto iter = rhs.begin(); iter != rhs.end(); ++iter)
+		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter)
 			push_back(*iter);
 	}
 
 	template<typename T>
 	list<T>& list<T>::operator=(list&& rhs) {
 		if (this == &rhs) return *this;				//避免自我赋值
-		clear();									//清空原有节点（保留头节点）
-		__head = rhs.__head;			//窃取
-
-		rhs.__head = iterator();		//无奈，大哭
-		rhs.__size = 0;
+		clear();									//清空原有节点（会保留头节点）
+		cheat_from_rhs(std::move(rhs));
 	}
 
 	//assgin(count, value)
@@ -344,10 +364,11 @@ namespace kkli {
 	//clear()
 	template<typename T>
 	void list<T>::clear() {
+		if (__head.get() == nullptr) return;
+
 		__head->prev->next = nullptr;			//末尾节点的next置空，作为循环结束条件
 
-												//删除非__head的所有节点
-		auto ptr = __head->next;
+		auto ptr = __head->next;				//删除非__head的所有节点
 		while (ptr != nullptr) {
 			auto del_ptr = ptr;
 			ptr = ptr->next;
@@ -449,7 +470,7 @@ namespace kkli {
 	template<typename T>
 	void list<T>::push_back(const value_type& value) {
 		list_node<T>* node = new list_node<T>(value);
-		node->next = __head;
+		node->next = __head.get();
 		node->prev = __head->prev;
 		__head->prev->next = node;
 		__head->prev = node;
@@ -526,6 +547,8 @@ namespace kkli {
 		iterator lhs_end = this->end();
 		iterator rhs_beg = rhs.begin();
 		iterator rhs_end = rhs.end();
+
+		//对两链表节点进行比较，并将满足条件者插入到__head后
 		iterator iter = __head;
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
 			if (comp(*lhs_beg, *rhs_beg)) {
@@ -697,7 +720,7 @@ namespace kkli {
 	template<typename T>
 	void list<T>::print(const std::string& obj_name)const {
 		std::cout << obj_name << ": ";
-		for (auto iter = this->begin(); iter != this->end(); ++iter)
+		for (auto iter = this->cbegin(); iter != this->cend(); ++iter)
 			std::cout << *iter << " ";
 		std::cout << std::endl;
 		std::cout << "size: " << __size << std::endl;

@@ -14,8 +14,8 @@ namespace test {
 		void test_iterator();
 		void test_constructor();
 		void test_destructor();
-		void test_op_assgin();			//operator =
-		void test_assgin();
+		void test_op_assign();			//operator =
+		void test_assign();
 		void test_front_and_back();
 		void test_begin_and_end();
 		void test_empty();
@@ -47,12 +47,12 @@ namespace test {
 
 			test_iterator();
 			test_constructor();
-			//test_destructor();
-			//test_op_assgin();			//operator =
-			//test_assgin();
-			//test_front_and_back();
-			//test_begin_and_end();
-			//test_empty();
+			test_destructor();
+			test_op_assign();			//operator =
+			test_assign();
+			test_front_and_back();
+			test_begin_and_end();
+			test_empty();
 			//test_size();
 			//test_max_size();
 			//test_clear();
@@ -141,7 +141,7 @@ namespace test {
 			list<int> list2(4, 1);		//list(count, value)
 			list2.print("list2");
 
-			list<int> list3(4);			//list(count)
+			list<int> list3(2);			//list(count)
 			list3.print("list3");
 
 			list<int> list4(list2);		//list(rhs)
@@ -153,6 +153,93 @@ namespace test {
 
 			list<int> list6({ 1,2,3,4 });			//list(il)
 			list6.print("list6");
+		}
+
+		//²âÊÔ destructor
+		void test_destructor() {
+			cout << "\ntest_destructor()" << endl;
+
+			list<int> list1;
+			list<int> list2{ 1,2,3,4 };
+			list<int> list3(4, 1);
+			list<int> list4 = list2;
+			list<int> list5(std::move(list3));
+		}
+
+		//²âÊÔ operator =
+		void test_op_assign() {
+			cout << "\ntest_op_assign()" << endl;
+
+			list<int> list1;
+			list<int> list2;
+			list2 = list1;
+			list1.print("list1");		//list1: 
+			list2.print("list2");		//list2: 
+
+			list<int> list3{ 1,2,3,4 };
+			list2 = list3;
+			list2.print("list2");		//list2: 1 2 3 4
+			list3.print("list3");		//list3: 1 2 3 4
+
+			list1 = std::move(list3);
+			list1.print("list1");		//list1: 1 2 3 4
+			list3.print("list3");		//list3: 
+		}
+
+		//²âÊÔ assign
+		void test_assign() {
+			cout << "\ntest_assign()" << endl;
+
+			list<int> list1;
+			list1.assign(4, 1);
+			list1.print("list1");			//list1: 1 1 1 1
+
+			list1.assign({ 1,2,3,4 });
+			list1.print("list1");			//list1: 1 2 3 4
+		}
+
+		//²âÊÔ front / back
+		void test_front_and_back() {
+			cout << "\ntest_front_and_back()" << endl;
+
+			list<int> list1{ 1,2,3,4 };
+			cout << list1.front() << endl;
+			cout << list1.back() << endl;
+		}
+
+		//²âÊÔ begin / end
+		void test_begin_and_end() {
+			cout << "\ntest_begin_and_end()" << endl;
+
+			list<int> list1;
+			cout << "list1: ";
+			for (auto iter = list1.begin(); iter != list1.end(); ++iter)
+				cout << *iter << " ";
+			cout << endl;
+
+			list<int> list2{ 1,2,3,4 };
+			cout << "list2: ";
+			for (auto iter = list2.begin(); iter != list2.end(); ++iter)
+				cout << *iter << " ";
+			cout << endl;
+
+			cout << "list2: ";
+			for (auto l : list2) cout << l << " ";
+			cout << endl;
+		}
+
+		//²âÊÔ empty
+		void test_empty() {
+			cout << "\ntest_empty()" << endl;
+
+			list<int> list1;
+			list1.print("list1");
+			cout << "list1: "<< (list1.empty() ? "empty" : "not empty") << endl;
+
+			list<int> list2{ 1,2,3,4 };
+			list2.print("list2");
+			cout << "list2: " << (list2.empty() ? "empty" : "not empty") << endl;
+
 		}
 	}
 }
