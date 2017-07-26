@@ -20,7 +20,6 @@ namespace test {
 		void test_begin_and_end();
 		void test_empty();
 		void test_size();
-		void test_max_size();
 		void test_clear();
 		void test_insert();
 		void test_erase();
@@ -53,10 +52,9 @@ namespace test {
 			test_front_and_back();
 			test_begin_and_end();
 			test_empty();
-			//test_size();
-			//test_max_size();
-			//test_clear();
-			//test_insert();
+			test_size();
+			test_clear();
+			test_insert();
 			//test_erase();
 			//test_push_back();
 			//test_pop_back();
@@ -240,6 +238,61 @@ namespace test {
 			list2.print("list2");
 			cout << "list2: " << (list2.empty() ? "empty" : "not empty") << endl;
 
+		}
+
+		//²âÊÔ size
+		void test_size() {
+			cout << "\ntest_size()" << endl;
+
+			list<int> list1;
+			list<int> list2(4);
+			list<int> list3(4, 1);
+			list<int> list4{ 1,2,3,4 };
+			list<int> list_move{ 1,2,3,4 };
+			list<int> list5(std::move(list_move));
+			list<int> list6;
+			list6 = list5;
+
+			cout << list1.size() << endl;		//0
+			cout << list2.size() << endl;		//4
+			cout << list3.size() << endl;		//4
+			cout << list4.size() << endl;		//4
+			cout << list5.size() << endl;		//4
+			cout << list6.size() << endl;		//4
+
+			cout << "list's max_size: " << list<int>::max_size() << endl;
+		}
+
+		//²âÊÔ clear
+		void test_clear() {
+			cout << "\ntest_clear()" << endl;
+
+			list<int> list1;
+			list<int> list2{ 1,2,3,4 };
+			list1.print("list1");
+			list2.print("list2");
+			list1.clear();
+			list2.clear();
+			list1.print("list1");
+			list2.print("list2");
+		}
+
+		//²âÊÔ insert
+		void test_insert() {
+			cout << "\ntest_insert()" << endl;
+
+			list<int> list1{ 1,2,3,4 };
+
+			list1.insert(list1.begin(), 1);		//insert(pos, value)
+			list1.print("list1");				//list1: 1 1 2 3 4 
+			list1.insert(list1.begin(), 4, 1);	//insert(pos, count, value)
+			list1.print("list1");				//1ist1: 1 1 1 1 1 1 2 3 4
+			list<int>::iterator iter = list1.begin();
+			++(++(++(++iter)));
+			list1.insert(iter, 1);				//list1: 1 1 1 1 1 1 1 2 3 4 
+			list1.print("list1");
+			list1.insert(iter, { 1,2,3,4 });	//list1: 1 1 1 1 1 1 2 3 4 1 1 2 3 4 
+			list1.print("list1");
 		}
 	}
 }

@@ -184,7 +184,7 @@ namespace kkli {
 		const_iterator cend()const { return __head; }
 		bool empty()const { return __size == 0; }
 		size_type size()const { return __size; }
-		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
+		constexpr static size_type max_size() { return std::numeric_limits<size_type>::max(); }
 		void clear();
 		iterator insert(iterator pos, value_type&& value);
 		iterator insert(iterator pos, size_type count, const value_type& value);
@@ -337,6 +337,7 @@ namespace kkli {
 		clear();									//清空原有节点（保留头节点）
 		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter)
 			push_back(*iter);
+		return *this;
 	}
 
 	template<typename T>
@@ -344,6 +345,7 @@ namespace kkli {
 		if (this == &rhs) return *this;				//避免自我赋值
 		clear();									//清空原有节点（会保留头节点）
 		cheat_from_rhs(std::move(rhs));
+		return *this;
 	}
 
 	//assgin(count, value)
@@ -390,6 +392,7 @@ namespace kkli {
 		pos->next = node;
 		node->next->prev = node;
 		++__size;	//差点忘了
+		return pos;
 	}
 
 	//insert(pos, count, value)
@@ -409,7 +412,7 @@ namespace kkli {
 		}
 
 		//将节点链插入到pos位置
-		head_node->next->prev = pos;
+		head_node->next->prev = pos.get();
 		head_node->prev->next = pos->next;
 		pos->next->prev = head_node->prev;
 		pos->next = head_node->next;
@@ -436,7 +439,7 @@ namespace kkli {
 		}
 
 		//将节点链插入到pos位置
-		head_node->next->prev = pos;
+		head_node->next->prev = pos.get();
 		head_node->prev->next = pos->next;
 		pos->next->prev = head_node->prev;
 		pos->next = head_node->next;
