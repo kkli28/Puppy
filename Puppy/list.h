@@ -457,16 +457,32 @@ namespace kkli {
 		--prev_first;
 		iterator prev_last = last;			//last的前一个节点
 		--prev_last;
-		prev_iter->next = prev_last->next;
-		prev_iter->next->prev = prev_first.get();
+		prev_first->next = prev_last->next;
+		prev_first->next->prev = prev_first.get();
+
+		print("list");
+
+		//log
+		std::cout << "删除[first,prev_last]" << prev_last->next->value << std::endl;
 
 		//删除[first, prev_last]所指元素，注意，last指向的元素在this上，不在待删除链上
-		list_note<T>* ptr = first.get();
-		while (ptr != prev_last->next) {
+		list_node<T>* ptr = first.get();
+		while (ptr != (prev_last->next)) {
+			std::cout << "prev_last->next->value: " << prev_last->next->value << std::endl;
+
+			//log
+			std::cout << "删除节点" << ptr->value << std::endl;
+
 			list_node<T>* del_ptr = ptr;
 			ptr = ptr->next;
 			delete del_ptr;					//删除节点
+			--__size;
 		}
+		
+		//log
+		std::cout << "return" << std::endl;
+
+		return ++prev_first;
 	}
 
 	//push_back(value)

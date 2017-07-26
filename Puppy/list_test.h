@@ -55,7 +55,7 @@ namespace test {
 			test_size();
 			test_clear();
 			test_insert();
-			//test_erase();
+			test_erase();
 			//test_push_back();
 			//test_pop_back();
 			//test_push_front();
@@ -293,6 +293,28 @@ namespace test {
 			list1.print("list1");
 			list1.insert(iter, { 1,2,3,4 });	//list1: 1 1 1 1 1 1 2 3 4 1 1 2 3 4 
 			list1.print("list1");
+		}
+
+		//²âÊÔ erase
+		void test_erase() {
+			cout << "\ntest_erase()" << endl;
+
+			list<int> list1;
+			list1.erase(list1.begin(), list1.end());
+			list1.print("list1");				//list1: 
+
+			cout << "process list2" << endl;
+			list<int> list2{ 1,2,3,4 };
+			list<int>::iterator iter = list2.begin();
+			++iter;
+			cout << "*iter: " << *iter << endl;
+			list2.erase(iter, list2.end());
+			list2.print("list2");				//list2: 1
+
+			cout << "process list3" << endl;
+			list<int> list3{ 1,2,3,4 };
+			list3.erase(list3.begin());
+			list3.print("list3");				//list3: 2 3 4
 		}
 	}
 }
