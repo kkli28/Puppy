@@ -147,6 +147,7 @@
     <ClInclude Include="forward_list.h" />
     <ClInclude Include="forward_list_test.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="list_test.h" />
     <ClInclude Include="my_pair.h" />
     <ClInclude Include="my_pair_test.h" />
     <ClInclude Include="stdafx.h" />

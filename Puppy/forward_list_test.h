@@ -12,7 +12,7 @@ namespace test {
 		using kkli::forward_list;
 
 		//Ç°ÖÃÉùÃ÷
-		void test_iter();
+		void test_iterator();
 		void test_constructor();
 		void test_destructor();
 		void test_begin_end();
@@ -32,7 +32,7 @@ namespace test {
 			cout << "          test: forward_list " << endl;
 			cout << "========================================" << endl;
 
-			test_iter();
+			test_iterator();
 			test_constructor();
 			test_destructor();
 			test_begin_end();
@@ -48,8 +48,8 @@ namespace test {
 		}
 
 		//²âÊÔ iterator
-		void test_iter() {
-			cout << "\ntest_iter()" << endl;
+		void test_iterator() {
+			cout << "\ntest_iterator()" << endl;
 
 			//constructors
 			forward_list<int>::iterator it1 = 1;

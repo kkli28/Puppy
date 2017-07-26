@@ -13,8 +13,8 @@ namespace kkli {
 	class list_node {
 	public:
 		T value;
-		T* next;
-		T* prev;
+		list_node* next;
+		list_node* prev;
 
 		//constructor
 		list_node() :value(T()), next(nullptr), prev(nullptr) {}
@@ -33,7 +33,7 @@ namespace kkli {
 		}
 
 		//operator ==
-		bool operator==(const forward_list& rhs) {
+		bool operator==(const forward_list<T>& rhs) {
 			return (value == rhs.value && next == rhs.next && prev == rhs.prev);
 		}
 	};
@@ -95,7 +95,7 @@ namespace kkli {
 
 			//operator ==
 			bool operator==(const __iterator& rhs)const {
-				return iter == it.iter;
+				return iter == rhs.iter;
 			}
 
 			//operator !=
@@ -239,6 +239,8 @@ namespace kkli {
 		template<typename Compare>
 		void sort(Compare comp = std::less<T>());
 		void sort() { sort(std::less<T>()); }
+
+		void print(const std::string& obj_name = "")const;
 	};
 }
 
@@ -337,6 +339,25 @@ namespace kkli {
 		clear();
 		for (auto iter = il.begin(); iter != il.end(); ++iter)
 			push_back(*iter);
+	}
+
+	//clear()
+	template<typename T>
+	void list<T>::clear() {
+		__head->prev->next = nullptr;			//末尾节点的next置空，作为循环结束条件
+
+												//删除非__head的所有节点
+		auto ptr = __head->next;
+		while (ptr != nullptr) {
+			auto del_ptr = ptr;
+			ptr = ptr->next;
+			delete del_ptr;
+		}
+
+		//__head的next和prev都指向自身
+		__head->next = __head.get();
+		__head->prev = __head->next;
+		__size = 0;
 	}
 
 	//insert(pos, &&value)
@@ -632,7 +653,7 @@ namespace kkli {
 		}
 	}
 
-	//sort
+	//sort(comp)
 	template<typename T>
 	template<typename Compare>
 	void list<T>::sort(Compare comp=std::less<T>()) {
@@ -643,7 +664,7 @@ namespace kkli {
 		kkli::sort(vec.begin(), vec.end(), comp);
 	}
 
-	//swap
+	//swap(rhs)
 	template<typename T>
 	void list<T>::swap(list& rhs) {
 		//保存指向第一个和最后一个节点的迭代器
@@ -672,23 +693,14 @@ namespace kkli {
 		rhs.__size = temp_size;
 	}
 
-	//clear()
+	//print(prefix)
 	template<typename T>
-	void list<T>::clear() {
-		__head->prev->next = nullptr;			//末尾节点的next置空，作为循环结束条件
-
-		//删除非__head的所有节点
-		auto ptr = __head->next;
-		while (ptr != nullptr) {
-			auto del_ptr = ptr;
-			ptr = ptr->next;
-			delete del_ptr;
-		}
-
-		//__head的next和prev都指向自身
-		__head->next = __head.get();
-		__head->prev = __head->next;
-		__size = 0;
+	void list<T>::print(const std::string& obj_name)const {
+		std::cout << obj_name << ": ";
+		for (auto iter = this->begin(); iter != this->end(); ++iter)
+			std::cout << *iter << " ";
+		std::cout << std::endl;
+		std::cout << "size: " << __size << std::endl;
 	}
 }
 
