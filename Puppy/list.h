@@ -229,27 +229,29 @@ namespace kkli {
 
 		template<typename Compare>
 		void merge(list&& rhs, Compare comp);
-		void merge(list&& rhs) { merge(rhs, std::less<T>()); }
+		void merge(list&& rhs) { merge(std::move(rhs), std::less<T>()); }
 
-		void splice(iterator pos, const list& rhs, iterator first, iterator last);
-		void splice(iterator pos, const list& rhs, iterator it) {
+		void splice(iterator pos, list& rhs, iterator first, iterator last);
+		void splice(iterator pos, list& rhs, iterator it) {
 			iterator iter(it);
 			++iter;
 			splice(pos, rhs, it, iter);
 		}
-		void splice(iterator pos, const list& rhs) { splice(pos, rhs, begin(), end()); }
+		void splice(iterator pos, list& rhs) { splice(pos, rhs, begin(), end()); }
 
 		template<typename UnaryPredicate>
 		void remove_if(UnaryPredicate pred);
 		void remove(const value_type& value) {
-			remove_if([&value](const value_type& val) -> {return val == value; });
+			remove_if([&value](const value_type& val) ->bool {return val == value; });
 		}
 
 		void reverse();
 		
 		template<typename BinaryPredicate>
 		void unique(BinaryPredicate pred);
-		void unique() { unique(std::equal<T>()); }
+		void unique() {
+			unique([](const T& t1, const T& t2)->bool {return t1 == t2; });
+		}
 
 		template<typename Compare>
 		void sort(Compare comp = std::less<T>());
@@ -277,7 +279,7 @@ namespace kkli {
 	template<typename T>
 	typename list<T>::size_type list<T>::get_size(iterator first, iterator last) {
 		size_type size = 0;
-		for (auto iter = first; iter != end; ++iter)
+		for (auto iter = first; iter != last; ++iter)
 			++size;
 		return size;
 	}
@@ -586,11 +588,13 @@ namespace kkli {
 		while (lhs_beg != lhs_end) {
 			iter->next = lhs_beg.get();
 			iter->next->prev = iter.get();
+			++lhs_beg;
 			++iter;
 		}
 		while (rhs_beg != rhs_end) {
 			iter->next = rhs_beg.get();
 			iter->next->prev = iter.get();
+			++rhs_beg;
 			++iter;
 		}
 
@@ -600,14 +604,18 @@ namespace kkli {
 			__head->prev = rhs.__head->prev;
 		}
 
+		//更新rhs的__head
+		rhs.__head->prev = rhs.__head.get();
+		rhs.__head->next = rhs.__head.get();
+
 		//更新__size
-		__size = __size + rhs.__size;
+		__size += rhs.__size;
 		rhs.__size = 0;
 	}
 
 	//splice(pos, rhs, first, last)
 	template<typename T>
-	void list<T>::splice(iterator pos, const list& rhs, iterator first, iterator last) {
+	void list<T>::splice(iterator pos, list& rhs, iterator first, iterator last) {
 		size_type size = get_size(first, last);			//获取[first, last)的长度
 
 		--last;			//更改last指向
@@ -652,13 +660,13 @@ namespace kkli {
 		iterator end = __head;
 		list_node<T>* temp_ptr = iter->next;
 		iter->next = iter->prev;
-		__head->prev = temp_ptr;
+		iter->prev = temp_ptr;
 
 		--iter;				//注意，__head的next与prev交换后，要找到下一个元素，需要--
 		while (iter != end) {
 			temp_ptr = iter->next;
 			iter->next = iter->prev;
-			__head->prev = temp_ptr;
+			iter->prev = temp_ptr;
 			--iter;
 		}
 	}
@@ -677,7 +685,7 @@ namespace kkli {
 		for (; iter != end(); ++iter) {
 			iterator prev_iter = iter;
 			--prev_iter;
-			if (*iter == *prev_iter) {
+			if (pred(*iter,*prev_iter)) {
 				//iter前一个元素连接iter后一个元素
 				prev_iter->next = prev_iter->next->next;
 				prev_iter->next->prev = prev_iter.get();
@@ -697,8 +705,9 @@ namespace kkli {
 	void list<T>::sort(Compare comp=std::less<T>()) {
 		//将所有节点存入vector，排序后再重新建立链表
 		kkli::vector<list_node<T>*> vec(__size);
+		int index = 0;
 		for (auto iter = this->begin(); iter != this->end(); ++iter)
-			vec[i] = iter.get();
+			vec[index++] = iter.get();
 		kkli::sort(vec.begin(), vec.end(), comp);
 	}
 

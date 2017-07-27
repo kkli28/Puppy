@@ -62,12 +62,12 @@ namespace test {
 			test_pop_front();
 			test_resize();
 			test_swap();
-			//test_merge();
-			//test_splice();
-			//test_remove();
-			//test_remove_if();
-			//test_reverse();
-			//test_unique();
+			test_merge();
+			test_splice();
+			test_remove();
+			test_remove_if();
+			test_reverse();
+			test_unique();
 			//test_sort();
 			//test_operators();			//operator == / != / < / <= / > / >=
 		}
@@ -395,6 +395,121 @@ namespace test {
 			kkli::swap(list1, list2);
 			list1.print("list1");
 			list2.print("list2");
+		}
+
+		//²âÊÔ merge
+		void test_merge() {
+			cout << "\ntest_merge()" << endl;
+
+			cout << "====list1====" << endl;
+			list<int> list1;
+			list<int> list2{ 1,2,3,4 };
+			list1.merge(std::move(list2));
+			list1.print("list1");			//list1: 1 2 3 4
+			list2.print("list2");			//list2: 
+			
+			cout << "====list3====" << endl;
+			list<int> list3{ 1,3,5,7 };
+			list<int> list4{ 2,4,6,8 };
+			list3.merge(std::move(list4), [](int val1, int val2)->bool {return val1 < val2; });
+			list3.print("list3");
+			list4.print("list4");
+
+			cout << "====list1====" << endl;
+			list1.merge(std::move(list3));
+			list1.print("list1");
+			list3.print("list3");
+		}
+
+		//²âÊÔ splice
+		void test_splice() {
+			cout << "\ntest_splice()" << endl;
+
+			list<int> list1{ 1 };
+			list<int> list2{ 1,2,3,4 };
+			list1.splice(list1.begin(), list2, list2.begin(), list2.end());
+			list1.print("list1");			//list1: 1 1 2 3 4
+			list2.print("list2");			//list2: 
+
+			list<int> list3{ 1,2,3,4 };
+			list<int>::iterator l3_iter = list3.begin();
+			++l3_iter;
+			list<int>::iterator l1_iter = list1.begin();
+			++++++++l1_iter;
+			list1.splice(l1_iter, list3, l3_iter, list3.end());
+			list3.print("list3");			//list3: 1
+			list1.print("list1");			//list1: 1 1 2 3 4 2 3 4
+		}
+
+		//²âÊÔ remove
+		void test_remove() {
+			cout << "\ntest_remove()" << endl;
+
+			list<int> list1{ 1,2,3,4 };
+			for (int i = 1; i < 5; ++i) {
+				list1.remove(i);
+				list1.print("list1");
+			}
+			list1.remove(1);
+			list1.print("list1");		//list1: 
+		}
+
+		//²âÊÔ remove_if
+		void test_remove_if() {
+			cout << "\ntest_remove_if()" << endl;
+
+			list<int> list1{ 1,1,2,2,3,3,4,4 };
+			list1.remove_if([](int i)->bool {return i % 2; });		//ÒÆ³ıÆæÊı
+			list1.print("list1");		//list1: 2 2 4 4
+			list1.remove_if([](int i)->bool {return i == 2; });		//ÒÆ³ı2
+			list1.print("list1");		//list1: 4 4
+		}
+
+		//²âÊÔ reverse
+		void test_reverse() {
+			cout << "\ntest_reverse()" << endl;
+
+			list<int> list1;
+			list1.reverse();
+			list1.print("list1");		//list1: 
+
+			list<int> list2{ 1,2,3,4 };
+			list2.reverse();
+			list2.print("list2");		//list2: 4 3 2 1
+		}
+
+		//²âÊÔ unique
+		void test_unique() {
+			cout << "\ntest_unique()" << endl;
+
+			list<int> list1;
+			list1.unique();
+			list1.print("list1");		//list1: 
+
+			list<int> list2{ 1,1,2,2,3,3,4,5,6,6,7,8,8 };
+			list2.unique();
+			list2.print("list2");		//list2: 1 2 3 4 5 6 7 8
+
+			list<int> list3{ 1,2,3,4 };
+			list3.unique();
+			list3.print("list3");		//list3: 1 2 3 4
+		}
+
+		//²âÊÔ sort
+		void test_sort() {
+			cout << "\ntest_sort()" << endl;
+
+			list<int> list1;
+			list1.sort();
+			list1.print("list1");		//list1: 
+
+			list<int> list2{ 1,3,4,2 };
+			list2.sort();
+			list2.print("list2");		//list2: 1 2 3 4
+
+			list<int> list3{ 1,1,4,3,3,4,2,2 };
+			list3.sort();
+			list3.print("list3");		//list3: 1 1 2 2 3 3 4 4
 		}
 	}
 }
