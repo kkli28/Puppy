@@ -71,42 +71,40 @@ namespace kkli {
 	template<typename BidirectionalIterator, typename Compare>
 	void __aux_insertion_sort(BidirectionalIterator first, BidirectionalIterator last, 
 		Compare comp = std::less<decltype(*first)>()) {
-		auto i = first;
-		++i;
-		while (i != last) {
-			auto iter = i;
+		if (first == last) return;
+		auto index = first;
+		++index;
+		while (index != last) {
+			auto iter = index;
 			--iter;
 			auto end_iter = first;
 			--end_iter;
+			auto value = *index;
 			while (iter != end_iter) {
-				if (comp(*iter, *i)) {
+				if (!comp(*iter, value)) {
 					auto next_iter = iter;
 					++next_iter;
 					*next_iter = *iter;
+					--iter;
 				}
-				--iter;
+				else break;
 			}
+			*(++iter) = value;
+			++index;
 		}
 	}
 
-	/*
-	//sort
-	template<typename RandomAccessIterator>
-	void sort(RandomAccessIterator first, RandomAccessIterator last) {
-		kkli::sort(first, last, std::less<int>());
-	}
-	*/
-
 	template<typename RandomAccessIterator, typename Compare>
-	void sort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
+	void sort(RandomAccessIterator first, RandomAccessIterator last, 
+		Compare comp = std::less<decltype(*first)>()) {
 		//元素少于20个，进行插入排序
 		if (last - first < 20) {
 			__aux_insertion_sort(first, last, comp);
 		}
-		if (first < last) {
-			auto iter = __partition(first, last, comp);
-			sort(first, iter, comp);
-			sort(iter + 1, last, comp);
+		else if (first < last) {
+			auto iter = __aux_partition(first, last, comp);
+			kkli::sort(first, iter, comp);
+			kkli::sort(iter + 1, last, comp);
 		}
 	}
 }

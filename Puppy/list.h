@@ -708,7 +708,7 @@ namespace kkli {
 		int index = 0;
 		for (auto iter = this->begin(); iter != this->end(); ++iter)
 			vec[index++] = iter.get();
-		kkli::sort(vec.begin(), vec.end(), comp);
+		kkli::sort(vec.begin(), vec.end(), [=](list_node<T>* ptr1, list_node<T>* ptr2)->bool {return comp(ptr1->value, ptr2->value); });
 	}
 
 	//swap(rhs)
