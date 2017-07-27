@@ -154,7 +154,7 @@ namespace kkli {
 		/*
 		//需要SFINAE，暂时不会，故没有实现该构造函数
 		template< class InputIt >
-		list(InputIt first, InputIt last, const Allocator& alloc = Allocator());
+		list(InputIt first, InputIt last);
 		*/
 
 		//destructor
@@ -168,16 +168,22 @@ namespace kkli {
 		std::allocator<T> get_allocator()const { return std::allocator<T>(); }
 		void assign(size_type count, const value_type& value);
 		void assign(std::initializer_list<T> il);
-		reference front() { return __head->next->value; }
-		const_reference front()const { 
-			if (__head->next == __head.get()) throw std::runtime_error("链表为空!");
+		reference front() {
+			if (__size == 0) throw std::runtime_error("list is empty!");
+			return __head->next->value;
+		}
+		const_reference front()const {
+			if (__size == 0) throw std::runtime_error("list is empty!");
 			return __head->next->value;
 		}
 		reference back() {
-			if (__head->prev == __head.get()) throw std::runtime_error("链表为空!");
+			if (__size == 0) throw std::runtime_error("list is empty!");
 			return __head->prev->value;
 		}
-		const_reference back()const { return __head->prev->value; }
+		const_reference back()const {
+			if (__size == 0) throw std::runtime_error("list is empty!");
+			return __head->prev->value;
+		}
 		iterator begin() { return ++iterator(__head); }
 		const_iterator cbegin()const { return ++iterator(__head); }
 		iterator end() { return __head; }
@@ -452,36 +458,24 @@ namespace kkli {
 	//erase(first, last)
 	template<typename T>
 	typename list<T>::iterator list<T>::erase(iterator first, iterator last) {
-		//更改this的链接指向
 		iterator prev_first = first;		//first的前一个节点
 		--prev_first;
 		iterator prev_last = last;			//last的前一个节点
 		--prev_last;
+
+		//跳过[first,prev_last]，重新链接，[first,prev_last]链所有元素都需要删除
 		prev_first->next = prev_last->next;
 		prev_first->next->prev = prev_first.get();
 
-		print("list");
-
-		//log
-		std::cout << "删除[first,prev_last]" << prev_last->next->value << std::endl;
-
 		//删除[first, prev_last]所指元素，注意，last指向的元素在this上，不在待删除链上
-		list_node<T>* ptr = first.get();
-		while (ptr != (prev_last->next)) {
-			std::cout << "prev_last->next->value: " << prev_last->next->value << std::endl;
-
-			//log
-			std::cout << "删除节点" << ptr->value << std::endl;
-
+		list_node<T>* ptr = first.get();			//指向待删除节点的循环指针
+		list_node<T>* end_ptr = prev_last->next;	//最末待删除节点的next指针
+		while (ptr != end_ptr) {
 			list_node<T>* del_ptr = ptr;
 			ptr = ptr->next;
-			delete del_ptr;					//删除节点
+			delete del_ptr;
 			--__size;
 		}
-		
-		//log
-		std::cout << "return" << std::endl;
-
 		return ++prev_first;
 	}
 
@@ -500,7 +494,7 @@ namespace kkli {
 	template<typename T>
 	void list<T>::push_back(value_type&& value) {
 		list_node<T>* node = new list_node<T>(std::move(value));
-		node->next = __head;
+		node->next = __head.get();
 		node->prev = __head->prev;
 		__head->prev->next = node;
 		__head->prev = node;
@@ -510,6 +504,7 @@ namespace kkli {
 	//pop_back()
 	template<typename T>
 	void list<T>::pop_back() {
+		if (__size == 0) throw std::runtime_error("list is empty!");
 		list_node<T>* del_ptr = __head->prev;
 		__head->prev = __head->prev->prev;
 		__head->prev->next = __head.get();
@@ -520,7 +515,7 @@ namespace kkli {
 	//push_front(value)
 	template<typename T>
 	void list<T>::push_front(const value_type& value) {
-		list_node<T>* node = new list_node(value);
+		list_node<T>* node = new list_node<T>(value);
 		node->next = __head->next;
 		node->prev = __head.get();
 		__head->next->prev = node;
@@ -531,7 +526,7 @@ namespace kkli {
 	//push_front(&&value)
 	template<typename T>
 	void list<T>::push_front(value_type&& value) {
-		list_node<T>* node = new list_node(std::move(value));
+		list_node<T>* node = new list_node<T>(std::move(value));
 		node->next = __head->next;
 		node->prev = __head.get();
 		__head->next->prev = node;
@@ -542,6 +537,7 @@ namespace kkli {
 	//pop_front()
 	template<typename T>
 	void list<T>::pop_front() {
+		if (__size == 0) throw std::runtime_error("list is empty!");
 		list_node<T>* del_ptr = __head->next;
 		__head->next = __head->next->next;
 		__head->next->prev = __head.get();
@@ -553,7 +549,7 @@ namespace kkli {
 	template<typename T>
 	void list<T>::resize(size_type count, const value_type& value) {
 		if (count <= __size) return;		//不能减少元素
-		count -= size;
+		count -= __size;
 		for (size_type i = 0; i < count; ++i)
 			push_back(value);
 	}
@@ -710,8 +706,9 @@ namespace kkli {
 	template<typename T>
 	void list<T>::swap(list& rhs) {
 		//保存指向第一个和最后一个节点的迭代器
-		iterator temp_beg = __head->next;
-		iterator temp_end = __head->prev;
+		iterator temp_beg = this->begin();
+		iterator temp_end = this->end();
+		--temp_end;
 
 		//this头结点next指向rhs的第一个节点
 		__head->next = rhs.__head->next;
@@ -722,13 +719,13 @@ namespace kkli {
 		__head->prev->next = __head.get();
 
 		//rhs头节点next指向this第一个节点
-		rhs.__head->next = temp_beg;
+		rhs.__head->next = temp_beg.get();
 		temp_beg->prev = rhs.__head.get();
 
 		//rhs头结点prev指向this最后一个节点
-		rhs.__head->prev = temp_end;
+		rhs.__head->prev = temp_end.get();
 		temp_end->next = rhs.__head.get();
-
+		 
 		//更新__size
 		size_type temp_size = __size;
 		__size = rhs.__size;
