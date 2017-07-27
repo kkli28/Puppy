@@ -37,7 +37,7 @@ namespace test {
 		void test_unique();
 		void test_sort();
 		void test_operators();		//operator == / != / < / <= / > / >=
-		
+
 		//ÕûÌå²âÊÔ
 		void test() {
 			cout << "\n========================================" << endl;
@@ -68,8 +68,8 @@ namespace test {
 			test_remove_if();
 			test_reverse();
 			test_unique();
-			//test_sort();
-			//test_operators();			//operator == / != / < / <= / > / >=
+			test_sort();
+			test_operators();			//operator == / != / < / <= / > / >=
 		}
 
 		//²âÊÔ iterator
@@ -510,6 +510,94 @@ namespace test {
 			list<int> list3{ 1,1,4,3,3,4,2,2 };
 			list3.sort();
 			list3.print("list3");		//list3: 1 1 2 2 3 3 4 4
+
+			list<int> list4{
+				1,2,3,4,7,6,5,8,10,9
+				,1,2,3,4,7,6,5,8,10,9
+				,1,2,3,4,7,6,5,8,10,9
+				,1,2,3,4,7,6,5,8,10,9
+				,1,2,3,4,7,6,5,8,10,9
+			};
+			list4.sort();
+			list4.print("list4");
+		}
+
+		//²âÊÔ operator == / != / < / <= / > / >=
+		void test_operators() {
+			cout << "\ntest_operators()" << endl;
+
+
+			list<int> list1;
+			list<int> list2{ 1,1,1,1 };
+			list<int> list3{ 1,2,3,4 };
+			list<int> list4{ 1,2,3,4,5 };
+			list<int> list5{ 1,3,5,7,9 };
+
+			//operator ==
+			cout << "operator==" << endl;
+			cout << (list1 == list1 ? "true" : "false") << endl;		//true
+			cout << (list2 == list2 ? "true" : "false") << endl;		//true
+			cout << (list1 == list2 ? "true" : "false") << endl;		//false;
+			cout << (list2 == list3 ? "true" : "false") << endl;		//false
+			cout << (list3 == list4 ? "true" : "false") << endl;		//false
+			cout << endl;
+			
+			//operator !=
+			cout << "operator!=" << endl;
+			cout << (list1 != list1 ? "true" : "false") << endl;		//fals
+			cout << (list2 != list2 ? "true" : "false") << endl;		//false
+			cout << (list1 != list2 ? "true" : "false") << endl;		//true
+			cout << (list2 != list3 ? "true" : "false") << endl;		//true
+			cout << (list3 != list4 ? "true" : "false") << endl;		//true
+			cout << endl;
+
+			//operator <
+			cout << "operator<" << endl;
+			cout << (list1 < list1 ? "true" : "false") << endl;			//false
+			cout << (list1 < list2 ? "true" : "false") << endl;			//true
+			cout << (list2 < list2 ? "true" : "false") << endl;			//false
+			cout << (list2 < list3 ? "true" : "false") << endl;			//true
+			cout << (list2 < list1 ? "true" : "false") << endl;			//false
+			cout << (list3 < list2 ? "true" : "false") << endl;			//false
+			cout << (list3 < list4 ? "true" : "false") << endl;			//true
+			cout << (list4 < list3 ? "true" : "false") << endl;			//false
+			cout << (list3 < list5 ? "true" : "false") << endl;			//true
+			cout << endl;
+
+			//operator <=
+			cout << "operator<=" << endl;
+			cout << (list1 <= list1 ? "true" : "false") << endl;		//true
+			cout << (list1 <= list2 ? "true" : "false") << endl;		//true
+			cout << (list2 <= list3 ? "true" : "false") << endl;		//true
+			cout << (list2 <= list1 ? "true" : "false") << endl;		//false
+			cout << (list3 <= list2 ? "true" : "false") << endl;		//false
+			cout << (list3 <= list5 ? "true" : "false") << endl;		//true
+			cout << endl;
+
+			//operator >
+			cout << "operator>" << endl;
+			cout << (list1 > list1 ? "true" : "false") << endl;			//false
+			cout << (list1 > list2 ? "true" : "false") << endl;			//false
+			cout << (list2 > list2 ? "true" : "false") << endl;			//false
+			cout << (list2 > list3 ? "true" : "false") << endl;			//false
+			cout << (list2 > list1 ? "true" : "false") << endl;			//true
+			cout << (list3 > list2 ? "true" : "false") << endl;			//true
+			cout << (list3 > list4 ? "true" : "false") << endl;			//false
+			cout << (list4 > list3 ? "true" : "false") << endl;			//true
+			cout << (list3 > list5 ? "true" : "false") << endl;			//false
+			cout << endl;
+
+			//operator >=
+			cout << "operator>=" << endl;
+			cout << (list1 >= list1 ? "true" : "false") << endl;		//true
+			cout << (list1 >= list2 ? "true" : "false") << endl;		//false
+			cout << (list2 >= list2 ? "true" : "false") << endl;		//true
+			cout << (list2 >= list3 ? "true" : "false") << endl;		//false
+			cout << (list2 >= list1 ? "true" : "false") << endl;		//true
+			cout << (list3 >= list2 ? "true" : "false") << endl;		//true
+			cout << (list3 >= list4 ? "true" : "false") << endl;		//false
+			cout << (list4 >= list3 ? "true" : "false") << endl;		//true
+			cout << (list3 >= list5 ? "true" : "false") << endl;		//false
 		}
 	}
 }

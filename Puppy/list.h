@@ -703,12 +703,22 @@ namespace kkli {
 	template<typename T>
 	template<typename Compare>
 	void list<T>::sort(Compare comp=std::less<T>()) {
-		//将所有节点存入vector，排序后再重新建立链表
+		//将所有节点存入vector，进行排序
 		kkli::vector<list_node<T>*> vec(__size);
 		int index = 0;
 		for (auto iter = this->begin(); iter != this->end(); ++iter)
 			vec[index++] = iter.get();
 		kkli::sort(vec.begin(), vec.end(), [=](list_node<T>* ptr1, list_node<T>* ptr2)->bool {return comp(ptr1->value, ptr2->value); });
+		
+		//重新建立节点间的链接
+		auto head = __head;
+		for (auto iter = vec.begin(); iter != vec.end(); ++iter) {
+			head->next = *iter;
+			(*iter)->prev = head.get();
+			++head;
+		}
+		head->next = __head.get();
+		__head->prev = head.get();
 	}
 
 	//swap(rhs)
@@ -760,10 +770,10 @@ namespace kkli {
 	//operator ==
 	template<typename T>
 	bool operator==(const list<T>& lhs, const list<T>& rhs) {
-		auto lhs_beg = lhs.begin();
-		auto rhs_beg = rhs.end();
-		auto lhs_end = lhs.end();
-		auto rhs_end = rhs.end();
+		auto lhs_beg = lhs.cbegin();
+		auto lhs_end = lhs.cend();
+		auto rhs_beg = rhs.cbegin();
+		auto rhs_end = rhs.cend();
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
 			if (*lhs_beg != *rhs_beg) return false;
 			++lhs_beg;
@@ -784,10 +794,10 @@ namespace kkli {
 	//operator <
 	template<typename T>
 	bool operator< (const list<T>& lhs, const list<T>& rhs) {
-		auto lhs_beg = lhs.begin();
-		auto rhs_beg = rhs.end();
-		auto lhs_end = lhs.end();
-		auto rhs_end = rhs.end();
+		auto lhs_beg = lhs.cbegin();
+		auto lhs_end = lhs.cend();
+		auto rhs_beg = rhs.cbegin();
+		auto rhs_end = rhs.cend();
 		bool smaller = false;
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
 			if (*lhs_beg > *rhs_beg) return false;
@@ -804,14 +814,14 @@ namespace kkli {
 	//operator >
 	template<typename T>
 	bool operator> (const list<T>& lhs, const list<T>& rhs) {
-		auto lhs_beg = lhs.begin();
-		auto rhs_beg = rhs.end();
-		auto lhs_end = lhs.end();
-		auto rhs_end = rhs.end();
+		auto lhs_beg = lhs.cbegin();
+		auto lhs_end = lhs.cend();
+		auto rhs_beg = rhs.cbegin();
+		auto rhs_end = rhs.cend();
 		bool greater = false;
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
 			if (*lhs_beg < *rhs_beg) return false;
-			else if (*lhs_beg > *rhs_beg) smaller = true;
+			else if (*lhs_beg > *rhs_beg) greater = true;
 			++lhs_beg;
 			++rhs_beg;
 		}

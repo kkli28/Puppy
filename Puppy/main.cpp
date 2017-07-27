@@ -17,11 +17,7 @@ int main() {
 	//test::avl_tree_test::test();
 	//test::array_test::test();
 	//test::vector_test::test();
-	//test::list_test::test();
-	int arr[50] = { 1,3,5,7,9,2,4,10,8,6,1,3,5,7,9,2,4,10,8,6,1,3,5,7,9,2,4,10,8,6,1,3,5,7,9,2,4,10,8,6,1,3,5,7,9,2,4,10,8,6 };
-	kkli::sort(begin(arr), end(arr), std::less<int>());
-	for (auto a : arr) cout << a << " ";
-	cout << endl;
+	test::list_test::test();
 	system("pause");
     return 0;
 }
