@@ -401,21 +401,18 @@ namespace test {
 		void test_merge() {
 			cout << "\ntest_merge()" << endl;
 
-			cout << "====list1====" << endl;
 			list<int> list1;
 			list<int> list2{ 1,2,3,4 };
 			list1.merge(std::move(list2));
 			list1.print("list1");			//list1: 1 2 3 4
 			list2.print("list2");			//list2: 
 			
-			cout << "====list3====" << endl;
 			list<int> list3{ 1,3,5,7 };
 			list<int> list4{ 2,4,6,8 };
 			list3.merge(std::move(list4), [](int val1, int val2)->bool {return val1 < val2; });
 			list3.print("list3");
 			list4.print("list4");
 
-			cout << "====list1====" << endl;
 			list1.merge(std::move(list3));
 			list1.print("list1");
 			list3.print("list3");

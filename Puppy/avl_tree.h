@@ -102,15 +102,13 @@ namespace kkli {
 		avl_tree(const avl_tree&) = delete;
 		avl_tree& operator=(const avl_tree&) = delete;
 
-		//获取根节点指针
+		//成员函数
 		avl_node<T>* get_root()const { return root; }
-
-		//插入
 		void insert_elem(const T& elem);					//插入元素elem
 		void insert_elem(std::initializer_list<T> il);		//插入元素列表
 		void insert_elem(int n, const T& elem);				//插入n个elem
-
 		void delete_elem(const T& elem);					//删除
+		avl_node<T>* find(const T& elem)const;				//查找
 
 		//输出树节点，分别采用前序遍历和中序遍历
 		void print()const;
@@ -504,6 +502,18 @@ namespace kkli{
 
 		//平衡节点
 		if (balance_ptr != nullptr) balance(balance_ptr);
+	}
+
+	//find
+	template<typename T>
+	avl_node<T>* avl_tree<T>::find(const T& elem)const {
+		avl_node<T>* ptr = root;
+		while (ptr != nullptr) {
+			if (ptr->value == elem) return ptr;
+			if (ptr->value > elem) ptr = ptr->left_child;
+			else ptr = ptr->right_child;
+		}
+		return nullptr;
 	}
 
 	//print

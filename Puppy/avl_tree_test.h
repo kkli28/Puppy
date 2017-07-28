@@ -8,6 +8,7 @@ namespace test {
 
 		using std::cout;
 		using std::endl;
+
 		//ÕûÌå²âÊÔ
 		void test() {
 			cout << "\n========================================" << endl;
@@ -23,6 +24,22 @@ namespace test {
 				if (ptr != nullptr) cout << ptr->height << endl;
 				else cout << "¿ÕÊ÷" << endl;
 			}
+
+			for (int i = 0; i < 20; ++i) {
+				cout << "\n==== find " << i << " ====" << endl;
+				kkli::avl_node<int>* ptr = at.find(i);
+				if (ptr != nullptr) cout << "find " << i << endl;
+				else {
+					cout << "not find" << endl;
+					continue;
+				}
+				if (ptr->left_child != nullptr) cout << "left: " << ptr->left_child->value << endl;
+				else cout << "left: nullptr" << endl;
+				if (ptr->right_child != nullptr) cout << "right: " << ptr->right_child->value << endl;
+				else cout << "right: nullptr" << endl;
+			}
+
+			/* 
 			for (int i = 19; i >= 0; --i) {
 				cout << "\n========== É¾³ı " << i << "==========" << endl;
 				at.delete_elem(i);
@@ -32,6 +49,7 @@ namespace test {
 				if (ptr != nullptr) cout << ptr->height << endl;
 				else cout << "¿ÕÊ÷" << endl;
 			}
+			*/
 		}
 	}
 }
