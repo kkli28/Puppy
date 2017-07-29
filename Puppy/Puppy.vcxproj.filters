@@ -75,6 +75,9 @@
     <ClInclude Include="set.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="string.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
