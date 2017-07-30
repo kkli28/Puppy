@@ -143,6 +143,7 @@
     <ClInclude Include="array_test.h" />
     <ClInclude Include="avl_tree.h" />
     <ClInclude Include="avl_tree_test.h" />
+    <ClInclude Include="char_traits.h" />
     <ClInclude Include="deque_uncomplete.h" />
     <ClInclude Include="forward_list.h" />
     <ClInclude Include="forward_list_test.h" />
