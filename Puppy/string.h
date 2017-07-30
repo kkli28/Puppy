@@ -416,7 +416,18 @@ namespace kkli {
 		}
 	}
 
-	//
+	//operator +=
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator+=(value_type value) {
+		this->push_back(value);
+		return *this;
+	}
+
+	//operator +=
+	template<typename CharType,typename Traits,typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator+=(const_pointer data) {
+		//TODO: 考虑用便捷函数实现在this后添加[first, last)元素
+	}
 }
 
 //================================================================================
