@@ -49,6 +49,10 @@ namespace kkli {
 			__alloc.construct(__start + pos, kkli::char_traits<value_type>::eof());
 		}
 
+		//申请内存并设置相应属性
+		template<typename InputIterator>
+		void allocate(size_type mem_size, InputIterator first, InputIterator last);
+
 		//释放原有内存
 		void deallocate() { __alloc.deallocate(__start, __capacity - __start); }
 
@@ -81,8 +85,8 @@ namespace kkli {
 		string& operator=(std::initializer_list<value_type> init);
 
 		//operator []
-		reference operator[](size_type pos);
-		const_reference operator[](size_type pos)const;
+		reference operator[](size_type pos) { return __start[pos]; }
+		const_reference operator[](size_type pos)const { return __start[pos]; }
 
 		//operator +=
 		string& operator+=(const string& rhs);
@@ -227,22 +231,34 @@ namespace kkli {
 
 namespace kkli {
 
+	//allocate(mem_size, first, last)
+	template<typename CharType, typename Traits, typename Allocator>
+	template<typename InputIterator>
+	void string<CharType, Traits, Allocator>::allocate(size_type mem_size, InputIterator first, InputIterator last) {
+		__start = __alloc.allocate(mem_size);
+		size_type index = 0;
+		for (auto iter = first; iter != last; ++iter) {
+			__alloc.construct(__start + index, *iter);
+			++index;
+		}
+		set_end_char(index);
+		__end = __start + index;
+		__capacity = __end + 1;
+	}
+
 	//string(alloc)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const Allocator& alloc = Allocator()) 
+	string<CharType, Traits, Allocator>::string(const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		__start = __alloc.allocate(1);
-		set_end_char(1);			//设置结束字符
-		__end = __start;
-		__capacity = __start + 1;
+		allocate(1, iterator(), iterator());
 	}
 
 	//string(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
 	string<CharType, Traits, Allocator>::string(size_type count, value_type value,
-		const Allocator& alloc=Allocator()) 
+		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		__start = __alloc.allocate(count+1);
+		__start = __alloc.allocate(count + 1);
 		for (size_type i = 0; i < count; ++i)
 			__alloc.construct(__start + i, value);
 		set_end_char(count);			//设置结束字符
@@ -255,24 +271,17 @@ namespace kkli {
 	string<CharType, Traits, Allocator>::string(const string& rhs, size_type pos,
 		size_type count = npos, const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		
+
 		//计算应分配的内存大小
 		size_type size = rhs.size();
 		if (count >= size) count = size;
 
-		//复制rhs的内容
-		__start = __alloc.allocate(count+1);
-		for (size_type i = 0; i < count; ++i)
-			__alloc.construct(__start + i, rhs[i]);
-		set_end_char(count);			//设置结束字符
-		
-		__end = __start + count;
-		__capacity = __end + 1;
+		allocate(count + 1, rhs.begin(), rhs.end());
 	}
 
 	//string(data, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const_pointer data, size_type count=npos,
+	string<CharType, Traits, Allocator>::string(const_pointer data, size_type count = npos,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 
@@ -283,48 +292,27 @@ namespace kkli {
 				if (data[i] == kkli::char_traits<value_type>::eof()) break;
 		}
 
-		__start = __alloc.allocate(size + 1);
-		for (size_type i = 0; i < size; ++i)
-			__alloc.construct(__start + i, data[i]);
-		set_end_char(size);			//设置结束字符
-
-		__end = __start + size;
-		__capacity = __end + 1;
+		allocate(size + 1, data, data + size);
 	}
 
 	//string(first, last)
-	template<typename CharType,typename Traits, typename Allocator>
+	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	string<CharType,Traits,Allocator>::string(InputIterator first, InputIterator last,
-		const Allocator& alloc=Allocator())
+	string<CharType, Traits, Allocator>::string(InputIterator first, InputIterator last,
+		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 
 		//计算[first, last)区间的长度
 		size_type size = 0;
 		for (auto iter = first; iter != last; ++size, ++iter);
 
-		__start = __alloc.allocate(size + 1);
-		size_type index = 0;
-		for (auto iter = first; iter != last; ++iter) {
-			__alloc.construct(__start + index, *iter);
-			++index;
-		}
-		set_end_char(index);
-
-		__end = __start + size;
-		__capacity = __end + 1;
+		allocate(size + 1, first, last);
 	}
 
 	//string(rhs)
-	template<typename CharType,typename Traits, typename Allocator>
+	template<typename CharType, typename Traits, typename Allocator>
 	string<CharType, Traits, Allocator>::string(const string& rhs) {
-		size_type size = rhs.size();
-		__start = __alloc.allocate(size + 1);
-		for (size_type i = 0; i < size; ++i)
-			__alloc.construct(__start + i, rhs[i]);
-		set_end_char(size);
-		__end = __start + size;
-		__capacity = __end + 1;
+		allocate(rhs.size() + 1, rhs.begin(), rhs.end());
 	}
 
 	//string(&&rhs)
@@ -342,16 +330,7 @@ namespace kkli {
 	string<CharType, Traits, Allocator>::string(std::initializer_list<value_type> init,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		size_type size = init.size();
-		__start = __alloc.allocate(size + 1);
-		size_type index = 0;
-		for (auto iter = init.begin(); iter != init.end(); ++iter) {
-			__alloc.construct(__start + index, *iter);
-			++index;
-		}
-		set_end_char(index);
-		__end = __start + size;
-		__capacity = __end + 1;
+		allocate(init.size() + 1, init.begin(), init.end());
 	}
 
 	//~string
@@ -361,7 +340,83 @@ namespace kkli {
 		reset_iterators();
 	}
 
+	//operator =
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(const string& rhs) {
+		if (this == &rhs) return *this;
+		deallocate();
+		allocate(rhs.size() + 1, rhs.begin(), rhs.end());
+	}
 
+	//operator =
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(string&& rhs) {
+		if (this == rhs) return *this;
+		deallocate();
+		__alloc = rhs.__alloc;
+		__start = rhs.__start;
+		__end = rhs.__end;
+		__capacity = rhs.__capacity;
+		rhs.reset_iterators();
+	}
+
+	//operator =
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(const_pointer data) {
+		if (this == &rhs) return *this;
+		size_type size = 0;
+		if (data != NULL) {
+			for (;; ++size)
+				if (data[i] == kkli::char_traits<char>::eof()) break;
+		}
+		allocate(size + 1, data, data + size);
+	}
+
+	//operator =
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(std::initializer_list<value_type> init) {
+		if (this == &rhs) return *this;
+		deallocate();
+		allocate(init.size() + 1, init.begin(), init.end());
+	}
+
+	//operator +=
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator+=(const string& rhs) {
+		size_type size = rhs.size();
+
+		//剩余空间足够，直接将rhs的内容填充到后面
+		if (__capacity - __end > size) {
+			for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter) this->push_back(*iter);
+		}
+
+		//剩余空间不够
+		else {
+			//可能是自己和自己相加，如str=str+str，则不能直接释放原有内存
+			iterator new_addr = __alloc.allocate(this->size() + size + 1);		//刚好能装下，且末尾有一个 '\0'
+			size_type index = 0;
+
+			//复制this
+			for (auto iter = __start; iter != __end; ++iter) {
+				__alloc.construct(new_addr + index, *iter);
+				++index;
+			}
+
+			//复制rhs
+			for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter) {
+				__alloc.construct(new_addr + index, *iter);
+				++index;
+			}
+
+			__alloc.construct(new_addr + index, kkli::char_traits<char>::eof());		//末尾添加 '\0'
+			deallocate();			//释放原有内存
+			__start = new_addr;
+			__end = __start + index;
+			__capacity = __end + 1;
+		}
+	}
+
+	//
 }
 
 //================================================================================
