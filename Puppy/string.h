@@ -65,6 +65,9 @@ namespace kkli {
 
 	public:
 
+		//注意，下方很多函数都没有将性能放在第一位。通常将函数的某些参数进行包装，然后再调用其重载函数，
+		//这个过程中会导致一些性能损失。如果完全每个函数都根据自己的特点单独实现，太多了，懒得写
+
 		//constructor
 		string(const Allocator& alloc = Allocator());
 		string(size_type count, value_type value, const Allocator& alloc = Allocator());
@@ -103,68 +106,118 @@ namespace kkli {
 		string& operator+=(std::initializer_list<value_type> init);
 
 		//assign
-		string& assign(size_type count, value_type value);
-		string& assign(const string& rhs);
-		string& assign(string&& rhs);
-		string& assign(const string& rhs, size_type pos, size_type count = npos);
-		string& assign(const_pointer data, size_type count);
-		string& assign(const_pointer data);
+		void assign(size_type count, value_type value);
+		void assign(const string& rhs);
+		void assign(string&& rhs);
+		void assign(const string& rhs, size_type pos, size_type count = npos);
+		void assign(const_pointer data, size_type count);
+		void assign(const_pointer data) { return assign(data, npos); }
 
 		template<typename InputIterator>
-		string& assign(InputIterator first, InputIterator last);
-		string& assign(std::initializer_list<value_type> init);
+		void assign(InputIterator first, InputIterator last);
+		void assign(std::initializer_list<value_type> init);
 
 		//insert
-		string& insert(size_type index, size_type count, value_type value);
-		string& insert(size_type index, const_pointer data);
-		string& insert(size_type index, const_pointer data, size_type count);
-		string& insert(size_type index, const string& rhs);
-		string& insert(size_type index, const string& rhs, size_type index_str, size_type count=npos);
-		string& insert(iterator pos, value_type value);
-		string& insert(const_iterator pos, value_type value);
-		void insert(const_iterator pos, size_type count, value_type value);
-		iterator insert(const_iterator pos, std::initializer_list<value_type> init);
-
 		template<typename InputIterator>
 		void insert(const_iterator pos, InputIterator first, InputIterator last);
+
+		void insert(size_type index, const string& rhs, size_type index_rhs, size_type count = npos);
+		void insert(size_type index, const string& rhs) { return insert(index, rhs, 0, npos); }
+		void insert(size_type index, size_type count, value_type value) { insert(index, string(count, value)); }
+		void insert(size_type index, const_pointer data, size_type count = npos) { insert(index, string(data, count)); }
+		void insert(const_iterator pos, size_type count, value_type value);
+		void insert(const_iterator pos, value_type value) {
+			insert(pos, 1, value);
+			return *this;
+		}
+		void insert(const_iterator pos, std::initializer_list<value_type> init) { return insert(init.cbegin(), init.cend()); }
 		
 		//append
-		string& append(size_type count, value_type value);
-		string& append(const string& rhs) { return (*this) += rhs; }
-		string& append(const string& rhs, size_type pos, size_type count = npos);
-		string& append(const_pointer data, size_type count);
-		string& append(const_pointer data) { return (*this) += data; }
+		void append(const string& rhs, size_type pos, size_type count = npos) {
+			if (count == npos) count = rhs.size() - pos;
+			(*this) += string(rhs.cbegin() + pos, rhs.cbegin() + pos + count);
+		}
+		void append(const string& rhs) { (*this) += rhs; }
+		void append(const_pointer data, size_type count) { (*this) += string(data, count); }
+		void append(size_type count, value_type value) { (*this) += string(count, value); }
+		void append(const_pointer data) { (*this) += data; }
 
 		template<typename InputIterator>
-		string& append(InputIterator first, InputIterator last) { return (*this) += string(first, last); }
-		string& append(std::initializer_list<value_type> init) { return (*this) += init; }
+		void append(InputIterator first, InputIterator last) { (*this) += string(first, last); }
+		void append(std::initializer_list<value_type> init) { (*this) += init; }
 
 		//compare
 		int compare(const string& rhs)const;
-		int compare(size_type pos, size_type count, const string& rhs)const;
+		int compare(size_type pos, size_type count, const string& rhs)const {
+			string str(__start + pos, __start + pos + count);
+			return str.compare(rhs);
+		}
 		int compare(size_type pos1, size_type count1,
-			const string& rhs, size_type pos1, size_type count2 = npos)const;
-		int compare(const_pointer data)const;
-		int compare(size_type pos, size_type count, const_pointer data);
+			const string& rhs, size_type pos2, size_type count2 = npos)const {
+			string str1(__start + pos1, __start + pos1 + count1);
+			if (count2 == npos) count2 = rhs.size() - pos2;
+			string str2(rhs.__start + pos2, rhs.__start + pos2 + count2);
+			return str1.compare(str2);
+		}
+		int compare(const_pointer data)const {
+			return compare(string(data));
+		}
+		int compare(size_type pos, size_type count, const_pointer data) {
+			string str(__start + pos, __start + pos + count);
+			return str.compare(string(data));
+		}
 		int compare(size_type pos1, size_type count1,
-			const_pointer data, size_type count2)const;
+			const_pointer data, size_type count2)const {
+			string str1(__start + pos1, __start + pos1 + count1);
+			string str2(data, count2);
+			return str1.compare(str2);
+		}
 
 		//replace
-		string& replace(size_type pos, size_type count, const string& rhs);
-		string& replace(const_iterator first, const_iterator last, const string& rhs);
-		string& replace(size_type pos1, size_type count1,
-			const string& rhs, size_type pos2, size_type count2 = npos);
 
+		//TODO: replace 可以将短的字符串替换成长的字符串，如C++ --> ABCDEFG，此时需要重新开辟内存，GG
+		//正确地做法应该是先erase[first1, last1)，然后再insert(first1, first2, last2)
 		template<typename InputIterator>
-		string& repalce(const_iterator first1, const_iterator last1,
+		void repalce(const_iterator first1, const_iterator last1,
 			InputIterator first2, InputIterator last2);
-		string& replace(size_type pos, size_type count, const_pointer data, size_type count2);
-		string& replace(size_type pos, size_type count, const_pointer data);
-		string& replace(const_iterator first, const_iterator last, const_pointer data, size_type count2);
-		string& replace(const_iterator first, const_iterator last, const_pointer data);
-		string& replace(size_type pos1, size_type count1, size_type count2, value_type value);
-		string& replace(const_iterator first, const_iterator last, size_type count2, value_type value);
-		string& replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init);
+
+		void replace(const_iterator first, const_iterator last, const string& rhs) {
+			replace(first, last, rhs.cbegin(), rhs.cend());
+		}
+		void replace(size_type pos, size_type count, const string& rhs) {
+			replace(__start + pos, __start + pos + count, rhs.cbegin(), rhs.cend());
+		}
+		void replace(size_type pos1, size_type count1,
+			const string& rhs, size_type pos2, size_type count2 = npos) {
+			if (count2 == npos) count2 = rhs.size() - pos2;
+			replace(__start + pos1, __start + pos1 + count1, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
+		}
+
+		void replace(size_type pos, size_type count, const_pointer data, size_type count2) {
+			replace(__start + pos, __start + pos + count, data, data + count2);
+		}
+		void replace(size_type pos, size_type count, const_pointer data) {
+			size_type data_count = get_size(data);
+			replace(__start + pos, __start + pos + count, data, data + data_count);
+		}
+		void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2) {
+			replace(first, last, data, data + count2);
+		}
+		void replace(const_iterator first, const_iterator last, const_pointer data) {
+			size_type count = get_size(data);
+			replace(first, last, data, data + count);
+		}
+		void replace(size_type pos1, size_type count1, size_type count2, value_type value) {
+			string str(count2, value);
+			replace(__start + pos1, __start + pos1 + count1, str.cbegin(), str.cend());
+		}
+		void replace(const_iterator first, const_iterator last, size_type count2, value_type value) {
+			replace(first, last, string(count2, value));
+		}
+		void replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init) {
+			replace(first, last, string(init));
+		}
+
 
 		//find
 		size_type find(const string& rhs, size_type pos = 0)const;
@@ -231,8 +284,8 @@ namespace kkli {
 
 		string				substr(size_type pos = 0, size_type count = npos)const;
 		size_type			copy(const_pointer data, size_type count, size_type pos = 0)const;
-		void				resize(size_type count);
 		void				resize(size_type count, value_type value);
+		void				resize(size_type count) { resize(count, value_type()); }
 		void				swap(string& rhs);
 	};
 }
@@ -472,7 +525,161 @@ namespace kkli {
 		return this->operator+=(str);
 	}
 
-	//assign
+	//assign(count, value)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(size_type count, value_type value) {
+		string<CharType, Traits, Allocator> str(count, value);
+		this->operator=(std::move(str));
+	}
+
+	//assign(rhs)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(const string<CharType,Traits,Allocator>& rhs) {
+		if (this == &rhs) return *this;
+		this->operator=(rhs);
+	}
+
+	//assign(&&rhs)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(string<CharType,Traits,Allocator>&& rhs) {
+		if (this == &rhs) return *this;
+		this->operator=(std::move(rhs));
+	}
+
+	//assign(pos, count)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(const string<CharType, Traits, Allocator>& rhs,
+		size_type pos, size_type count = npos) {
+		deallocate();
+		if (count == npos) count = rhs.size() - pos;
+		allocate(count + 1, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
+	}
+
+	//assign(data, count)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(const_pointer data, size_type count) {
+		deallocate();
+		allocate(count + 1, data, data + count);
+	}
+
+	//assign(first, last)
+	template<typename CharType, typename Traits, typename Allocator>
+	template<typename InputIterator>
+	void string<CharType, Traits, Allocator>::assign(InputIterator first, InputIterator last) {
+		deallocate();
+		size_type count = 0;
+		for (auto iter = first; iter != last; ++iter, ++count);
+		allocate(count + 1, first, last);
+	}
+
+	//assign(init)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::assign(std::initializer_list<value_type> init) {
+		deallocate();
+		size_type size = init.size();
+		allocate(size + 1, first, last);
+	}
+
+	//insert(index, rhs, index_rhs, count)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::insert(size_type index, const string& rhs,
+		size_type index_rhs, size_type count = npos) {
+		iterator pos = __start + index;
+		iterator end_iter = rhs.cbegin() + count;
+		if (count == npos) end_iter = rhs.cend();
+		insert(pos, rhs.cbegin()) + index_rhs, end_iter);		//调用insert(pos, first, last)
+	}
+
+	//insert(pos, count, value)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::insert(const_iterator pos, size_type count, value_type value) {
+		string str(count, value);
+		insert(pos, str.begin()), str.end());
+	}
+
+	//insert(pos, count, value)
+	template<typename CharType, typename Traits, typename Allocator>
+	template<typename InputIterator>
+	void string<CharType, Traits, Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last) {
+		if (first == last) return;
+		size_type count = 0;
+		for (auto iter = first; iter != last; ++iter, ++count);			//获取first到last的距离
+
+		//剩余空间足够
+		if (__capacity - __end > count) {
+
+			//将this后count个字符后移count个位置
+			auto iter = __end - count;
+			for (size_type i = 0; i < count; ++i) {
+				__alloc.construct(__end + i, *iter);
+				++iter;
+			}
+
+			//将待插入位置后续字符后移count个位置，为插入字符腾出空间
+			iter = __end - 1;
+			auto prev_iter = iter - count;			//将prev_iter所指字符复制到iter所指位置
+			while (iter >= pos) {
+				*iter = *prev_iter;
+				--iter;
+				--prev_iter;
+			}
+
+			//将字符插入
+			iter = __start + index;
+			for (auto i = first; i != last; ++i, ++iter)
+				*iter = *i;
+			set_end_char(this->size() + count);
+			__end += count;
+		}
+
+		//剩余空间不足
+		else {
+			//rhs可能就是*this，因此不能直接将原内存释放
+			size_type new_cap = this->size() + count;
+			auto new_addr = __alloc.allocate(new_cap);
+
+			//将this的[0,index)内容构造到新内存中
+			size_type i = 0;
+			for (auto iter = __start; iter != pos; ++iter) {
+				__alloc.construct(new_addr + i, __start[i]);
+				++i;
+			}
+
+			//将值插入
+			for (auto iter = first; iter != last; ++iter) {
+				__alloc.construct(new_addr + i, *iter);
+				++i;
+			}
+
+			//将this中后续的值构造到新内存中
+			auto iter = pos;
+			while (iter != __end) {
+				__alloc.construct(new_addr + i, *iter);
+				++i;
+			}
+			set_end_char(i);
+			deallocate();			//释放原有内存
+			__start = new_addr;
+			__end = new_addr + i;
+			__capacity = __start + new_cap;
+		}
+	}
+
+	//compare(rhs)
+	template<typename CharType, typename Traits, typename Allocator>
+	int string<CharType, Traits, Allocator>::compare(const string& rhs)const {
+		if ((*this) > rhs) return 1;
+		if ((*this) == rhs) return 0;
+		else return -1;
+	}
+
+	//replace(first1, last1, first2, last2)
+	template<typename CharType, typename Traits, typename Allocator>
+	template<typename InputIterator>
+	void string<CharType, Traits, Allocator>::replace(const_iterator first1, const_iterator last1,
+		InputIterator first2, InputIterator last2) {
+		throw 1;
+	}
 }
 
 //================================================================================
@@ -650,90 +857,122 @@ namespace kkli {
 		return !(data == rhs);
 	}
 
-	//**************************************** 明天从这里开始 ****************************************
-
 	//operator <(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<(const string<CharType, Traits, Allocator>& lhs,
 		const string<CharType, Allocator>& rhs) {
-		throw 1;
+		std::size_t lhs_size = lhs.size();
+		std::size_t rhs_size = rhs.size();
+		std::size_t min_size = lhs_size < rhs_size ? lhs_size : rhs_size;
+		bool smaller = false;
+		std::size_t i = 0;
+		for (; i < min_size; ++i) {
+			if (lhs[i] > rhs[i]) return false;
+			if (lhs[i] < rhs[i]) smaller = true;
+		}
+
+		if (i != lhs_size) return false;		//lhs更长
+		if (i != rhs_size) return true;			//rhs更长
+		if (smaller) return true;				//两者等长，则lhs存在比rhs更小的对应元素
+		else return false;
 	}
 
 	//operator <(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<(const string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return lhs < str;
 	}
 
 	//operator <(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<(const CharType* data,
 		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
-	}
-
-	//operator <=(lhs, rhs)
-	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
-	}
-
-	//operator <=(lhs, data)
-	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
-		const CharType* data) {
-		throw 1;
-	}
-
-	//operator <=(data, rhs)
-	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<=(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return str < rhs;
 	}
 
 	//operator >(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>(const string<CharType, Traits, Allocator>& lhs,
 		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+		std::size_t lhs_size = lhs.size();
+		std::size_t rhs_size = rhs.size();
+		std::size_t min_size = lhs_size < rhs_size ? lhs_size : rhs_size;
+		bool greater = false;
+		std::size_t i = 0;
+		for (; i < min_size; ++i) {
+			if (lhs[i] < rhs[i]) return false;
+			if (lhs[i] > rhs[i]) greater = true;
+		}
+
+		if (i != lhs_size) return true;			//lhs更长
+		if (i != rhs_size) return false;		//rhs更长
+		if (greater) return true;				//两者等长
+		else return false;
 	}
 
 	//operator >(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>(const string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return lhs > str;
 	}
 
 	//operator >(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>(const CharType* data,
 		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return str > rhs;
+	}
+
+	//operator <=(lhs, rhs)
+	template<typename CharType, typename Traits, typename Allocator>
+	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
+		const string<CharType, Traits, Allocator>& rhs) {
+		return !(lhs > rhs);
+	}
+
+	//operator <=(lhs, data)
+	template<typename CharType, typename Traits, typename Allocator>
+	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
+		const CharType* data) {
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return !(lhs > str);
+	}
+
+	//operator <=(data, rhs)
+	template<typename CharType, typename Traits, typename Allocator>
+	bool operator<=(const CharType* data,
+		const string<CharType, Traits, Allocator>& rhs) {
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return !(str > rhs);
 	}
 
 	//operator >=(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>=(const string<CharType, Traits, Allocator>& lhs,
 		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+		return !(lhs < rhs);
 	}
 
 	//operator >=(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>=(const string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return !(lhs < data);
 	}
 
 	//operator >=(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>=(const CharType* data,
 		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+		kkli::string<CharType, Traits, Allocator> str(data);
+		return !(str < rhs);
 	}
 
 
@@ -741,9 +980,9 @@ namespace kkli {
 
 	//swap(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	void swap(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
-		throw 1;
+	void swap(string<CharType, Traits, Allocator>& lhs,
+		string<CharType, Traits, Allocator>& rhs) {
+		lhs.swap(rhs);
 	}
 
 
@@ -754,7 +993,8 @@ namespace kkli {
 	std::ostream<CharType, Traits, >& operator<<(
 		std::ostream<CharType, Traits>& os,
 		const string<CharType, Traits, Allocator>& str) {
-		throw 1;
+		os << str.data();
+		return os;
 	}
 
 	//operator >>
@@ -762,13 +1002,13 @@ namespace kkli {
 	std::istream<CharType, Traits>& operator<<(
 		std::istream<CharType, Traits>& is,
 		const string<CharType, Traits, Allocator>& str) {
-		throw 1;
+		is >> str.data();
 	}
 
 
 	//============================== [getline] ==============================
 
-	//getline(is, str, delim
+	//getline(is, str, delim)
 	template<typename CharType, typename Traits, typename Allocator>
 	std::istream<CharType, Traits>& getline(
 		std::istream<CharType, Traits>&& is,
@@ -781,11 +1021,11 @@ namespace kkli {
 	std::istream<CharType, Traits>& getline(
 		std::istream<CharType, Traits>&& is,
 		string<CharType, Traits, Allocator>& str) {
-		throw 1;
+		return getline(is, str, '\n');
 	}
 
 
-	//============================== [stox] ==============================
+	//==================== [stox]: 不想实现，好麻烦！！ ====================
 
 	//stoi
 	template<typename CharType,typename Traits,typename Allocator>
