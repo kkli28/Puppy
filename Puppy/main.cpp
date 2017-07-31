@@ -8,12 +8,13 @@
 #include "array_test.h"
 #include "vector_test.h"
 #include "list_test.h"
+#include <memory>
 using namespace std;
 
 int main() {
 	//test::my_pair_test::test();
 	//test::forward_list_test::test();
-	test::avl_tree_test::test();
+	//test::avl_tree_test::test();
 	//test::array_test::test();
 	//test::vector_test::test();
 	//test::list_test::test();
