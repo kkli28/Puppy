@@ -10,14 +10,7 @@ namespace kkli {
 	//aux_function:	__partition(first, last), __insertion_sort
 	//================================================================================
 	
-	/*
-	//__partition
-	template<typename RandomAccessIterator>
-	RandomAccessIterator __aux_partition(RandomAccessIterator first, RandomAccessIterator last) {
-		return __aux_partition(first, last, [](const decltype(*first)& val1, const decltype(*first)& val2)-> bool {return val1 < val2; });
-	}
-	*/
-
+	//__aux_partition(first, last, comp)
 	template<typename RandomAccessIterator, typename Compare>
 	RandomAccessIterator __aux_partition(RandomAccessIterator first, RandomAccessIterator last,
 		Compare comp = std::less<decltype(*first)>()) {
@@ -60,14 +53,7 @@ namespace kkli {
 		return iter;
 	}
 
-	/*
-	//__insertion_sort
-	template<typename BidirectionalIterator>
-	void __aux_insertion_sort(BidirectionalIterator first, BidirectionalIterator last) {
-		__aux_insertion_sort(first, last, [](BidirectionalIterator iter1, BidirectionalIterator iter2)->bool {return *iter1 < *iter2; });
-	}
-	*/
-
+	//__aux_insertion_sort(first, last, comp)
 	template<typename BidirectionalIterator, typename Compare>
 	void __aux_insertion_sort(BidirectionalIterator first, BidirectionalIterator last, 
 		Compare comp = std::less<decltype(*first)>()) {
@@ -94,6 +80,7 @@ namespace kkli {
 		}
 	}
 
+	//sort(first, last, comp)
 	template<typename RandomAccessIterator, typename Compare>
 	void sort(RandomAccessIterator first, RandomAccessIterator last, 
 		Compare comp = std::less<decltype(*first)>()) {
