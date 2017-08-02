@@ -386,6 +386,8 @@ namespace kkli {
 		string				substr(size_type pos = 0, size_type count = npos)const;
 		size_type			copy(const_pointer data, size_type pos=0, size_type count=npos)const;
 		void				swap(string& rhs);
+
+		void print(const string& prefix) const { cout << prefix << ": " << __start << endl; }
 	};
 }
 

@@ -81,6 +81,9 @@
     <ClInclude Include="char_traits.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="string_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
