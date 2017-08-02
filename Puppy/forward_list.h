@@ -55,6 +55,7 @@ namespace kkli {
 			__iterator(forward_list_node<T>* ptr) : iter(ptr) {}
 
 		public:
+
 			//constructor
 			__iterator() : iter(nullptr) {}
 			__iterator(const T& t) : iter(new forward_list_node<T>(t)) {}

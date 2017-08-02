@@ -94,4 +94,16 @@ namespace kkli {
 			kkli::sort(iter + 1, last, comp);
 		}
 	}
+
+
+	//================================================================================
+	//algorithm:	find(first, last, first, last)
+	//complexity:	O(n*m)
+	//aux_function:	__aux_partial_match_table(first, last)
+	//================================================================================
+	template<typename InputIterator>
+	InputIterator find(InputIterator first1, InputIterator last1,
+		InputIterator first2, InputIterator last2) {
+		//写不下去了！！！MMP
+	}
 }

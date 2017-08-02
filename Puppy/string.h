@@ -83,6 +83,11 @@ namespace kkli {
 		int __compare(size_type size1, InputIterator first1, InputIterator last1,
 			size_type size2, InputIterator first2, InputIterator last2);
 
+		//将[first1, last1)替换为[first2, last2)
+		template<typename InputIterator>
+		void __replace(const_iterator first, const_iterator last, size_type size,
+			InputIterator first, InputIterator last);
+
 	public:
 
 		//获取data的有效字符个数
@@ -279,63 +284,49 @@ namespace kkli {
 		//若直接erase再insert，则需要两次移动[first1, last1)后部的内容，降低性能
 		//有空再写
 		//************************************************************************************************************************
-
+		
 		template<typename InputIterator>
-		void repalce(const_iterator first1, const_iterator last1,
-			InputIterator first2, InputIterator last2) {
-			erase(first1, last1);				//移除[first1, last1)
-			insert(first1, first2, last2);		//插入[first2, last2)
+		void repalce(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
+			__replace(first, last, npos, first2, last2);
 		}
-
+		void replace(const_iterator first, const_iterator last, size_type count2, value_type value);
 		void replace(const_iterator first, const_iterator last, const string& rhs) {
-			replace(first, last, rhs.cbegin(), rhs.cend());
+			__replace(first, last, rhs.size(), rhs.cbegin(), rhs.cend());
 		}
-		void replace(size_type pos, size_type count, const string& rhs) {
-			replace(__start + pos, __start + pos + count, rhs.cbegin(), rhs.cend());
-		}
-		void replace(size_type pos1, size_type count1,
-			const string& rhs, size_type pos2, size_type count2 = npos) {
-			if (count2 == npos) count2 = rhs.size() - pos2;
-			replace(__start + pos1, __start + pos1 + count1, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
-		}
-
-		void replace(size_type pos, size_type count, const_pointer data, size_type count2) {
-			replace(__start + pos, __start + pos + count, data, data + count2);
-		}
-		void replace(size_type pos, size_type count, const_pointer data) {
-			size_type size = __get_size(data);
-			replace(__start + pos, __start + pos + count, data, data + size);
-		}
-		void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2) {
-			replace(first, last, data, data + count2);
-		}
-		void replace(const_iterator first, const_iterator last, const_pointer data) {
-			size_type size = __get_size(data);
-			replace(first, last, data, data + size);
-		}
-		void replace(size_type pos1, size_type count1, size_type count2, value_type value) {
-			erase(__start + pos1, __start + pos1 + count1);
-			insert(__start + pos1, count2, value);
-		}
-		void replace(const_iterator first, const_iterator last, size_type count2, value_type value) {
-			erase(first, last);
-			insert(first, count2, value);
+		void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2 = npos) {
+			if (count2 == npos) count2 = get_size(data);
+			__replace(first, last, count2, data, data + count2);
 		}
 		void replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init) {
-			replace(first, last), init.cbegin(), init.cend());
+			__replace(first, last, init.size(), init.cbegin(), init.cend());
 		}
 
-		//TODO: ================================================================================================================================================
+		void replace(size_type pos, size_type count,
+			const string& rhs, size_type pos2 = 0, size_type count2 = npos) {
+			if (count2 == npos) count2 = rhs.size() - pos2;
+			__replace(__start + pos, __start + pos + count, count2, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
+		}
 
+		void replace(size_type pos, size_type count, const_pointer data, size_type count2=npos) {
+			if (count2 == npos) count2 = get_size(data);
+			replace(__start + pos, __start + pos + count, count2, data, data + count2);
+		}
+		void replace(size_type pos1, size_type count1, size_type count2, value_type value) {
+			replace(__start + pos1, __start + pos1 + count1, count2, value);
+		}
+		
 		//find
 		size_type find(const string& rhs, size_type pos = 0)const;
-		size_type find(const_pointer data, size_type pos, size_type count)const;
-		size_type find(const_pointer data, size_type pos = 0)const;
+		size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
 		size_type find(value_type value, size_type pos = 0)const;
-		size_type rfind(const string& rhs, size_type pos = npos)const;
-		size_type rfind(const_pointer data, size_type pos, size_type count)const;
+
+		/*
+		//要不要实现呢？
+		size_type rfind(const string& rhs, size_type pos = npos, size_type count=npos)const;
 		size_type rfind(const_pointer data, size_type pos = npos)const;
 		size_type rfind(value_type value, size_type pos = npos)const;
+		*/
+
 		size_type find_first_of(const string& rhs, size_type pos = 0)const;
 		size_type find_first_of(const_pointer data, size_type pos, size_type count)const;
 		size_type find_first_of(const_pointer data, size_type pos = 0)const;
@@ -352,7 +343,7 @@ namespace kkli {
 		size_type find_last_not_of(const_pointer data, size_type pos, size_type count)const;
 		size_type find_last_not_of(const_pointer data, size_type pos = npos)const;
 		size_type find_last_not_of(value_type value, size_type pos = npos)const;
-
+		
 		//c_str
 		const pointer c_str()const {
 			*__capacity = kkli::char_traits<char>::eof();			//将末尾预留字符置'0'
@@ -380,7 +371,6 @@ namespace kkli {
 		pointer				data() { return __start; }
 		const_pointer		data()const { return __start; }
 		
-		
 		bool				empty()const { return __start==__end; }
 		size_type			size()const { return __end - __start; }
 		size_type			length()const { return size(); }
@@ -392,10 +382,9 @@ namespace kkli {
 		void				push_back(value_type value) { insert(__end, 1, value); }
 		void				pop_bck() { --__end; }
 
+		void				resize(size_type count, value_type value = value_type());
 		string				substr(size_type pos = 0, size_type count = npos)const;
-		size_type			copy(const_pointer data, size_type count, size_type pos = 0)const;
-		void				resize(size_type count, value_type value);
-		void				resize(size_type count) { resize(count, value_type()); }
+		size_type			copy(const_pointer data, size_type pos=0, size_type count=npos)const;
 		void				swap(string& rhs);
 	};
 }
@@ -494,6 +483,53 @@ namespace kkli {
 		if (count1 < count2) return -1;
 		if (count1 > count2) return 1;
 		return 0;				//对应值相等，且一样长
+	}
+
+	//__replace(first1, last1, size2, first2, last2)
+	template<typename CharType, typename Traits, typename Allocator>
+	template<typename InputIterator>
+	void string<CharType, Traits, Allocator>::__replace(const_iterator first1, const_iterator last1, size_type size2,
+		InputIterator first2, InputIterator last2) {
+		size_type size1 = last1 - first1;
+		if (size2 == npos) size2 = get_size(first2, last2);
+
+		//[first1, last1)范围足够放下[first2, last2)
+		if (size1 >= size2) {
+			__set_value(first1, first2, last2);				//用[first2, last2)覆盖[first1, last1)前部分
+			__set_value(first1 + size2, last1, __end);		//[last2, __end)前移
+			__end -= size2;
+		}
+
+		//[first1, last1)范围不够放下[first2, last2)
+		else{
+			if (size2 - size1 <= __capacity - __end) {		//无需申请内存
+				size_type offset = size2 - size1;
+
+				//[last, __end)字符后移offset个位置
+				auto iter = __end -1 + offset;
+				auto prev_iter = __end - 1;
+				while (prev_iter >= last1) {
+					*iter = *prev_iter;
+					--iter;
+					--prev_iter;
+				}
+				__set_value(first1, first2, last2);			//写入[first2, last2)
+				__end += offset;
+			}
+			else{
+				size_type offset = size2 - size1;
+				size_type capacity = (this->size() + offset) * 2;
+				auto addr = __allocate(capacity);
+				size_type index = __set_value(addr, __start, first1);		//将前部写入
+				__set_value(addr + index, first2, last2);					//插入[first2, last2)
+				index += size2;
+				index += __set_value(last2, __end);							//将后部写入
+				__deallocate();					//释放原有内存
+				__start = addr;
+				__end = addr + index;
+				__capacity = __start + capacity;
+			}
+		}
 	}
 
 	//string(alloc)
@@ -672,9 +708,62 @@ namespace kkli {
 	//compare(rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	int string<CharType, Traits, Allocator>::compare(const string& rhs)const {
-		if ((*this) > rhs) return 1;
-		if ((*this) == rhs) return 0;
-		else return -1;
+		auto iter1 = this->begin();
+		auto end1 = this->end;
+		auto iter2 = rhs.begin();
+		auto end2 = rhs.end();
+		while (iter1 != end1 && iter2 != end2) {
+			if (*iter1 < *iter2) return -1;
+			if (*iter1 > *iter2) return 1;
+		}
+		if (iter1 != end1)	return 1;			//this长
+		if (iter2 != end2) return -1;			//rhs长
+		return 0;								//一样长
+	}
+
+	//replace(first, last, count2, value)
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::replace(const_iterator first, const_iterator last,
+		size_type count2, value_type value) {
+		size_type count1 = last1 - first1;
+
+		//[first1, last1)范围足够放下count个字符
+		if (count1 >= count2) {
+			__set_value(first1, count2, value);				//覆盖[first1, last1)前部分
+			__set_value(first1 + count2, last1, __end);		//[last2, __end)前移
+			__end -= count2;
+		}
+
+		//[first1, last1)范围不够放下count个字符
+		else {
+			if (count2 - count1 <= __capacity - __end) {		//无需申请内存
+				size_type offset = count2 - count1;
+
+				//[last, __end)字符后移offset个位置
+				auto iter = __end - 1 + offset;
+				auto prev_iter = __end - 1;
+				while (prev_iter >= last1) {
+					*iter = *prev_iter;
+					--iter;
+					--prev_iter;
+				}
+				__set_value(first1, count2, value);			//写入[first2, last2)
+				__end += offset;
+			}
+			else {
+				size_type offset = count2 - count1;
+				size_type capacity = (this->size() + offset) * 2;
+				auto addr = __allocate(capacity);
+				size_type index = __set_value(addr, __start, first1);		//将前部写入
+				__set_value(addr + index, count2, value);					//插入[first2, last2)
+				index += count2;
+				index += __set_value(addr+index, last2, __end);							//将后部写入
+				__deallocate();					//释放原有内存
+				__start = addr;
+				__end = addr + index;
+				__capacity = __start + capacity;
+			}
+		}
 	}
 
 	//find
@@ -696,12 +785,28 @@ namespace kkli {
 		__capacity = __start + new_cap;
 	}
 
-	//resize
+	//resize(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::resize(size_type count, value_type value) {
+	void string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
 		reserve(count);
 		__set_value(__end, count - this->size(), value);
 		__end = __capacity;
+	}
+
+	//substr(pos, count)
+	template<typename CharType, typename Traits, typename Allocator>
+	string<CharType,Traits,Allocator> string<CharType, Traits, Allocator>::substr(size_type pos=0, size_type count=npos)const{
+		if (count == npos) count = this->size() - pos;
+		return string(*this, pos, count);
+	}
+
+	//copy(data, pos, count)
+	template<typename CharType, typename Traits, typename Allocator>
+	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::copy(
+		const_pointer data, size_type pos=0, size_type count=npos)const{
+		if (count == pos) count = get_size(data) - pos;
+		assign(data + pos, data + pos + count);
+		return count;
 	}
 
 	//swap
