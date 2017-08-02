@@ -60,9 +60,9 @@ namespace test {
 			test_op_add_equal();		//operator +=
 			test_assign();
 			test_insert();
-			//test_erase();
-			//test_append();
-			//test_compare();
+			test_erase();
+			test_append();
+			test_compare();
 			//test_replace();
 			//test_find();				//¸Ãº¯ÊıÔİÎ´ÊµÏÖ
 			//test_c_str();
@@ -261,23 +261,169 @@ namespace test {
 
 			//insert(index, data, count)
 			str1.insert(7, "abcd", 3);
-			str1.print("str1");						//abaaabcdabc
+			str1.print("str1");						//abaaabcabcd
 
 			//insert(index, rhs)
 			str1.insert(4, str2);
-			str1.print("str1");						//abaaabcdabcdabc
+			str1.print("str1");						//abaaabcdabcabcd
 
 			//insert(index, count, value)
 			str1.insert(1, 4, 'a');
-			str1.print("str1");						//aaaaabaaabcdabcdabc
+			str1.print("str1");						//aaaaabaaabcdabcabcd
 
 			//insert(pos, value)
 			str1.insert(str1.cend(), 'd');
-			str1.print("str1");						//aaaaabaaabcdabcdabcd
+			str1.print("str1");						//aaaaabaaabcdabcabcdd
 
 			//insert(pos, init)
-			str1.insert(0, { 'q','w','e','r' });
-			str1.print("str1");						//qertaaaaabaaabcdabcdabcd
+			str1.insert(str1.begin(), { 'q','w','e','r' });
+			str1.print("str1");						//qweraaaaabaaabcdabcdabcd
 		}
+
+		//²âÊÔ erase
+		void test_erase() {
+			cout << "\ntest_erase()" << endl;
+
+			string str1("abcd");
+			string str2 = str1;
+
+			//erase(first, last)
+			str2.erase(str2.begin() + 1, str2.begin() + 2);
+			str2.print("str2");					//acd
+
+			str2.erase(str2.begin(), str2.end());
+			str2.print("str2");					//(¿Õ)
+
+			//erase(index, count)
+			str2 = str1;
+			str2.erase(0, 2);
+			str2.print("str2");					//cd
+
+			str2.erase(1);						//c
+			str2.print("str2");
+
+			str2.erase((std::size_t)0);
+			str2.print("str2");					//(¿Õ)
+
+			//erase(pos)
+			str2 = str1;
+			for (std::size_t i = 0; i < 4; ++i) {
+				str2.erase(str2.begin());
+				str2.print("str2");
+			}
+		}
+
+		//²âÊÔ append
+		void test_append() {
+			cout << "\ntest_append()" << endl;
+
+			string str1;
+			string str2("abcd");
+
+			//append(rhs, pos, count)
+			str1.append(str2, 0, 2);
+			str1.print("str1");					//ab
+			
+			str1.append(str2, 2);
+			str1.print("str1");					//abcd
+
+			//append(data, count)
+			str1.append("abcd", 2);
+			str1.print("str1");					//abcdab
+			
+			str1.append("abcd");
+			str1.print("str1");					//abcdababcd
+
+			//append(count, value)
+			str1.append(1, ' ');
+			str1.append(4, 'a');
+			str1.print("str1");					//abcdababcd aaaa
+
+			//append(first, last)
+			str1 = string();
+			str1.append(str2.begin(), str2.end());
+			str1.print("str1");					//abcd
+
+			str1.append(str1.begin(), str1.end());
+			str1.print("str1");					//abcdabcd
+
+			//append(init)
+			str1.append({ 'q','w','e','r' });
+			str1.print("str1");					//abcdabcdqwer
+		}
+
+		//²âÊÔ compare
+		void test_compare() {
+			cout << "\ntest_compare()" << endl;
+
+			string str1("abcd");
+			string str2("aceg");
+			string str3("abcdef");
+			string str4("acegik");
+
+			//compare(rhs)
+			cout << "-- 1 --" << endl;
+			cout << str1.compare(str1) << endl;				//0
+			cout << str1.compare(str2) << endl;				//-1
+			cout << str1.compare(str3) << endl;				//-1
+			cout << str1.compare(str4) << endl;				//-1
+			
+			cout << str2.compare(str1) << endl;				//1
+			cout << str2.compare(str2) << endl;				//0
+			cout << str2.compare(str3) << endl;				//1
+			cout << str2.compare(str4) << endl;				//-1
+
+			cout << str3.compare(str1) << endl;				//1
+			cout << str3.compare(str2) << endl;				//-1
+			cout << str3.compare(str3) << endl;				//0
+			cout << str3.compare(str4) << endl;				//-1
+
+			cout << str4.compare(str1) << endl;				//1
+			cout << str4.compare(str2) << endl;				//1
+			cout << str4.compare(str3) << endl;				//1
+			cout << str4.compare(str4) << endl;				//0
+
+			//compare(pos, count, rhs)
+			cout << "-- 2 --" << endl;
+			cout << str1.compare(0, 4, str1) << endl;		//0
+			cout << str1.compare(0, 3, str1) << endl;		//-1
+			cout << str2.compare(0, 4, str1) << endl;		//1
+			cout << str2.compare(0, 4, str2) << endl;		//0
+			cout << str1.compare(0, 4, str3) << endl;		//-1
+			
+			cout << str1.compare(0, 4, str1, 0, 4) << endl;			//0
+			cout << str1.compare(0, 4, str1, 2, 2) << endl;			//-1
+			cout << str1.compare(0, 4, str2, 0, 4) << endl;			//-1
+			cout << str2.compare(0, 4, str1, 0, 4) << endl;			//1
+			cout << str1.compare(0, 4, str3) << endl;				//-1
+			cout << str1.compare(0, 4, str1) << endl;				//0
+
+			//compare(data)
+			cout << "-- 3 --" << endl;
+			cout << str1.compare("abcd") << endl;			//0
+			cout << str1.compare("aceg") << endl;			//-1
+			cout << str1.compare("aaaa") << endl;			//1
+			cout << str1.compare("abcdef") << endl;			//-1
+			cout << str1.compare("ab") << endl;				//1
+			cout << str1.compare("cd") << endl;				//-1
+			cout << str1.compare("") << endl;				//1
+
+			//compare(pos1, count1, data, count2)
+			cout << "-- 4 --" << endl;
+			cout << str1.compare(0, 4, "abcd") << endl;		//0
+			cout << str1.compare(0, 3, "abcd") << endl;		//-1
+			cout << str2.compare(0, 4, "abcd") << endl;		//1
+			cout << str2.compare(0, 4, "aceg") << endl;		//0
+			cout << str1.compare(0, 4, "abcdef") << endl;	//-1
+
+			cout << str1.compare(0, 4, "abcd", 4) << endl;		//0
+			cout << str1.compare(0, 4, "abcd", 2) << endl;		//1
+			cout << str1.compare(0, 4, "aceg", 4) << endl;		//-1
+			cout << str2.compare(0, 4, "abcd", 4) << endl;		//1
+			cout << str1.compare(0, 4, "abcdef", 4) << endl;	//0
+			cout << str1.compare(0, 4, "abcdef", 6) << endl;	//-1
+		}
+
+		//TODO: 
 	}
 }

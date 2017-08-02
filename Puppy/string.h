@@ -72,16 +72,16 @@ namespace kkli {
 			}
 
 			//将[first, last)标示的字符复制到指定内存地址中，返回构造的字符个数
-			template<typename InputIterator>
-			size_type __set_value(iterator addr, InputIterator first, InputIterator last);
+			template<typename InputIteratorA, typename InputIteratorB>
+			size_type __set_value_by_range(iterator addr, InputIteratorA first, InputIteratorB last);
 
 			//将count个value写入指定内存地址中
-			void __set_value(iterator addr, size_type count, value_type value);
+			void __set_value_by_value(iterator addr, size_type count, value_type value);
 
 			//将[first1, last1)与[first2, last2)进行比较
-			template<typename InputIterator>
-			int __compare(size_type size1, InputIterator first1, InputIterator last1,
-				size_type size2, InputIterator first2, InputIterator last2);
+			template<typename InputIteratorA, typename InputIteratorB>
+			int __compare(size_type size1, InputIteratorA first1, InputIteratorA last1,
+				size_type size2, InputIteratorB first2, InputIteratorB last2) const;
 
 			//将[first1, last1)替换为[first2, last2)
 			template<typename InputIterator>
@@ -215,9 +215,10 @@ namespace kkli {
 
 			//erase
 			iterator erase(const_iterator first, const_iterator last) {
-				__set_value(first, last, __end);			//将[last, __end)元素移动到[first, ~)中
+				auto iter = __start + (first - __start);
+				__set_value_by_range(iter, last, __end);			//将[last, __end)元素移动到[first, ~)中
 				__end -= last - first;
-				return first;
+				return iter;
 			}
 			iterator erase(size_type index = 0, size_type count = npos) {
 				if (count == npos) return erase(__start + index, __end);
@@ -226,17 +227,15 @@ namespace kkli {
 			iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
 			//append
-			void append(const string& rhs, size_type pos, size_type count = npos) {
+			void append(const string& rhs, size_type pos = 0, size_type count = npos) {
 				if (count == npos) count = rhs.size() - pos;
 				__append(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
 			}
-			void append(const string& rhs) { __append(rhs.size(), rhs.cbegin(), rhs.cend()); }
-			void append(const_pointer data, size_type count) { __append(count, data, data + count); }
-			void append(size_type count, value_type value) { insert(__end, count, value); }
-			void append(const_pointer data) {
-				size_type size = get_size(data);
-				__append(size, data, data + size);
+			void append(const_pointer data, size_type count = npos) {
+				if (count == npos) count = get_size(data);
+				__append(count, data, data + count);
 			}
+			void append(size_type count, value_type value) { insert(__end, count, value); }
 
 			template<typename InputIterator>
 			void append(InputIterator first, InputIterator last) {
@@ -249,40 +248,24 @@ namespace kkli {
 			int compare(const string& rhs)const {
 				return __compare(this->size(), __start, __end, rhs.size(), rhs.cbegin(), rhs.cend());
 			}
-			int compare(size_type pos, size_type count, const string& rhs)const {
-				return __compare(count, __start + pos, __start + pos + count, rhs.size(), rhs.cbegin(), rhs.cend());
-			}
 			int compare(size_type pos1, size_type count1,
-				const string& rhs, size_type pos2, size_type count2 = npos)const {
+				const string& rhs, size_type pos2 = 0, size_type count2 = npos)const {
 				if (count2 == npos) count2 = rhs.size() - pos2;
 				return __compare(count1, __start + pos1, __start + pos1 + count1, count2,
 					rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
 			}
 			int compare(const_pointer data)const {
-				size_type size = __get_size(data);
+				size_type size = get_size(data);
 				return __compare(this->size(), __start, __end, size, data, data + size);
 			}
-			int compare(size_type pos, size_type count, const_pointer data) {
-				size_type size = __get_size(data);
-				return __compare(count, __start + pos, __start + pos + count,
-					size, data, data + size);
-			}
 			int compare(size_type pos1, size_type count1,
-				const_pointer data, size_type count2)const {
+				const_pointer data, size_type count2 = npos)const {
+				if (count2 == npos) count2 = get_size(data);
 				return __compare(count1, __start + pos1, __start + pos1 + count1,
 					count2, data, data + count2);
 			}
 
 			//replace
-
-			//************************************************************************************************************************
-			//TODO: 可以通过比较[first1， last1)与[first2, last2)的大小进行优化，如：
-			//当[first1, last1)比[first2, last2)短时，可将[first1, last1)的多余部分连同所有剩余字符后移，然后用[first2, last2)覆盖
-			//当[first1, last1)比[first2, last2)长时，可直接将用[first2, last2)覆盖前部分，并将后部分后移
-			//若直接erase再insert，则需要两次移动[first1, last1)后部的内容，降低性能
-			//有空再写
-			//************************************************************************************************************************
-
 			template<typename InputIterator>
 			void repalce(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
 				__replace(first, last, npos, first2, last2);
@@ -405,7 +388,7 @@ namespace kkli {
 	template<typename InputIterator>
 	void string<CharType, Traits, Allocator>::__allocate(size_type mem_size, InputIterator first, InputIterator last) {
 		__start = __alloc.allocate(mem_size + 1);
-		size_type index = __set_value(__start, first, last);
+		size_type index = __set_value_by_range(__start, first, last);
 		__end = __start + index;
 		__capacity = __start + mem_size;
 	}
@@ -414,7 +397,7 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	void string<CharType, Traits, Allocator>::__allocate(size_type mem_size, size_type count, value_type value) {
 		__start = __alloc.allocate(mem_size + 1);
-		__set_value(__start, count, value);
+		__set_value_by_value(__start, count, value);
 		__end = __start + count;
 		__capacity = __start + mem_size;
 	}
@@ -430,11 +413,11 @@ namespace kkli {
 		return size;
 	}
 
-	//__set_value(addr, first, last)
+	//__set_value_by_range(addr, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
-	template<typename InputIterator>
-	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::__set_value(
-		iterator addr, InputIterator first, InputIterator last) {
+	template<typename InputIteratorA, typename InputIteratorB>
+	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::__set_value_by_range(
+		iterator addr, InputIteratorA first, InputIteratorB last) {
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
 			*(addr + index) = *iter;
@@ -443,9 +426,9 @@ namespace kkli {
 		return index;
 	}
 
-	//__set_value(addr, count, value)
+	//__set_value_by_value(addr, count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::__set_value(iterator addr, size_type count, value_type value) {
+	void string<CharType, Traits, Allocator>::__set_value_by_value(iterator addr, size_type count, value_type value) {
 		for (size_type i = 0; i < count; ++i) {
 			*(addr + i) = value;
 		}
@@ -457,7 +440,7 @@ namespace kkli {
 	void string<CharType, Traits, Allocator>::__append(size_type size, InputIterator first, InputIterator last) {
 		//剩余空间足够，直接将rhs的内容填充到后面
 		if (__capacity - __end >= size) {
-			__end += __set_value(__end, first, last);
+			__end += __set_value_by_range(__end, first, last);
 			//__capacity不变
 		}
 
@@ -466,8 +449,8 @@ namespace kkli {
 			//可能[fist, last)指向自身区域，故不能直接释放原有内存
 			size_type capacity = (this->size() + size) * 2;					//预留一半空间
 			iterator new_addr = __allocate(capacity);
-			size_type index = __set_value(new_addr, __start, __end);		//将[__start,__end)中的字符写入
-			index += __set_value(new_addr + index, first, last);			//将[first, last)中的字符写入
+			size_type index = __set_value_by_range(new_addr, __start, __end);		//将[__start,__end)中的字符写入
+			index += __set_value_by_range(new_addr + index, first, last);			//将[first, last)中的字符写入
 			__deallocate();			//释放原有内存
 			__start = new_addr;
 			__end = __start + index;
@@ -477,14 +460,16 @@ namespace kkli {
 
 	//__compare(count1, first1, last1, count2, first2, last2)
 	template<typename CharType, typename Traits, typename Allocator>
-	template<typename InputIterator>
-	int string<CharType, Traits, Allocator>::__compare(size_type count1, InputIterator first1, InputIterator last1,
-		size_type count2, InputIterator first2, InputIterator last2) {
+	template<typename InputIteratorA, typename InputIteratorB>
+	int string<CharType, Traits, Allocator>::__compare(size_type count1, InputIteratorA first1, InputIteratorA last1,
+		size_type count2, InputIteratorB first2, InputIteratorB last2) const {
 		auto iter1 = first1;
 		auto iter2 = first2;
 		while (iter1 != last1 && iter2 != last2) {
 			if (*iter1 < *iter2) return -1;
 			if (*iter1 > *iter2) return 1;
+			++iter1;
+			++iter2;
 		}
 		if (count1 < count2) return -1;
 		if (count1 > count2) return 1;
@@ -501,35 +486,35 @@ namespace kkli {
 
 		//[first1, last1)范围足够放下[first2, last2)
 		if (size1 >= size2) {
-			__set_value(first1, first2, last2);				//用[first2, last2)覆盖[first1, last1)前部分
-			__set_value(first1 + size2, last1, __end);		//[last2, __end)前移
+			__set_value_by_range(first1, first2, last2);				//用[first2, last2)覆盖[first1, last1)前部分
+			__set_value_by_range(first1 + size2, last1, __end);		//[last2, __end)前移
 			__end -= size2;
 		}
 
 		//[first1, last1)范围不够放下[first2, last2)
-		else{
+		else {
 			if (size2 - size1 <= __capacity - __end) {		//无需申请内存
 				size_type offset = size2 - size1;
 
 				//[last, __end)字符后移offset个位置
-				auto iter = __end -1 + offset;
+				auto iter = __end - 1 + offset;
 				auto prev_iter = __end - 1;
 				while (prev_iter >= last1) {
 					*iter = *prev_iter;
 					--iter;
 					--prev_iter;
 				}
-				__set_value(first1, first2, last2);			//写入[first2, last2)
+				__set_value_by_range(first1, first2, last2);			//写入[first2, last2)
 				__end += offset;
 			}
-			else{
+			else {
 				size_type offset = size2 - size1;
 				size_type capacity = (this->size() + offset) * 2;
 				auto addr = __allocate(capacity);
-				size_type index = __set_value(addr, __start, first1);		//将前部写入
-				__set_value(addr + index, first2, last2);					//插入[first2, last2)
+				size_type index = __set_value_by_range(addr, __start, first1);		//将前部写入
+				__set_value_by_range(addr + index, first2, last2);					//插入[first2, last2)
 				index += size2;
-				index += __set_value(last2, __end);							//将后部写入
+				index += __set_value_by_range(addr + index, last2, __end);							//将后部写入
 				__deallocate();					//释放原有内存
 				__start = addr;
 				__end = addr + index;
@@ -638,7 +623,7 @@ namespace kkli {
 	template<typename InputIterator>
 	void string<CharType, Traits, Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last) {
 		if (first == last) return;
-		size_type count = __get_size(first, last);
+		size_type count = get_size(first, last);
 
 		//剩余空间足够
 		if (__capacity - __end >= count) {
@@ -653,7 +638,8 @@ namespace kkli {
 			}
 
 			//将[first, last)插入到pos位置
-			__set_value(pos, first, last);
+			auto iter = __start + (pos - __start);
+			__set_value_by_range(iter, first, last);
 			__end += count;
 		}
 
@@ -664,11 +650,11 @@ namespace kkli {
 			auto new_addr = __allocate(new_cap);
 
 			//将this的[0,pos)内容构造到新内存中
-			size_type i = __set_value(new_addr, __start, pos);
+			size_type i = __set_value_by_range(new_addr, __start, pos);
 
-			__set_value(new_addr + i, first, last);			//将插入值写入
+			__set_value_by_range(new_addr + i, first, last);			//将插入值写入
 			i += count;
-			i += __set_value(new_addr + i, pos, __end);		//将后续值写入
+			i += __set_value_by_range(new_addr + i, pos, __end);		//将后续值写入
 
 			__deallocate();			//释放原有内存
 			__start = new_addr;
@@ -694,21 +680,25 @@ namespace kkli {
 			}
 
 			//将值写入到pos位置
-			__set_value(pos, count, value);
+			auto iter = __start + (pos - __start);
+			__set_value_by_value(iter, count, value);
 			__end += count;
 		}
 
 		//剩余空间不足
 		else {
-			size_type new_cap = (this->size() + count) * 2;			//预留一半空间
-			auto addr = __allocate(size + count);
-			auto index = __set_value(addr, __start, pos);			//将[0, pos)标示字符写入
-			__set_value(addr + index, count, value);				//将插入字符写入
-			__set_value(addr + index + count, pos, __end);			//将后续字符写入
+			size_type size = this->size();
+			size_type capacity = (size + count) * 2;				//预留一半空间
+			auto addr = __allocate(capacity);
+			size_type index = 0;
+			index = __set_value_by_range(addr, __start, pos);			//将[0, pos)标示字符写入
+			__set_value_by_value(addr + index, count, value);				//将插入字符写入
+			index += count;
+			__set_value_by_range(addr + index, pos, __end);			//将后续字符写入
 			__deallocate();				//释放原有内存
 			__start = addr;
-			__end = __start + size + count;
-			__capacity = __end;
+			__end = __start + index;
+			__capacity = __start + capacity;
 		}
 	}
 
@@ -720,8 +710,8 @@ namespace kkli {
 
 		//[first1, last1)范围足够放下count个字符
 		if (count1 >= count2) {
-			__set_value(first1, count2, value);				//覆盖[first1, last1)前部分
-			__set_value(first1 + count2, last1, __end);		//[last2, __end)前移
+			__set_value_by_value(first1, count2, value);				//覆盖[first1, last1)前部分
+			__set_value_by_range(first1 + count2, last1, __end);		//[last2, __end)前移
 			__end -= count2;
 		}
 
@@ -738,17 +728,17 @@ namespace kkli {
 					--iter;
 					--prev_iter;
 				}
-				__set_value(first1, count2, value);			//写入[first2, last2)
+				__set_value_by_value(first1, count2, value);			//写入[first2, last2)
 				__end += offset;
 			}
 			else {
 				size_type offset = count2 - count1;
 				size_type capacity = (this->size() + offset) * 2;
 				auto addr = __allocate(capacity);
-				size_type index = __set_value(addr, __start, first1);		//将前部写入
-				__set_value(addr + index, count2, value);					//插入[first2, last2)
+				size_type index = __set_value_by_range(addr, __start, first1);		//将前部写入
+				__set_value_by_value(addr + index, count2, value);					//插入[first2, last2)
 				index += count2;
-				index += __set_value(addr+index, last2, __end);							//将后部写入
+				index += __set_value_by_range(addr + index, last2, __end);							//将后部写入
 				__deallocate();					//释放原有内存
 				__start = addr;
 				__end = addr + index;
@@ -763,7 +753,7 @@ namespace kkli {
 		if (__capacity - __start >= new_cap) return;
 		size_type size = this->size();
 		auto addr = __allocate(new_cap);
-		__set_value(addr, __start, __end);
+		__set_value_by_range(addr, __start, __end);
 		__deallocate();
 		__start = addr;
 		__end = __start + size;
@@ -774,13 +764,13 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	void string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
 		reserve(count);
-		__set_value(__end, count - this->size(), value);
+		__set_value_by_value(__end, count - this->size(), value);
 		__end = __capacity;
 	}
 
 	//substr(pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType,Traits,Allocator> string<CharType, Traits, Allocator>::substr(size_type pos=0, size_type count=npos)const{
+	string<CharType, Traits, Allocator> string<CharType, Traits, Allocator>::substr(size_type pos = 0, size_type count = npos)const {
 		if (count == npos) count = this->size() - pos;
 		return string(*this, pos, count);
 	}
@@ -788,7 +778,7 @@ namespace kkli {
 	//copy(data, pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
 	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::copy(
-		const_pointer data, size_type pos=0, size_type count=npos)const{
+		const_pointer data, size_type pos = 0, size_type count = npos)const {
 		if (count == pos) count = get_size(data) - pos;
 		assign(data + pos, data + pos + count);
 		return count;
@@ -796,11 +786,11 @@ namespace kkli {
 
 	//swap
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::swap(string& rhs){
+	void string<CharType, Traits, Allocator>::swap(string& rhs) {
 		auto temp = __start;
 		__start = rhs.__start;
 		rhs.__start = temp;
-		
+
 		temp = __end;
 		__end = rhs.__end;
 		rhs.__end = temp;
