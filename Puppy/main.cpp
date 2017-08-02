@@ -8,7 +8,7 @@
 #include "array_test.h"
 #include "vector_test.h"
 #include "list_test.h"
-#include <memory>
+#include "string_test.h"
 using namespace std;
 
 int main() {
@@ -18,6 +18,7 @@ int main() {
 	//test::array_test::test();
 	//test::vector_test::test();
 	//test::list_test::test();
+	test::string_test::test();
 	system("pause");
     return 0;
 }

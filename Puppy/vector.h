@@ -360,7 +360,7 @@ namespace kkli {
 		const_iterator pos, std::initializer_list<value_type> il) {
 		size_type count = il.size();
 		//容量空间足够
-		if (__capacity - __end >= count) {
+		if ((__capacity - __end) >= count) {
 
 			//后count个元素需要构造在[__end,__end+count)指向的内存中
 			auto iter = __end;

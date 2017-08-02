@@ -11,383 +11,386 @@
 namespace kkli {
 
 	template<
-		typename CharType, 
-		typename Traits=kkli::char_traits<char>,
+		typename CharType,
+		typename Traits = kkli::char_traits<char>,
 		typename Allocator = kkli::allocator<CharType>
 	>
-	class string {
+		class string {
 
-	public:
+		public:
 
-		//typedefs
-		typedef CharType				value_type;
-		typedef Traits					traits_type;
-		typedef Allocator				allocator_type;
-		typedef value_type&				reference;
-		typedef const value_type&		const_reference;
-		typedef value_type*				pointer;
-		typedef const value_type*		const_pointer;
-		typedef value_type*				iterator;
-		typedef const value_type*		const_iterator;
-		typedef std::size_t				size_type;
-		typedef std::ptrdiff_t			difference_type;
+			//typedefs
+			typedef CharType				value_type;
+			typedef Traits					traits_type;
+			typedef Allocator				allocator_type;
+			typedef value_type&				reference;
+			typedef const value_type&		const_reference;
+			typedef value_type*				pointer;
+			typedef const value_type*		const_pointer;
+			typedef value_type*				iterator;
+			typedef const value_type*		const_iterator;
+			typedef std::size_t				size_type;
+			typedef std::ptrdiff_t			difference_type;
 
-		//npos
-		constexpr static size_type npos = -1;
+			//npos
+			constexpr static size_type npos = -1;
 
-	private:
+		private:
 
-		iterator __start;			//内存开始地址
-		iterator __end;				//[__start,__end)：有效字符空间
-		iterator __capacity;		//[__start,__capacity)：所有字符空间
-		Allocator __alloc;
-		
-		//重置内部迭代器
-		void __reset_iterators() { __start = __end = __capacity = iterator(); }
+			iterator __start;			//内存开始地址
+			iterator __end;				//[__start,__end)：有效字符空间
+			iterator __capacity;		//[__start,__capacity)：所有字符空间
+			Allocator __alloc;
 
-		//申请内存并设置相应值
-		template<typename InputIterator>
-		void __allocate(size_type mem_size, InputIterator first, InputIterator last);
+			//重置内部迭代器
+			void __reset_iterators() { __start = __end = __capacity = iterator(); }
 
-		//申请内存并设置相应值
-		void __allocate(size_type mem_size, size_type count, value_type value);
+			//申请内存并设置相应值
+			template<typename InputIterator>
+			void __allocate(size_type mem_size, InputIterator first, InputIterator last);
 
-		//申请内存
-		iterator __allocate(size_type mem_size) { return __alloc.allocate(mem_size + 1); }
+			//申请内存并设置相应值
+			void __allocate(size_type mem_size, size_type count, value_type value);
 
-		//释放原有内存
-		void __deallocate() {
-			__alloc.deallocate(__start, (__capacity - __start) + 1);		//末尾有一个预留的空间，故须 +1
-		}
+			//申请内存
+			iterator __allocate(size_type mem_size) { return __alloc.allocate(mem_size + 1); }
 
-		//将[first, last)的字符添加到*this后
-		template<typename InputIterator>
-		void __append(size_type size, InputIterator first, InputIterator last);
+			//释放原有内存
+			void __deallocate() {
+				__alloc.deallocate(__start, (__capacity - __start) + 1);		//末尾有一个预留的空间，故须 +1
+			}
 
-		//将*this赋值为[first,last)所指字符
-		template<typename InputIterator>
-		void __assign(size_type size, InputIterator first, InputIterator last) {
-			__deallocate();
-			__allocate(size, first, last);
-		}
+			//将[first, last)的字符添加到*this后
+			template<typename InputIterator>
+			void __append(size_type size, InputIterator first, InputIterator last);
 
-		//将[first, last)标示的字符复制到指定内存地址中，返回构造的字符个数
-		template<typename InputIterator>
-		size_type __set_value(iterator addr, InputIterator first, InputIterator last);
+			//将*this赋值为[first,last)所指字符
+			template<typename InputIterator>
+			void __assign(size_type size, InputIterator first, InputIterator last) {
+				__deallocate();
+				__allocate(size, first, last);
+			}
 
-		//将count个value写入指定内存地址中
-		void __set_value(iterator addr, size_type count, value_type value);
-		
-		//将[first1, last1)与[first2, last2)进行比较
-		template<typename InputIterator>
-		int __compare(size_type size1, InputIterator first1, InputIterator last1,
-			size_type size2, InputIterator first2, InputIterator last2);
+			//将[first, last)标示的字符复制到指定内存地址中，返回构造的字符个数
+			template<typename InputIterator>
+			size_type __set_value(iterator addr, InputIterator first, InputIterator last);
 
-		//将[first1, last1)替换为[first2, last2)
-		template<typename InputIterator>
-		void __replace(const_iterator first, const_iterator last, size_type size,
-			InputIterator first, InputIterator last);
+			//将count个value写入指定内存地址中
+			void __set_value(iterator addr, size_type count, value_type value);
 
-	public:
+			//将[first1, last1)与[first2, last2)进行比较
+			template<typename InputIterator>
+			int __compare(size_type size1, InputIterator first1, InputIterator last1,
+				size_type size2, InputIterator first2, InputIterator last2);
 
-		//获取data的有效字符个数
-		static size_type get_size(const_pointer data);
+			//将[first1, last1)替换为[first2, last2)
+			template<typename InputIterator>
+			void __replace(const_iterator first, const_iterator last, size_type size,
+				InputIterator first2, InputIterator last2);
 
-		//获取[first, last)的字符个数
-		template<typename InputIterator>
-		static size_type get_size(InputIterator first, InputIterator last) {
-			size_type size = 0;
-			for (auto iter = first; iter != last; ++size, ++iter);
-			return size;
-		}
+		public:
 
-	public:
-		
-		//constructor
-		string(const Allocator& alloc = Allocator());
-		string(size_type count, value_type value, const Allocator& alloc = Allocator());
-		string(const string& rhs, size_type pos, size_type count = npos,
-			const Allocator& alloc = Allocator());
-		string(const_pointer data, size_type count=npos,
-			const Allocator& alloc = Allocator());
-		string(size_type count, const Allocator& alloc = Allocator());
-		
-		template<typename InputIterator>
-		string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator());
-		string(const string& rhs);
-		string(string&& rhs);
-		string(std::initializer_list<value_type> init, const Allocator& alloc = Allocator());
+			//获取data的有效字符个数
+			static size_type get_size(const_pointer data);
 
-		//destructor
-		~string();
+			//获取[first, last)的字符个数
+			template<typename InputIterator>
+			static size_type get_size(InputIterator first, InputIterator last) {
+				size_type size = 0;
+				for (auto iter = first; iter != last; ++size, ++iter);
+				return size;
+			}
 
-		//get_allocator
-		allocator_type get_allocator()const { return __alloc; }
+		public:
 
-		//operator =
-		string& operator=(const string& rhs){
-			if (this == &rhs) return *this;
-			__deallocate();
-			__allocate(rhs.size(), rhs.begin(), rhs.end());
-		}
-		string& operator=(string&& rhs);
-		string& operator=(const_pointer data){
-			if (__start == data) return *this;
-			size_type size = __get_size(data);
-			__allocate(size, data, data + size);
-		}
-		string& operator=(std::initializer_list<value_type> init){
-			__deallocate();
-			__allocate(init.size(), init.begin(), init.end());
-		}
+			//constructor
+			string(const Allocator& alloc = Allocator());
+			string(size_type count, value_type value, const Allocator& alloc = Allocator());
+			string(const string& rhs, size_type pos, size_type count = npos,
+				const Allocator& alloc = Allocator());
+			string(const_pointer data, size_type count = npos,
+				const Allocator& alloc = Allocator());
+			string(size_type count, const Allocator& alloc = Allocator());
 
-		//operator []
-		reference operator[](size_type pos) { return __start[pos]; }
-		const_reference operator[](size_type pos)const { return __start[pos]; }
+			template<typename InputIterator>
+			string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator());
+			string(const string& rhs);
+			string(string&& rhs);
+			string(std::initializer_list<value_type> init, const Allocator& alloc = Allocator());
 
-		//operator +=
-		string& operator+=(const string& rhs) {
-			__append(rhs.size(), rhs.cbegin(), rhs.cend());
-			return *this;
-		}
-		string& operator+=(value_type value){
-			this->push_back(value);
-			return *this;
-		}
-		string& operator+=(const_pointer data) {
-			size_type size = get_size(data);
-			__append(size, data, data + size);
-			return *this;
-		}
-		string& operator+=(std::initializer_list<value_type> init){
-			__append(init.size(), init.cbegin(), init.cend());
-			return *this;
-		}
+			//destructor
+			~string();
 
-		//assign
-		void assign(size_type count, value_type value) {
-			__deallocate();
-			__allocate(count, count, value);
-		}
-		void assign(const string& rhs) {
-			if (this == &rhs) return;
-			__assign(rhs.size(), rhs.cbegin(), rhs.cend());
-		}
-		void assign(string&& rhs) { operator=(std::move(rhs)); }
-		void assign(const string& rhs, size_type pos, size_type count = npos) {
-			if (count == npos) count = rhs.size() - pos;
-			__assign(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
-		}
-		void assign(const_pointer data, size_type count) {
-			if (data == __start && count == this->size()) return;		//自我赋值
-			__assign(count, data, data + count);
-		}
-		void assign(const_pointer data) {
-			if (data == __start) return;		//自我赋值
-			size_type size = get_size(data);
-			__assign(size, data, data + size);
-		}
+			//get_allocator
+			allocator_type get_allocator()const { return __alloc; }
 
-		template<typename InputIterator>
-		void assign(InputIterator first, InputIterator last) {
-			size_type size = __get_size(first, last);
-			__assign(size + 1, first, last);
-		}
-		void assign(std::initializer_list<value_type> init) {
-			__assign(init.size(), init.cbegin(), init.cend());
-		}
+			//operator =
+			string& operator=(const string& rhs) {
+				if (this == &rhs) return *this;
+				__deallocate();
+				__allocate(rhs.size(), rhs.cbegin(), rhs.cend());
+				return *this;
+			}
+			string& operator=(string&& rhs);
+			string& operator=(const_pointer data) {
+				if (__start == data) return *this;
+				size_type size = get_size(data);
+				__allocate(size, data, data + size);
+				return *this;
+			}
+			string& operator=(std::initializer_list<value_type> init) {
+				__deallocate();
+				__allocate(init.size(), init.begin(), init.end());
+				return *this;
+			}
 
-		//insert
-		template<typename InputIterator>
-		void insert(const_iterator pos, InputIterator first, InputIterator last);
-		void insert(const_iterator pos, size_type count, value_type value);
-		void insert(size_type index, const string& rhs, size_type index_rhs, size_type count = npos) {
-			if (count == npos) count = rhs.size() - index_rhs;
-			insert(__start + index, rhs.cbegin() + index_rhs, rhs.cbegin() + index_rhs + count);
-		}
-		void insert(size_type index, const_pointer data, size_type count = npos) {
-			if (count == npos) count = get_size(data);
-			insert(__start + index, data, data + count);
-		}
+			//operator []
+			reference operator[](size_type pos) { return __start[pos]; }
+			const_reference operator[](size_type pos)const { return __start[pos]; }
 
-		void insert(size_type index, const string& rhs) { return insert(__start + index, rhs.cbegin(), rhs.cend()); }
-		void insert(size_type index, size_type count, value_type value) { insert(__start + index, count, value); }
-		void insert(const_iterator pos, value_type value) { insert(pos, 1, value); }
-		void insert(const_iterator pos, std::initializer_list<value_type> init) { return insert(pos, init.cbegin(), init.cend()); }
+			//operator +=
+			string& operator+=(const string& rhs) {
+				__append(rhs.size(), rhs.cbegin(), rhs.cend());
+				return *this;
+			}
+			string& operator+=(value_type value) {
+				this->push_back(value);
+				return *this;
+			}
+			string& operator+=(const_pointer data) {
+				size_type size = get_size(data);
+				__append(size, data, data + size);
+				return *this;
+			}
+			string& operator+=(std::initializer_list<value_type> init) {
+				__append(init.size(), init.begin(), init.end());
+				return *this;
+			}
 
-		//erase
-		iterator erase(const_iterator first, const_iterator last) {
-			__set_value(first, last, __end);			//将[last, __end)元素移动到[first, ~)中
-			__end -= last - first;
-			return first;
-		}
-		iterator erase(size_type index = 0, size_type count = npos) {
-			if (count == npos) return erase(__start + index, __end);
-			else return erase(__start + index, __start + index + count);
-		}
-		iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
+			//assign
+			void assign(size_type count, value_type value) {
+				__deallocate();
+				__allocate(count, count, value);
+			}
+			void assign(const string& rhs) {
+				if (this == &rhs) return;
+				__assign(rhs.size(), rhs.cbegin(), rhs.cend());
+			}
+			void assign(string&& rhs) { operator=(std::move(rhs)); }
+			void assign(const string& rhs, size_type pos, size_type count = npos) {
+				if (count == npos) count = rhs.size() - pos;
+				__assign(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
+			}
+			void assign(const_pointer data, size_type count = npos) {
+				if (count == npos) count = get_size(data);
+				__assign(count, data, data + count);
+			}
 
-		//append
-		void append(const string& rhs, size_type pos, size_type count = npos) {
-			if (count == npos) count = rhs.size() - pos;
-			__append(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
-		}
-		void append(const string& rhs) { __append(rhs.size(), rhs.cbegin(), rhs.cend()); }
-		void append(const_pointer data, size_type count) { __append(count, data, data + count); }
-		void append(size_type count, value_type value) { insert(__end, count, value); }
-		void append(const_pointer data) {
-			size_type size = get_size(data);
-			__append(size, data, data + size);
-		}
+			template<typename InputIterator>
+			void assign(InputIterator first, InputIterator last) {
+				size_type size = get_size(first, last);
+				__assign(size, first, last);
+			}
+			void assign(std::initializer_list<value_type> init) {
+				__assign(init.size(), init.begin(), init.end());
+			}
 
-		template<typename InputIterator>
-		void append(InputIterator first, InputIterator last) {
-			size_type size = get_size(first, last);
-			__append(size, first, last);
-		}
-		void append(std::initializer_list<value_type> init) { __append(init.size(), init.cbegin(), init.cend()); }
+			//insert
+			template<typename InputIterator>
+			void insert(const_iterator pos, InputIterator first, InputIterator last);
+			void insert(const_iterator pos, size_type count, value_type value);
+			void insert(size_type index, const string& rhs, size_type index_rhs, size_type count = npos) {
+				if (count == npos) count = rhs.size() - index_rhs;
+				insert(__start + index, rhs.cbegin() + index_rhs, rhs.cbegin() + index_rhs + count);
+			}
+			void insert(size_type index, const_pointer data, size_type count = npos) {
+				if (count == npos) count = get_size(data);
+				insert(__start + index, data, data + count);
+			}
 
-		//compare
-		int compare(const string& rhs)const {
-			return __compare(this->size(), __start, __end, rhs.size(), rhs.cbegin(), rhs.cend());
-		}
-		int compare(size_type pos, size_type count, const string& rhs)const {
-			return __compare(count, __start + pos, __start + pos + count, rhs.size(), rhs.cbegin(), rhs.cend());
-		}
-		int compare(size_type pos1, size_type count1,
-			const string& rhs, size_type pos2, size_type count2 = npos)const {
-			if (count2 == npos) count2 = rhs.size() - pos2;
-			return __compare(count1, __start + pos1, __start + pos1 + count1, count2,
-				rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
-		}
-		int compare(const_pointer data)const {
-			size_type size = __get_size(data);
-			return __compare(this->size(), __start, __end, size, data, data + size);
-		}
-		int compare(size_type pos, size_type count, const_pointer data) {
-			size_type size = __get_size(data);
-			return __compare(count, __start + pos, __start + pos + count,
-				size, data, data + size);
-		}
-		int compare(size_type pos1, size_type count1,
-			const_pointer data, size_type count2)const {
-			return __compare(count1, __start + pos1, __start + pos1 + count1,
-				count2, data, data + count2);
-		}
+			void insert(size_type index, const string& rhs) { return insert(__start + index, rhs.cbegin(), rhs.cend()); }
+			void insert(size_type index, size_type count, value_type value) { insert(__start + index, count, value); }
+			void insert(const_iterator pos, value_type value) { insert(pos, 1, value); }
+			void insert(const_iterator pos, std::initializer_list<value_type> init) { return insert(pos, init.begin(), init.end()); }
 
-		//replace
+			//erase
+			iterator erase(const_iterator first, const_iterator last) {
+				__set_value(first, last, __end);			//将[last, __end)元素移动到[first, ~)中
+				__end -= last - first;
+				return first;
+			}
+			iterator erase(size_type index = 0, size_type count = npos) {
+				if (count == npos) return erase(__start + index, __end);
+				else return erase(__start + index, __start + index + count);
+			}
+			iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
-		//************************************************************************************************************************
-		//TODO: 可以通过比较[first1， last1)与[first2, last2)的大小进行优化，如：
-		//当[first1, last1)比[first2, last2)短时，可将[first1, last1)的多余部分连同所有剩余字符后移，然后用[first2, last2)覆盖
-		//当[first1, last1)比[first2, last2)长时，可直接将用[first2, last2)覆盖前部分，并将后部分后移
-		//若直接erase再insert，则需要两次移动[first1, last1)后部的内容，降低性能
-		//有空再写
-		//************************************************************************************************************************
-		
-		template<typename InputIterator>
-		void repalce(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
-			__replace(first, last, npos, first2, last2);
-		}
-		void replace(const_iterator first, const_iterator last, size_type count2, value_type value);
-		void replace(const_iterator first, const_iterator last, const string& rhs) {
-			__replace(first, last, rhs.size(), rhs.cbegin(), rhs.cend());
-		}
-		void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2 = npos) {
-			if (count2 == npos) count2 = get_size(data);
-			__replace(first, last, count2, data, data + count2);
-		}
-		void replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init) {
-			__replace(first, last, init.size(), init.cbegin(), init.cend());
-		}
+			//append
+			void append(const string& rhs, size_type pos, size_type count = npos) {
+				if (count == npos) count = rhs.size() - pos;
+				__append(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
+			}
+			void append(const string& rhs) { __append(rhs.size(), rhs.cbegin(), rhs.cend()); }
+			void append(const_pointer data, size_type count) { __append(count, data, data + count); }
+			void append(size_type count, value_type value) { insert(__end, count, value); }
+			void append(const_pointer data) {
+				size_type size = get_size(data);
+				__append(size, data, data + size);
+			}
 
-		void replace(size_type pos, size_type count,
-			const string& rhs, size_type pos2 = 0, size_type count2 = npos) {
-			if (count2 == npos) count2 = rhs.size() - pos2;
-			__replace(__start + pos, __start + pos + count, count2, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
-		}
+			template<typename InputIterator>
+			void append(InputIterator first, InputIterator last) {
+				size_type size = get_size(first, last);
+				__append(size, first, last);
+			}
+			void append(std::initializer_list<value_type> init) { __append(init.size(), init.begin(), init.end()); }
 
-		void replace(size_type pos, size_type count, const_pointer data, size_type count2=npos) {
-			if (count2 == npos) count2 = get_size(data);
-			replace(__start + pos, __start + pos + count, count2, data, data + count2);
-		}
-		void replace(size_type pos1, size_type count1, size_type count2, value_type value) {
-			replace(__start + pos1, __start + pos1 + count1, count2, value);
-		}
-		
-		//find
-		size_type find(const string& rhs, size_type pos = 0)const;
-		size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
-		size_type find(value_type value, size_type pos = 0)const;
+			//compare
+			int compare(const string& rhs)const {
+				return __compare(this->size(), __start, __end, rhs.size(), rhs.cbegin(), rhs.cend());
+			}
+			int compare(size_type pos, size_type count, const string& rhs)const {
+				return __compare(count, __start + pos, __start + pos + count, rhs.size(), rhs.cbegin(), rhs.cend());
+			}
+			int compare(size_type pos1, size_type count1,
+				const string& rhs, size_type pos2, size_type count2 = npos)const {
+				if (count2 == npos) count2 = rhs.size() - pos2;
+				return __compare(count1, __start + pos1, __start + pos1 + count1, count2,
+					rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
+			}
+			int compare(const_pointer data)const {
+				size_type size = __get_size(data);
+				return __compare(this->size(), __start, __end, size, data, data + size);
+			}
+			int compare(size_type pos, size_type count, const_pointer data) {
+				size_type size = __get_size(data);
+				return __compare(count, __start + pos, __start + pos + count,
+					size, data, data + size);
+			}
+			int compare(size_type pos1, size_type count1,
+				const_pointer data, size_type count2)const {
+				return __compare(count1, __start + pos1, __start + pos1 + count1,
+					count2, data, data + count2);
+			}
 
-		/*
-		//要不要实现呢？
-		size_type rfind(const string& rhs, size_type pos = npos, size_type count=npos)const;
-		size_type rfind(const_pointer data, size_type pos = npos)const;
-		size_type rfind(value_type value, size_type pos = npos)const;
-		*/
+			//replace
 
-		size_type find_first_of(const string& rhs, size_type pos = 0)const;
-		size_type find_first_of(const_pointer data, size_type pos, size_type count)const;
-		size_type find_first_of(const_pointer data, size_type pos = 0)const;
-		size_type find_first_of(value_type value, size_type pos = 0)const;
-		size_type find_first_not_of(const string& rhs, size_type pos = 0)const;
-		size_type find_first_not_of(const_pointer data, size_type pos, size_type count)const;
-		size_type find_first_not_of(const_pointer data, size_type pos = 0)const;
-		size_type find_first_not_of(value_type value, size_type pos = 0)const;
-		size_type find_last_of(const string& rhs, size_type pos = npos)const;
-		size_type find_last_of(const_pointer data, size_type pos, size_type count)const;
-		size_type find_last_of(const_pointer data, size_type pos = npos)const;
-		size_type find_last_of(value_type value, size_type pos = npos)const;
-		size_type find_last_not_of(const string& rhs, size_type pos = npos)const;
-		size_type find_last_not_of(const_pointer data, size_type pos, size_type count)const;
-		size_type find_last_not_of(const_pointer data, size_type pos = npos)const;
-		size_type find_last_not_of(value_type value, size_type pos = npos)const;
-		
-		//c_str
-		const pointer c_str()const {
-			*__capacity = kkli::char_traits<char>::eof();			//将末尾预留字符置'0'
-			return __start;
-		}
+			//************************************************************************************************************************
+			//TODO: 可以通过比较[first1， last1)与[first2, last2)的大小进行优化，如：
+			//当[first1, last1)比[first2, last2)短时，可将[first1, last1)的多余部分连同所有剩余字符后移，然后用[first2, last2)覆盖
+			//当[first1, last1)比[first2, last2)长时，可直接将用[first2, last2)覆盖前部分，并将后部分后移
+			//若直接erase再insert，则需要两次移动[first1, last1)后部的内容，降低性能
+			//有空再写
+			//************************************************************************************************************************
+
+			template<typename InputIterator>
+			void repalce(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
+				__replace(first, last, npos, first2, last2);
+			}
+			void replace(const_iterator first, const_iterator last, size_type count2, value_type value);
+			void replace(const_iterator first, const_iterator last, const string& rhs) {
+				__replace(first, last, rhs.size(), rhs.cbegin(), rhs.cend());
+			}
+			void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2 = npos) {
+				if (count2 == npos) count2 = get_size(data);
+				__replace(first, last, count2, data, data + count2);
+			}
+			void replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init) {
+				__replace(first, last, init.size(), init.begin(), init.end());
+			}
+
+			void replace(size_type pos, size_type count,
+				const string& rhs, size_type pos2 = 0, size_type count2 = npos) {
+				if (count2 == npos) count2 = rhs.size() - pos2;
+				__replace(__start + pos, __start + pos + count, count2, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
+			}
+
+			void replace(size_type pos, size_type count, const_pointer data, size_type count2 = npos) {
+				if (count2 == npos) count2 = get_size(data);
+				replace(__start + pos, __start + pos + count, count2, data, data + count2);
+			}
+			void replace(size_type pos1, size_type count1, size_type count2, value_type value) {
+				replace(__start + pos1, __start + pos1 + count1, count2, value);
+			}
+
+			//find
+			size_type find(const string& rhs, size_type pos = 0)const;
+			size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
+			size_type find(value_type value, size_type pos = 0)const;
+
+			/*
+			//要不要实现呢？
+			size_type rfind(const string& rhs, size_type pos = npos, size_type count=npos)const;
+			size_type rfind(const_pointer data, size_type pos = npos)const;
+			size_type rfind(value_type value, size_type pos = npos)const;
+			*/
+
+			size_type find_first_of(const string& rhs, size_type pos = 0)const;
+			size_type find_first_of(const_pointer data, size_type pos, size_type count)const;
+			size_type find_first_of(const_pointer data, size_type pos = 0)const;
+			size_type find_first_of(value_type value, size_type pos = 0)const;
+			size_type find_first_not_of(const string& rhs, size_type pos = 0)const;
+			size_type find_first_not_of(const_pointer data, size_type pos, size_type count)const;
+			size_type find_first_not_of(const_pointer data, size_type pos = 0)const;
+			size_type find_first_not_of(value_type value, size_type pos = 0)const;
+			size_type find_last_of(const string& rhs, size_type pos = npos)const;
+			size_type find_last_of(const_pointer data, size_type pos, size_type count)const;
+			size_type find_last_of(const_pointer data, size_type pos = npos)const;
+			size_type find_last_of(value_type value, size_type pos = npos)const;
+			size_type find_last_not_of(const string& rhs, size_type pos = npos)const;
+			size_type find_last_not_of(const_pointer data, size_type pos, size_type count)const;
+			size_type find_last_not_of(const_pointer data, size_type pos = npos)const;
+			size_type find_last_not_of(value_type value, size_type pos = npos)const;
+
+			//c_str
+			const pointer c_str()const {
+				*__end = kkli::char_traits<char>::eof();			//设置结束字符
+				return __start;
+			}
 
 
-		//other member functions
-		reference at(size_type pos) {
-			if (pos >= this->size()) throw std::runtime_error("下标越界!");
-			return __start[pos];
-		}
-		const_reference	at(size_type pos)const {
-			if (pos >= this->size()) throw std::runtime_error("下标越界!");
-			return __start[pos];
-		}
-		value_type&			front() { return __start[0]; }
-		const value_type&	front()const { return __start[0]; }
-		value_type&			back() { return __end[-1]; }
-		const value_type&	back()const { return __end[-1]; }
-		iterator			begin() { return __start; }
-		const_iterator		cbegin()const { return __start; }
-		iterator			end() { return __end; }
-		const_iterator		cend()const { return __end; }
-		pointer				data() { return __start; }
-		const_pointer		data()const { return __start; }
-		
-		bool				empty()const { return __start==__end; }
-		size_type			size()const { return __end - __start; }
-		size_type			length()const { return size(); }
-		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
-		void				reserve(size_type new_cap = 0);
-		size_type			capacity()const { return __capacity - __start; }
-		void				shrink_to_fit() {}		//无效果
-		void				clear() { __deallocate(); }
-		void				push_back(value_type value) { insert(__end, 1, value); }
-		void				pop_bck() { --__end; }
+			//other member functions
+			reference at(size_type pos) {
+				if (pos >= this->size()) throw std::runtime_error("下标越界!");
+				return __start[pos];
+			}
+			const_reference	at(size_type pos)const {
+				if (pos >= this->size()) throw std::runtime_error("下标越界!");
+				return __start[pos];
+			}
+			value_type&			front() { return __start[0]; }
+			const value_type&	front()const { return __start[0]; }
+			value_type&			back() { return __end[-1]; }
+			const value_type&	back()const { return __end[-1]; }
+			iterator			begin() { return __start; }
+			const_iterator		cbegin()const { return __start; }
+			iterator			end() { return __end; }
+			const_iterator		cend()const { return __end; }
+			pointer				data() { return __start; }
+			const_pointer		data()const { return __start; }
 
-		void				resize(size_type count, value_type value = value_type());
-		string				substr(size_type pos = 0, size_type count = npos)const;
-		size_type			copy(const_pointer data, size_type pos=0, size_type count=npos)const;
-		void				swap(string& rhs);
+			bool				empty()const { return __start == __end; }
+			size_type			size()const { return __end - __start; }
+			size_type			length()const { return size(); }
+			constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
+			void				reserve(size_type new_cap = 0);
+			size_type			capacity()const { return __capacity - __start; }
+			void				shrink_to_fit() {}		//无效果
+			void				clear() { __deallocate(); }
+			void				push_back(value_type value) { insert(__end, 1, value); }
+			void				pop_bck() { --__end; }
 
-		void print(const string& prefix) const { cout << prefix << ": " << __start << endl; }
+			void				resize(size_type count, value_type value = value_type());
+			string				substr(size_type pos = 0, size_type count = npos)const;
+			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos)const;
+			void				swap(string& rhs);
+
+			void print(const std::string& prefix) const {
+				this->c_str();
+				cout << prefix << ": " << __start << endl;
+				cout << "size: " << this->size() << endl;
+				cout << "capacity: " << this->capacity() << endl << endl;
+			}
 	};
 }
 
@@ -422,7 +425,7 @@ namespace kkli {
 		size_type size = 0;
 		if (data != NULL) {
 			for (;; ++size)
-				if (data[i] == kkli::char_traits<char>::eof()) break;
+				if (data[size] == kkli::char_traits<char>::eof()) break;
 		}
 		return size;
 	}
@@ -430,7 +433,8 @@ namespace kkli {
 	//__set_value(addr, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	void string<CharType, Traits, Allocator>::__set_value(iterator addr, InputIterator first, InputIterator last) {
+	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::__set_value(
+		iterator addr, InputIterator first, InputIterator last) {
 		size_type index = 0;
 		for (auto iter = first; iter != last; ++iter) {
 			*(addr + index) = *iter;
@@ -452,7 +456,7 @@ namespace kkli {
 	template<typename InputIterator>
 	void string<CharType, Traits, Allocator>::__append(size_type size, InputIterator first, InputIterator last) {
 		//剩余空间足够，直接将rhs的内容填充到后面
-		if (__capacity - __end > size) {
+		if (__capacity - __end >= size) {
 			__end += __set_value(__end, first, last);
 			//__capacity不变
 		}
@@ -463,7 +467,7 @@ namespace kkli {
 			size_type capacity = (this->size() + size) * 2;					//预留一半空间
 			iterator new_addr = __allocate(capacity);
 			size_type index = __set_value(new_addr, __start, __end);		//将[__start,__end)中的字符写入
-			index + = __set_value(new_addr + index, first, last);			//将[first, last)中的字符写入
+			index += __set_value(new_addr + index, first, last);			//将[first, last)中的字符写入
 			__deallocate();			//释放原有内存
 			__start = new_addr;
 			__end = __start + index;
@@ -565,7 +569,7 @@ namespace kkli {
 	string<CharType, Traits, Allocator>::string(const_pointer data, size_type count = npos,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		if (count == npos) count = __get_size(data);
+		if (count == npos) count = get_size(data);
 		__allocate(count, data, data + count);
 	}
 
@@ -588,7 +592,7 @@ namespace kkli {
 	//string(rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	string<CharType, Traits, Allocator>::string(const string& rhs) {
-		__allocate(rhs.size(), rhs.begin(), rhs.end());
+		__allocate(rhs.size(), rhs.cbegin(), rhs.cend());
 	}
 
 	//string(&&rhs)
@@ -619,13 +623,14 @@ namespace kkli {
 	//operator =(&&rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(string&& rhs) {
-		if (this == rhs) return *this;
+		if (this == &rhs) return *this;
 		__deallocate();
 		__start = rhs.__start;
 		__end = rhs.__end;
 		__alloc = rhs.__alloc;
 		__capacity = rhs.__capacity;
 		rhs.__reset_iterators();
+		return *this;
 	}
 
 	//insert(pos, first, last)
@@ -707,22 +712,6 @@ namespace kkli {
 		}
 	}
 
-	//compare(rhs)
-	template<typename CharType, typename Traits, typename Allocator>
-	int string<CharType, Traits, Allocator>::compare(const string& rhs)const {
-		auto iter1 = this->begin();
-		auto end1 = this->end;
-		auto iter2 = rhs.begin();
-		auto end2 = rhs.end();
-		while (iter1 != end1 && iter2 != end2) {
-			if (*iter1 < *iter2) return -1;
-			if (*iter1 > *iter2) return 1;
-		}
-		if (iter1 != end1)	return 1;			//this长
-		if (iter2 != end2) return -1;			//rhs长
-		return 0;								//一样长
-	}
-
 	//replace(first, last, count2, value)
 	template<typename CharType, typename Traits, typename Allocator>
 	void string<CharType, Traits, Allocator>::replace(const_iterator first, const_iterator last,
@@ -766,12 +755,6 @@ namespace kkli {
 				__capacity = __start + capacity;
 			}
 		}
-	}
-
-	//find
-	template<typename CharType, typename Traits, typename Allocator>
-	size_type string<CharType, Traits, Allocator>::find(const string& rhs, size_type pos = 0)const {
-		//TODO: 
 	}
 
 	//reserve(new_cap)
@@ -1035,19 +1018,19 @@ namespace kkli {
 
 	//operator <<
 	template<typename CharType, typename Traits, typename Allocator>
-	std::ostream<CharType, Traits, >& operator<<(
-		std::ostream<CharType, Traits>& os,
+	std::ostream& operator<<(
+		std::ostream& os,
 		const string<CharType, Traits, Allocator>& str) {
-		os << str.data();
+		os << str.c_str();
 		return os;
 	}
 
 	//operator >>
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream<CharType, Traits>& operator<<(
-		std::istream<CharType, Traits>& is,
+	std::istream& operator<<(
+		std::istream& is,
 		const string<CharType, Traits, Allocator>& str) {
-		is >> str.data();
+		is >> str.c_str();
 	}
 
 
@@ -1055,16 +1038,16 @@ namespace kkli {
 
 	//getline(is, str, delim)
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream<CharType, Traits>& getline(
-		std::istream<CharType, Traits>&& is,
+	std::istream& getline(
+		std::istream&& is,
 		string<CharType, Traits, Allocator>& str, CharType delim) {
 		throw 1;
 	}
 
 	//getline(is, str)
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream<CharType, Traits>& getline(
-		std::istream<CharType, Traits>&& is,
+	std::istream& getline(
+		std::istream&& is,
 		string<CharType, Traits, Allocator>& str) {
 		return getline(is, str, '\n');
 	}
@@ -1094,7 +1077,7 @@ namespace kkli {
 
 	//stoull
 	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long long stoull(const std::string<CharType, Traits, Allocator>& str,
+	unsigned long long stoull(const kkli::string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
 	//stof
