@@ -39,7 +39,7 @@ namespace test {
 		void test_substr();
 		void test_copy();
 		void test_swap();
-		
+
 		//前置声明：非成员函数
 		void test_op_add();						//operator +
 		void test_op_compare();					//operator == != < <= > >=
@@ -63,28 +63,28 @@ namespace test {
 			test_erase();
 			test_append();
 			test_compare();
-			//test_replace();
+			test_replace();
 			//test_find();				//该函数暂未实现
-			//test_c_str();
-			//test_at();
-			//test_front_and_back();
-			//test_begin_and_end();
-			//test_data();
-			//test_empty();
-			//test_size();
-			//test_reserve();
-			//test_clear();
-			//test_push_back();
-			//test_pop_back();
-			//test_resize();
-			//test_substr();
-			//test_copy();
-			//test_swap();
+			test_c_str();
+			test_at();
+			test_front_and_back();
+			test_begin_and_end();
+			test_data();
+			test_empty();
+			test_size();
+			test_reserve();
+			test_clear();
+			test_push_back();
+			test_pop_back();
+			test_resize();
+			test_substr();
+			test_copy();
+			test_swap();
 
 			//测试：非成员函数
-			//test_op_add();				//operator +
-			//test_op_compare();			//operator == != < <= > >=
-			//test_op_stream();			//operator << >>
+			test_op_add();				//operator +
+			test_op_compare();			//operator == != < <= > >=
+			test_op_stream();			//operator << >>
 			//test_get_line();
 			//test_stox();				//函数暂未实现
 		}
@@ -323,14 +323,14 @@ namespace test {
 			//append(rhs, pos, count)
 			str1.append(str2, 0, 2);
 			str1.print("str1");					//ab
-			
+
 			str1.append(str2, 2);
 			str1.print("str1");					//abcd
 
 			//append(data, count)
 			str1.append("abcd", 2);
 			str1.print("str1");					//abcdab
-			
+
 			str1.append("abcd");
 			str1.print("str1");					//abcdababcd
 
@@ -367,7 +367,7 @@ namespace test {
 			cout << str1.compare(str2) << endl;				//-1
 			cout << str1.compare(str3) << endl;				//-1
 			cout << str1.compare(str4) << endl;				//-1
-			
+
 			cout << str2.compare(str1) << endl;				//1
 			cout << str2.compare(str2) << endl;				//0
 			cout << str2.compare(str3) << endl;				//1
@@ -390,7 +390,7 @@ namespace test {
 			cout << str2.compare(0, 4, str1) << endl;		//1
 			cout << str2.compare(0, 4, str2) << endl;		//0
 			cout << str1.compare(0, 4, str3) << endl;		//-1
-			
+
 			cout << str1.compare(0, 4, str1, 0, 4) << endl;			//0
 			cout << str1.compare(0, 4, str1, 2, 2) << endl;			//-1
 			cout << str1.compare(0, 4, str2, 0, 4) << endl;			//-1
@@ -424,6 +424,353 @@ namespace test {
 			cout << str1.compare(0, 4, "abcdef", 6) << endl;	//-1
 		}
 
-		//TODO: 
+		//测试 replace --- buggy
+		void test_replace() {
+			cout << "\ntest_replace()" << endl;
+
+			string str1("abcd");
+			string str2("qwer");
+
+			//replace(first1, last1, first2, last2)
+			string::iterator first1 = str1.begin();
+			string::iterator last1 = str1.end();
+			string::iterator first2 = str2.begin();
+			string::iterator last2 = str2.end();
+
+			//错误地匹配到replace(size_type, size_type, size_type, value_type)
+			//str1.replace(first1, last1, first2, last2);
+			str1.print("str1");
+		}
+
+		//测试 c_str
+		void test_c_str() {
+			cout << "\ntest_c_str()" << endl;
+
+			string str1;
+			string str2("abcd");
+
+			char* cp1 = str1.c_str();
+			char* cp2 = str2.c_str();
+			cout << "str1: " << cp1 << endl;			//(空)
+			cout << "str2: " << cp2 << endl;			//abcd
+
+			cout << "str2对应位置字符: " << endl;
+			for (int i = 0;; ++i) {
+				if (cp2[i] == '\0') break;
+				cout << i << ": " << cp2[i] << endl;
+			}
+		}
+
+		//测试 at
+		void test_at() {
+			cout << "\ntest_at()" << endl;
+
+			string str1("abcd");
+
+			for (int i = 0; i < 4; ++i)
+				cout << str1.at(i) << endl;
+		}
+
+		//测试 front和back
+		void test_front_and_back() {
+			cout << "\ntest_front_and_back()" << endl;
+
+			string str1("abcd");
+			cout << str1.front() << endl;
+			cout << str1.back() << endl;
+		}
+
+		//测试 begin和end
+		void test_begin_and_end() {
+			cout << "\ntest_begin_and_end()" << endl;
+
+			string str1;
+			string str2("abcd");
+			for (auto s : str1) cout << s;
+			cout << endl;
+
+			for (auto s : str2) cout << s;
+			cout << endl;
+
+			for (auto iter = str1.begin(); iter != str1.end(); ++iter)
+				cout << *iter;
+			cout << endl;
+
+			for (auto iter = str2.begin(); iter != str2.end(); ++iter)
+				cout << *iter;
+			cout << endl;
+		}
+
+		//测试 data
+		void test_data() {
+			cout << "\ntest_data()" << endl;
+
+			//可能内存访问越界导致异常
+			cout << string().data() << endl;
+			cout << string("abcd").data() << endl;
+			cout << "上述乱码并不是程序错误，应为string::data()直接返回首地址，没有在末尾添加字符'\\0'" << endl;
+		}
+
+		//测试 empty
+		void test_empty() {
+			cout << "\ntest_empty()" << endl;
+
+			cout << (string().empty() ? "empty" : "not empty") << endl;
+			cout << (string("abcd").empty() ? "empty" : "not empty") << endl;
+		}
+
+		//测试 size
+		void test_size() {
+			cout << "\ntest_size()" << endl;
+
+			string str1("abcd");
+			cout << string().size() << endl;
+			cout << str1.size() << endl;
+			str1.append("ab");
+			cout << str1.size() << endl;
+			str1.print("str1");
+		}
+
+		//测试 reserve
+		void test_reserve() {
+			cout << "\ntest_reserve()" << endl;
+
+			string str1;
+			str1.reserve(4);
+			str1.print("str1");				//(空)
+			str1.reserve(2);
+			str1.print("str1");				//(空)
+
+			str1.append("abcdef");
+			str1.print("str1");				//abcdef
+			str1.reserve(24);
+			str1.print("str1");				//abcdef
+		}
+
+		//测试 clear
+		void test_clear() {
+			cout << "\ntest_clear()" << endl;
+
+			string str1("abcd");
+			str1.clear();
+			str1.print("str1");			//(空)
+		}
+
+		//测试 push_back
+		void test_push_back() {
+			cout << "\ntest_push_back()" << endl;
+
+			string str1;
+			for (int i = 0; i < 4; ++i) {
+				str1.push_back('a');
+				str1.print("str1");
+			}
+		}
+
+		//测试 pop_back
+		void test_pop_back() {
+			cout << "\ntest_pop_back()" << endl;
+
+			string str1("abcd");
+			for (int i = 0; i < 4; ++i) {
+				str1.pop_back();
+				str1.print("str1");
+			}
+		}
+
+		//测试 resize
+		void test_resize() {
+			cout << "\ntest_resize()" << endl;
+
+			string str1;
+			str1.resize(4);
+			str1.print("str1");				//(空)
+
+			str1.resize(8, 'a');
+			str1.print("str1");				//aaaaaaaa
+			
+			str1.resize(4);
+			str1.print("str1");				//aaaaaaaa
+		}
+
+		//测试 substr
+		void test_substr() {
+			cout << "\ntest_substr()" << endl;
+
+			string str("abcdefgh");
+			string str1 = str.substr();
+			str1.print("str1");					//abcdefgh
+
+			str1 = str.substr(1, 4);
+			str1.print("str1");					//bcde
+
+			str1 = str.substr(4);
+			str1.print("str1");					//efgh
+		}
+
+		//测试 copy
+		void test_copy() {
+			cout << "\ntest_copy()" << endl;
+
+			string str1;
+			cout << str1.copy("abcd") << endl;
+			str1.print("str1");					//abcd
+
+			cout << str1.copy("abcd", 2) << endl;
+			str1.print("str1");					//cd
+
+			cout << str1.copy("abcd", 1, 2) << endl;
+			str1.print("str1");					//bc
+		}
+
+		//测试 swap
+		void test_swap() {
+			cout << "\ntest_swap()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str3("qwerty");
+
+			str1.swap(str2);
+			str1.print("str1");			//abcd
+			str2.print("str2");			//(空)
+
+			str1.swap(str3);
+			str1.print("str1");			//qwerty
+			str3.print("str3");			//abcd
+		}
+
+		//测试：非成员函数 operator +
+		void test_op_add() {
+			cout << "\ntest_op_add()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str3("qwerty");
+
+			cout << str1 + str2 << endl;		//abcd
+			cout << str1 + str3 << endl;		//qwerty
+			cout << str2 + str1 << endl;		//abcd
+			cout << str2 + str3 << endl;		//abcdqwerty
+			cout << str3 + str1 << endl;		//qwerty
+			cout << str3 + str2 << endl;		//qwertyabcd
+		}
+
+		//测试：非成员函数 operator == < >
+		//由于!=由==实现，>=由<实现，<=由>实现，因此不再单独测试!=, <=, >=
+		void test_op_compare() {
+			cout << "\ntest_op_compare()" << endl;
+
+			string str1;
+			string str2("abcd");
+			char* str3 = "aceg";
+			string str4("abcdef");
+			string str5("acegik");
+
+			//operator ==
+			cout << "operator ==" << endl;
+			cout << (str1 == str1 ? "true" : "false") << endl;				//true
+			cout << (str1 == str2 ? "true" : "false") << endl;				//false
+			cout << (str1 == str3 ? "true" : "false") << endl;				//false
+			cout << (str1 == str4 ? "true" : "false") << endl;				//false
+			cout << (str1 == str5 ? "true" : "false") << endl << endl;		//false
+			
+			cout << (str2 == str1 ? "true" : "false") << endl;				//false
+			cout << (str2 == str2 ? "true" : "false") << endl;				//true
+			cout << (str2 == str3 ? "true" : "false") << endl;				//false
+			cout << (str2 == str4 ? "true" : "false") << endl;				//false
+			cout << (str2 == str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str3 == str1 ? "true" : "false") << endl;				//false
+			cout << (str3 == str2 ? "true" : "false") << endl;				//false
+			cout << (str3 == str3 ? "true" : "false") << endl;				//true
+			cout << (str3 == str4 ? "true" : "false") << endl;				//false
+			cout << (str3 == str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str4 == str1 ? "true" : "false") << endl;				//false
+			cout << (str4 == str2 ? "true" : "false") << endl;				//false
+			cout << (str4 == str3 ? "true" : "false") << endl;				//false
+			cout << (str4 == str4 ? "true" : "false") << endl;				//true
+			cout << (str4 == str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str5 == str1 ? "true" : "false") << endl;				//false
+			cout << (str5 == str2 ? "true" : "false") << endl;				//false
+			cout << (str5 == str3 ? "true" : "false") << endl;				//false
+			cout << (str5 == str4 ? "true" : "false") << endl;				//false
+			cout << (str5 == str5 ? "true" : "false") << endl << endl;		//true
+
+			//operator <
+			cout << "operator <" << endl;
+			cout << (str1 < str1 ? "true" : "false") << endl;				//false
+			cout << (str1 < str2 ? "true" : "false") << endl;				//true
+			cout << (str1 < str3 ? "true" : "false") << endl;				//true
+			cout << (str1 < str4 ? "true" : "false") << endl;				//true
+			cout << (str1 < str5 ? "true" : "false") << endl << endl;		//true
+
+			cout << (str2 < str1 ? "true" : "false") << endl;				//false
+			cout << (str2 < str2 ? "true" : "false") << endl;				//false
+			cout << (str2 < str3 ? "true" : "false") << endl;				//true
+			cout << (str2 < str4 ? "true" : "false") << endl;				//true
+			cout << (str2 < str5 ? "true" : "false") << endl << endl;		//true
+
+			cout << (str3 < str1 ? "true" : "false") << endl;				//false
+			cout << (str3 < str2 ? "true" : "false") << endl;				//false
+			cout << (str3 < str3 ? "true" : "false") << endl;				//false
+			cout << (str3 < str4 ? "true" : "false") << endl;				//false
+			cout << (str3 < str5 ? "true" : "false") << endl << endl;		//true
+
+			cout << (str4 < str1 ? "true" : "false") << endl;				//false
+			cout << (str4 < str2 ? "true" : "false") << endl;				//false
+			cout << (str4 < str3 ? "true" : "false") << endl;				//true
+			cout << (str4 < str4 ? "true" : "false") << endl;				//false
+			cout << (str4 < str5 ? "true" : "false") << endl << endl;		//true
+
+			cout << (str5 < str1 ? "true" : "false") << endl;				//false
+			cout << (str5 < str2 ? "true" : "false") << endl;				//false
+			cout << (str5 < str3 ? "true" : "false") << endl;				//false
+			cout << (str5 < str4 ? "true" : "false") << endl;				//false
+			cout << (str5 < str5 ? "true" : "false") << endl << endl;		//false
+
+			//operator >
+			cout << "operator >" << endl;
+			cout << (str1 > str1 ? "true" : "false") << endl;				//false
+			cout << (str1 > str2 ? "true" : "false") << endl;				//false
+			cout << (str1 > str3 ? "true" : "false") << endl;				//false
+			cout << (str1 > str4 ? "true" : "false") << endl;				//false
+			cout << (str1 > str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str2 > str1 ? "true" : "false") << endl;				//true
+			cout << (str2 > str2 ? "true" : "false") << endl;				//false
+			cout << (str2 > str3 ? "true" : "false") << endl;				//false
+			cout << (str2 > str4 ? "true" : "false") << endl;				//false
+			cout << (str2 > str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str3 > str1 ? "true" : "false") << endl;				//true
+			cout << (str3 > str2 ? "true" : "false") << endl;				//true
+			cout << (str3 > str3 ? "true" : "false") << endl;				//false
+			cout << (str3 > str4 ? "true" : "false") << endl;				//true
+			cout << (str3 > str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str4 > str1 ? "true" : "false") << endl;				//true
+			cout << (str4 > str2 ? "true" : "false") << endl;				//true
+			cout << (str4 > str3 ? "true" : "false") << endl;				//false
+			cout << (str4 > str4 ? "true" : "false") << endl;				//false
+			cout << (str4 > str5 ? "true" : "false") << endl << endl;		//false
+
+			cout << (str5 > str1 ? "true" : "false") << endl;				//true
+			cout << (str5 > str2 ? "true" : "false") << endl;				//true
+			cout << (str5 > str3 ? "true" : "false") << endl;				//true
+			cout << (str5 > str4 ? "true" : "false") << endl;				//true
+			cout << (str5 > str5 ? "true" : "false") << endl << endl;		//false
+		}
+
+		//测试：非成员函数 stream
+		void test_op_stream() {
+			cout << "\ntest_op_stream()" << endl;
+
+			string str1;
+			cin >> str1;
+			str1.print("str1");
+		}
 	}
 }

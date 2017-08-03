@@ -359,20 +359,24 @@ namespace kkli {
 			void				reserve(size_type new_cap = 0);
 			size_type			capacity()const { return __capacity - __start; }
 			void				shrink_to_fit() {}		//ÎÞÐ§¹û
-			void				clear() { __deallocate(); }
+			void				clear() { __end = __start; }
 			void				push_back(value_type value) { insert(__end, 1, value); }
-			void				pop_bck() { --__end; }
+			void				pop_back() { --__end; }
 
 			void				resize(size_type count, value_type value = value_type());
 			string				substr(size_type pos = 0, size_type count = npos)const;
-			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos)const;
+			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos);
 			void				swap(string& rhs);
 
 			void print(const std::string& prefix) const {
 				this->c_str();
-				cout << prefix << ": " << __start << endl;
-				cout << "size: " << this->size() << endl;
-				cout << "capacity: " << this->capacity() << endl << endl;
+				std::cout << prefix << ": ";
+				size_type size = this->size();
+				for (size_type i = 0; i < size; ++i)
+					std::cout << __start[i];
+				std::cout << std::endl;
+				std::cout << "size: " << this->size() << std::endl;
+				std::cout << "capacity: " << this->capacity() << std::endl << std::endl;
 			}
 	};
 }
@@ -527,7 +531,7 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	string<CharType, Traits, Allocator>::string(const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
-		__allocate(0, iterator(), iterator());
+		__allocate(0, 0, value_type());
 	}
 
 	//string(count, value)
@@ -763,9 +767,11 @@ namespace kkli {
 	//resize(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
 	void string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
+		size_type size = this->size();
+		if (count < size) return;
 		reserve(count);
-		__set_value_by_value(__end, count - this->size(), value);
-		__end = __capacity;
+		__set_value_by_value(__end, count - size, value);
+		__end += (count - size);
 	}
 
 	//substr(pos, count)
@@ -778,9 +784,9 @@ namespace kkli {
 	//copy(data, pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
 	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::copy(
-		const_pointer data, size_type pos = 0, size_type count = npos)const {
-		if (count == pos) count = get_size(data) - pos;
-		assign(data + pos, data + pos + count);
+		const_pointer data, size_type pos = 0, size_type count = npos) {
+		if (count == npos) count = get_size(data) - pos;
+		__assign(count, data + pos, data + pos + count);
 		return count;
 	}
 
@@ -912,7 +918,7 @@ namespace kkli {
 	//operator <(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Allocator>& rhs) {
+		const string<CharType, Traits, Allocator>& rhs) {
 		return lhs.compare(rhs) == -1;
 	}
 
@@ -1017,12 +1023,18 @@ namespace kkli {
 
 	//operator >>
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream& operator<<(
+	std::istream& operator>>(
 		std::istream& is,
-		const string<CharType, Traits, Allocator>& str) {
-		is >> str.c_str();
+		string<CharType, Traits, Allocator>& str) {
+		char c;
+		is >> c;
+		is >> std::noskipws;
+		while (is) {
+			if (c == '\n') break;
+			str.push_back(c);
+		}
+		return is;
 	}
-
 
 	//============================== [getline] ==============================
 
