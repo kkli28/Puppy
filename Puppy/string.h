@@ -267,7 +267,7 @@ namespace kkli {
 
 			//replace
 			template<typename InputIterator>
-			void repalce(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
+			void replace(const_iterator first, const_iterator last, InputIterator first2, InputIterator last2) {
 				__replace(first, last, npos, first2, last2);
 			}
 			void replace(const_iterator first, const_iterator last, size_type count2, value_type value);
@@ -281,13 +281,11 @@ namespace kkli {
 			void replace(const_iterator first, const_iterator last, std::initializer_list<value_type> init) {
 				__replace(first, last, init.size(), init.begin(), init.end());
 			}
-
 			void replace(size_type pos, size_type count,
 				const string& rhs, size_type pos2 = 0, size_type count2 = npos) {
 				if (count2 == npos) count2 = rhs.size() - pos2;
 				__replace(__start + pos, __start + pos + count, count2, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
 			}
-
 			void replace(size_type pos, size_type count, const_pointer data, size_type count2 = npos) {
 				if (count2 == npos) count2 = get_size(data);
 				replace(__start + pos, __start + pos + count, count2, data, data + count2);
@@ -301,28 +299,25 @@ namespace kkli {
 			size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find(value_type value, size_type pos = 0)const;
 
-			/*
-			//要不要实现呢？
+			//要不要实现 rfind？
 			size_type rfind(const string& rhs, size_type pos = npos, size_type count=npos)const;
 			size_type rfind(const_pointer data, size_type pos = npos)const;
 			size_type rfind(value_type value, size_type pos = npos)const;
-			*/
 
 			size_type find_first_of(const string& rhs, size_type pos = 0)const;
-			size_type find_first_of(const_pointer data, size_type pos, size_type count)const;
-			size_type find_first_of(const_pointer data, size_type pos = 0)const;
+			size_type find_first_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_first_of(value_type value, size_type pos = 0)const;
+
 			size_type find_first_not_of(const string& rhs, size_type pos = 0)const;
 			size_type find_first_not_of(const_pointer data, size_type pos, size_type count)const;
-			size_type find_first_not_of(const_pointer data, size_type pos = 0)const;
 			size_type find_first_not_of(value_type value, size_type pos = 0)const;
+
 			size_type find_last_of(const string& rhs, size_type pos = npos)const;
-			size_type find_last_of(const_pointer data, size_type pos, size_type count)const;
-			size_type find_last_of(const_pointer data, size_type pos = npos)const;
+			size_type find_last_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_of(value_type value, size_type pos = npos)const;
+
 			size_type find_last_not_of(const string& rhs, size_type pos = npos)const;
-			size_type find_last_not_of(const_pointer data, size_type pos, size_type count)const;
-			size_type find_last_not_of(const_pointer data, size_type pos = npos)const;
+			size_type find_last_not_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_not_of(value_type value, size_type pos = npos)const;
 
 			//c_str
@@ -490,9 +485,10 @@ namespace kkli {
 
 		//[first1, last1)范围足够放下[first2, last2)
 		if (size1 >= size2) {
-			__set_value_by_range(first1, first2, last2);				//用[first2, last2)覆盖[first1, last1)前部分
-			__set_value_by_range(first1 + size2, last1, __end);		//[last2, __end)前移
-			__end -= size2;
+			auto first = __start + (first1 - __start);
+			__set_value_by_range(first, first2, last2);				//用[first2, last2)覆盖[first1, last1)前部分
+			__set_value_by_range(first + size2, last1, __end);		//[last1, __end)前移
+			__end = __end - size1 + size2;
 		}
 
 		//[first1, last1)范围不够放下[first2, last2)
@@ -508,7 +504,9 @@ namespace kkli {
 					--iter;
 					--prev_iter;
 				}
-				__set_value_by_range(first1, first2, last2);			//写入[first2, last2)
+
+				auto first = __start + (first1 - __start);
+				__set_value_by_range(first, first2, last2);			//写入[first2, last2)
 				__end += offset;
 			}
 			else {
@@ -708,14 +706,16 @@ namespace kkli {
 
 	//replace(first, last, count2, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::replace(const_iterator first, const_iterator last,
+	void string<CharType, Traits, Allocator>::replace(const_iterator first1, const_iterator last1,
 		size_type count2, value_type value) {
 		size_type count1 = last1 - first1;
 
 		//[first1, last1)范围足够放下count个字符
 		if (count1 >= count2) {
-			__set_value_by_value(first1, count2, value);				//覆盖[first1, last1)前部分
-			__set_value_by_range(first1 + count2, last1, __end);		//[last2, __end)前移
+			auto first = __start + (first1 - __start);				//获得first1的非const版本
+			auto last = __start + (last1 - __start);				//获得last1的非const版本
+			__set_value_by_value(first, count2, value);				//覆盖[first1, last1)前部分
+			__set_value_by_range(first + count2, last, __end);		//[last1, __end)前移
 			__end -= count2;
 		}
 
@@ -732,7 +732,9 @@ namespace kkli {
 					--iter;
 					--prev_iter;
 				}
-				__set_value_by_value(first1, count2, value);			//写入[first2, last2)
+
+				auto first = __start + (first1 - __start);
+				__set_value_by_value(first, count2, value);			//写入[first2, last2)
 				__end += offset;
 			}
 			else {
@@ -742,7 +744,7 @@ namespace kkli {
 				size_type index = __set_value_by_range(addr, __start, first1);		//将前部写入
 				__set_value_by_value(addr + index, count2, value);					//插入[first2, last2)
 				index += count2;
-				index += __set_value_by_range(addr + index, last2, __end);							//将后部写入
+				index += __set_value_by_range(addr + index, last1, __end);							//将后部写入
 				__deallocate();					//释放原有内存
 				__start = addr;
 				__end = addr + index;
@@ -1010,12 +1012,33 @@ namespace kkli {
 	}
 
 
+	//============================== [getline] ==============================
+
+	//getline(is, str, delim)
+	template<typename CharType, typename Traits, typename Allocator>
+	std::istream& getline(
+		std::istream& is,
+		string<CharType, Traits, Allocator>& str, CharType delim = '\n') {
+		str = "";
+		is >> std::noskipws;
+		char c;
+		is >> c;
+		while (is) {
+			if (c == delim) break;
+			str.push_back(c);
+			is >> c;
+		}
+		is.ignore(std::numeric_limits<std::streampos>::max());
+		is.clear();
+		return is;
+	}
+
+
 	//==================== [operator <<, >>] ====================
 
 	//operator <<
 	template<typename CharType, typename Traits, typename Allocator>
-	std::ostream& operator<<(
-		std::ostream& os,
+	std::ostream& operator<<(std::ostream& os,
 		const string<CharType, Traits, Allocator>& str) {
 		os << str.c_str();
 		return os;
@@ -1023,113 +1046,114 @@ namespace kkli {
 
 	//operator >>
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream& operator>>(
-		std::istream& is,
-		string<CharType, Traits, Allocator>& str) {
-		char c;
-		is >> c;
-		is >> std::noskipws;
-		while (is) {
-			if (c == '\n') break;
-			str.push_back(c);
-		}
-		return is;
-	}
-
-	//============================== [getline] ==============================
-
-	//getline(is, str, delim)
-	template<typename CharType, typename Traits, typename Allocator>
-	std::istream& getline(
-		std::istream&& is,
-		string<CharType, Traits, Allocator>& str, CharType delim) {
-		throw 1;
-	}
-
-	//getline(is, str)
-	template<typename CharType, typename Traits, typename Allocator>
-	std::istream& getline(
-		std::istream&& is,
-		string<CharType, Traits, Allocator>& str) {
-		return getline(is, str, '\n');
+	std::istream& operator>>(std::istream& is, string<CharType, Traits,
+		Allocator>& str) {
+		return getline(is, str);
 	}
 
 
 	//==================== [stox]: 不想实现，好麻烦！！ ====================
 
-	//stoi
-	template<typename CharType,typename Traits,typename Allocator>
-	int stoi(const kkli::string<CharType,Traits,Allocator>& str,
-		std::size_t* pos = 0, int base = 10);
-
-	//stol
-	template<typename CharType, typename Traits, typename Allocator>
-	long stol(const kkli::string<CharType, Traits, Allocator>& str, 
-		std::size_t* pos = 0, int base = 10);
-
-	//stoll
+	//string to long long
 	template<typename CharType, typename Traits, typename Allocator>
 	long long stoll(const kkli::string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
-	//stoul
-	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long stoul(const kkli::string<CharType, Traits, Allocator>& str,
-		std::size_t* pos = 0, int base = 10);
-
-	//stoull
+	//string to unsigned long long
 	template<typename CharType, typename Traits, typename Allocator>
 	unsigned long long stoull(const kkli::string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
-	//stof
+	//string to long double
+	template<typename CharType, typename Traits, typename Allocator>
+	long double stold(const kkli::string<CharType, Traits, Allocator>& str,
+		std::size_t* pos = 0);
+
+	//下方的stox是通过调用上方的三个：stoll、stoull、stold 函数来实现的
+
+	//string to int
+	template<typename CharType, typename Traits, typename Allocator>
+	int stoi(const kkli::string<CharType, Traits, Allocator>& str,
+		std::size_t* pos = 0, int base = 10) {
+		return stoll(str, pos, base);		//先转化成long long，再窄化转型成int
+	}
+
+	//string to long
+	template<typename CharType, typename Traits, typename Allocator>
+	long stol(const kkli::string<CharType, Traits, Allocator>& str,
+		std::size_t* pos = 0, int base = 10) {
+		return stoll(str, pos, base);		//先转化成long long，再窄化转型成long
+	}
+
+	//string to float
 	template<typename CharType, typename Traits, typename Allocator>
 	float stof(const kkli::string<CharType, Traits, Allocator>& str,
-		std::size_t* pos = 0);
+		std::size_t* pos = 0) {
+		return stoull(str, pos);			//先转化成long double，再窄化转型成float
+	}
 
-	//stod
+	//string to double
 	template<typename CharType, typename Traits, typename Allocator>
-	double stof(const kkli::string<CharType, Traits, Allocator>& str,
-		std::size_t* pos = 0);
+	double stod(const kkli::string<CharType, Traits, Allocator>& str,
+		std::size_t* pos = 0) {
+		return stold(str, pos);				//先转化成long double，再窄化转型成double
+	}
+	
+	//string to unsigned long
+	template<typename CharType, typename Traits, typename Allocator>
+	unsigned long stoul(const kkli::string<CharType, Traits, Allocator>& str,
+		std::size_t* pos = 0, int base = 10) {
+		return stoull(str, pos, base);		//先转化成unsigned long long，再窄化转型成unsigned long
+	}
 
-	//stold
-	template<typename CharType, typename Traits, typename Allocator>
-	long double stof(const kkli::string<CharType, Traits, Allocator>& str,
-		std::size_t* pos = 0);
-
-	//to_string(int)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(int value);
-
-	//to_sring(long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(long value);
+	//============================== [to_string] ==============================
 
 	//to_string(long long)
 	template<typename CharType, typename Traits, typename Allocator>
 	kkli::string<CharType, Traits, Allocator> to_string(long long value);
 
-	//to_string(unsigned)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(unsigned value);
-
-	//to_string(unsigned long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(unsigned long value);
-
 	//to_string(unsigned long long)
 	template<typename CharType, typename Traits, typename Allocator>
 	kkli::string<CharType, Traits, Allocator> to_string(unsigned long long value);
 
-	//to_string(float)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(float value);
-
-	//to_string(double)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(double value);
-
 	//to_string(long double)
 	template<typename CharType, typename Traits, typename Allocator>
 	kkli::string<CharType, Traits, Allocator> to_string(long double value);
+
+	//to_string(int)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(int value) {
+		return to_string(static_cast<long long>(value));
+	}
+
+	//to_sring(long)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(long value) {
+		return to_string(static_cast<long long>(value));
+	}
+
+	//to_string(unsigned)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(unsigned value) {
+		return to_string(static_cast<unsigned long long>(value));
+	}
+
+	//to_string(unsigned long)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(unsigned long value) {
+		return to_string(static_cast<unsigned long long>(value));
+	}
+
+	//to_string(float)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(float value) {
+		return to_string(static_cast<long double>(value));
+	}
+
+	//to_string(double)
+	template<typename CharType, typename Traits, typename Allocator>
+	kkli::string<CharType, Traits, Allocator> to_string(double value){
+		return to_string(static_cast<long double>(value));
+	}
+
 }

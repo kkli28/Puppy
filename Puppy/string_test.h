@@ -44,7 +44,7 @@ namespace test {
 		void test_op_add();						//operator +
 		void test_op_compare();					//operator == != < <= > >=
 		void test_op_stream();					//operator << >>
-		void test_get_line();
+		void test_getline();
 		//void test_stox();						//函数暂未实现
 
 		//整体测试
@@ -80,12 +80,12 @@ namespace test {
 			test_substr();
 			test_copy();
 			test_swap();
-
+			
 			//测试：非成员函数
 			test_op_add();				//operator +
 			test_op_compare();			//operator == != < <= > >=
+			test_getline();
 			test_op_stream();			//operator << >>
-			//test_get_line();
 			//test_stox();				//函数暂未实现
 		}
 
@@ -431,15 +431,33 @@ namespace test {
 			string str1("abcd");
 			string str2("qwer");
 
-			//replace(first1, last1, first2, last2)
-			string::iterator first1 = str1.begin();
-			string::iterator last1 = str1.end();
-			string::iterator first2 = str2.begin();
-			string::iterator last2 = str2.end();
+			//replace(first, last, first2, last2)无法正常匹配，故跳过
+			str1.replace(str1.cbegin(), str1.cend(), str2.cbegin(), str2.cend());
+			str1.print("str1");					//qwer
 
-			//错误地匹配到replace(size_type, size_type, size_type, value_type)
-			//str1.replace(first1, last1, first2, last2);
-			str1.print("str1");
+			//replace(first, last, count, value)
+			str1.replace(str1.begin() + 1, str1.begin() + 3, 3, 'e');
+			str1.print("str1");					//qeeer
+
+			//replace(first, last, rhs)
+			str1.replace(str1.begin(), str1.begin() + 1, str2);
+			str1.print("str1");					//qwerqeeer
+
+			//replace(first, last, data, count)
+			str1.replace(str1.begin(), str1.begin() + 2, "abcd");
+			str1.print("str1");					//abcderqeeer
+
+			//replace(first, last, init)
+			str1.replace(str1.begin(), str1.end(), { 'a','b','c','d' });
+			str1.print("str1");					//abcd
+
+			//replace(pos, count, rhs, pos2, count2)
+			str1.replace(0, 2, str2, 0, 3);
+			str1.print("str1");					//qwecd
+
+			//replace(pos, count, count2, value)
+			str1.replace(str1.begin(), str1.end(), 8, 'e');
+			str1.print("str1");					//eeeeeeee
 		}
 
 		//测试 c_str
@@ -764,13 +782,30 @@ namespace test {
 			cout << (str5 > str5 ? "true" : "false") << endl << endl;		//false
 		}
 
+		//测试：非成员函数 getline
+		void test_getline() {
+			cout << "\ntest_getline()" << endl;
+
+			string str;
+			cout << "需要输入十次字符串" << endl;
+			for (int i = 0; i < 10; ++i) {
+				cout << "\n" << i << ": ";
+				cin >> str;
+				cout << str << endl;
+			}
+		}
+
 		//测试：非成员函数 stream
 		void test_op_stream() {
 			cout << "\ntest_op_stream()" << endl;
 
-			string str1;
-			cin >> str1;
-			str1.print("str1");
+			string str;
+			cout << "需要输入十次字符串" << endl;
+			for (int i = 0; i < 10; ++i) {
+				cout << "\n" << i << ": ";
+				cin >> str;
+				cout << str << endl;
+			}
 		}
 	}
 }
