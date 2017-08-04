@@ -232,7 +232,7 @@ namespace kkli {
 		}
 
 		//operator *
-		back_insert_iterator& operator*()const { return *this; }
+		back_insert_iterator& operator*() { return *this; }
 
 		//operator ++
 		back_insert_iterator& operator++() { return *this; }
@@ -278,18 +278,18 @@ namespace kkli {
 
 		//operator =(value)
 		front_insert_iterator& operator=(const typename Container::value_type& value) {
-			container->push_back(value);
+			container->push_front(value);
 			return *this;
 		}
 
 		//operatpr =(&&value)
 		front_insert_iterator& operator=(typename Container::value_type&& value) {
-			container->push_back(std::move(value));
+			container->push_front(std::move(value));
 			return *this;
 		}
 
 		//operator *
-		front_insert_iterator& operator*()const { return *this; }
+		front_insert_iterator& operator*() { return *this; }
 		
 		//operator ++
 		front_insert_iterator& operator++() { return *this; }
@@ -349,7 +349,7 @@ namespace kkli {
 		}
 
 		//operator *
-		insert_iterator<Container>& operator*()const { return *this; }
+		insert_iterator<Container>& operator*() { return *this; }
 
 		//operator ++
 		insert_iterator<Container>& operator++() { return *this; }
@@ -357,6 +357,15 @@ namespace kkli {
 		//operator ++(int)
 		insert_iterator<Container>& operator++(int) { return *this; }
 	};
+
+	//non-member function
+
+	//inserter
+	template<typename Container>
+	inline insert_iterator<Container> inserter(Container& cont,
+		typename Container::iterator it) {
+		return insert_iterator<Container>(cont, it);
+	}
 }
 
 //================================================================================
@@ -408,10 +417,10 @@ namespace kkli {
 		}
 
 		//friend function
-		friend inline bool operator==(const istream_iterator<T, Distance>& lhs,
+		friend bool operator==(const istream_iterator<T, Distance>& lhs,
 			const istream_iterator<T, Distance>& rhs);
 
-		friend inline bool operator!=(const istream_iterator<T, Distance>& lhs,
+		friend bool operator!=(const istream_iterator<T, Distance>& lhs,
 			const istream_iterator<T, Distance>& rhs);
 	};
 
@@ -467,7 +476,7 @@ namespace kkli {
 		}
 
 		//operator *
-		ostream_iterator& operator*()const { return *this; }
+		ostream_iterator& operator*() { return *this; }
 
 		//operator ++
 		ostream_iterator& operator++() { return *this; }
@@ -476,10 +485,10 @@ namespace kkli {
 		ostream_iterator& operator++(int) { return *this; }
 
 		//friend function
-		friend inline bool operator==(const ostream_iterator<T>& lhs,
+		friend bool operator==(const ostream_iterator<T>& lhs,
 			const ostream_iterator<T>& rhs);
 
-		friend inline bool operator!=(const ostream_iterator<T>& lhs,
+		friend bool operator!=(const ostream_iterator<T>& lhs,
 			const ostream_iterator<T>& rhs);
 	};
 
