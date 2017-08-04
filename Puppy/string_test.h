@@ -9,7 +9,7 @@ namespace test {
 		using std::cin;
 		using std::cout;
 		using std::endl;
-		using string = kkli::string<char>;
+		using string = kkli::string<char, kkli::char_traits<char>, kkli::allocator<char>>;
 #define npos kkli::string<char>::npos
 
 		//前置声明：成员函数
@@ -39,6 +39,7 @@ namespace test {
 		void test_substr();
 		void test_copy();
 		void test_swap();
+		void test_reverse();
 
 		//前置声明：非成员函数
 		void test_op_add();						//operator +
@@ -46,6 +47,7 @@ namespace test {
 		void test_op_stream();					//operator << >>
 		void test_getline();
 		//void test_stox();						//函数暂未实现
+		void test_to_string();					//to_string(x)
 
 		//整体测试
 		void test() {
@@ -54,6 +56,7 @@ namespace test {
 			cout << "========================================" << endl;
 
 			//测试：成员函数
+			/*
 			test_constructor();
 			test_op_assign();			//operator =
 			test_op_square_bracket();	//operator []
@@ -80,13 +83,16 @@ namespace test {
 			test_substr();
 			test_copy();
 			test_swap();
+			test_reverse();
 			
 			//测试：非成员函数
 			test_op_add();				//operator +
 			test_op_compare();			//operator == != < <= > >=
-			test_getline();
-			test_op_stream();			//operator << >>
+			//test_getline();
+			//test_op_stream();			//operator << >>
 			//test_stox();				//函数暂未实现
+			*/
+			test_to_string();
 		}
 
 		//测试 constructor
@@ -658,6 +664,19 @@ namespace test {
 			str3.print("str3");			//abcd
 		}
 
+		//测试 reverse()
+		void test_reverse() {
+			cout << "\ntest_reverse()" << endl;
+
+			string str1("abcd");
+			str1.reverse();
+			str1.print("str1");			//dcba
+
+			string str2("qwert");
+			str2.reverse();
+			str2.print("str2");			//trewq
+		}
+
 		//测试：非成员函数 operator +
 		void test_op_add() {
 			cout << "\ntest_op_add()" << endl;
@@ -806,6 +825,198 @@ namespace test {
 				cin >> str;
 				cout << str << endl;
 			}
+		}
+
+		//测试：非成员函数 to_string
+		void test_to_string() {
+			using kkli::to_string;
+			cout << "\ntest_to_string()" << endl;
+
+			//to_string(long long)
+			cout << "to_string(long long)" << endl;
+
+			string str1 = to_string(0ll);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0ll);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567ll);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(-1234567ll);
+			str1.print("str1");					//-1234567
+
+			str1 = kkli::to_string(std::numeric_limits<long long>::max());
+			str1.print("str1");					//9223372036854775807
+
+			str1 = kkli::to_string(std::numeric_limits<long long>::min());
+			str1.print("str1");					//-9223372036854775808
+			
+			//to_string(unsigned long long)
+			cout << "to_string(unsigned long long)" << endl;
+
+			str1 = to_string(0ull);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0ull);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567ull);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(-1234567ull);
+			str1.print("str1");					//-1234567
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned long long>::max());
+			str1.print("str1");					//0xffffffffffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned long long>::min());
+			str1.print("str1");					//0
+
+			//to_string(long double)
+			cout << "to_string(long double)" << endl;
+
+			str1 = to_string((long double)(0.0));
+			str1.print("str1");					//0.0
+
+			str1 = to_string((long double)(-0.0));
+			str1.print("str1");					//0.0
+
+			str1 = kkli::to_string((long double)(1234567.123));
+			str1.print("str1");					//1234567.123
+
+			str1 = kkli::to_string((long double)(-1234567.123));
+			str1.print("str1");					//-1234567.123
+
+			str1 = kkli::to_string( 0xffffffff + 0.123);	//用long double的max会出错 -_-!
+			str1.print("str1");					//(不知道).123
+
+			str1 = kkli::to_string(std::numeric_limits<long double>::min() + 0.123);
+			str1.print("str1");					//0.123
+
+			//下方 to_string 测试的类型都是通过类型转换调用上方的 to_string
+			//例如 to_string(int val) 调用 to_string((long long)(val))
+
+			//to_string(int)
+			cout << "to_string(int)" << endl;
+
+			str1 = to_string(0);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(-1234567);
+			str1.print("str1");					//-1234567
+
+			str1 = kkli::to_string(std::numeric_limits<int>::max());
+			str1.print("str1");					//0xffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<int>::min());
+			str1.print("str1");					//0xffffffff+1
+
+			//to_string(long)
+			cout << "to_string(long)" << endl;
+
+			str1 = to_string(0l);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0l);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567l);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(-1234567l);
+			str1.print("str1");					//-1234567
+
+			str1 = kkli::to_string(std::numeric_limits<long>::max());
+			str1.print("str1");					//0xffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<long>::min());
+			str1.print("str1");					//0xffffffff+1
+
+			//to_string(unsigned)
+			cout << "to_string(unsigned)" << endl;
+
+			str1 = to_string(0u);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0u);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567u);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned>::max());
+			str1.print("str1");					//0xffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned>::min());
+			str1.print("str1");					//0
+
+			//to_string(unsigned long)
+			cout << "to_string(unsigned long)" << endl;
+
+			str1 = to_string(0ul);
+			str1.print("str1");					//0
+
+			str1 = to_string(-0ul);
+			str1.print("str1");					//0
+
+			str1 = kkli::to_string(1234567ul);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned long>::max());
+			str1.print("str1");					//0xffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<unsigned long>::min());
+			str1.print("str1");					//0
+
+			//to_string(float)
+			cout << "to_string(float)" << endl;
+
+			str1 = to_string(0.0f);
+			str1.print("str1");					//0.0
+
+			str1 = to_string(-0.0f);
+			str1.print("str1");					//0.0
+
+			str1 = kkli::to_string(1234567.123f);
+			str1.print("str1");					//1234567
+
+			str1 = kkli::to_string(-1234567.123f);
+			str1.print("str1");					//-1234567
+
+			str1 = kkli::to_string(std::numeric_limits<float>::max());
+			str1.print("str1");					//
+
+			str1 = kkli::to_string(std::numeric_limits<float>::min() + 0.123f);
+			str1.print("str1");					//0.123xxxx
+
+			//to_string(double)
+			cout << "to_string(double)" << endl;
+
+			str1 = to_string((double)(0.0));
+			str1.print("str1");					//0.0
+
+			str1 = to_string((double)(-0.0));
+			str1.print("str1");					//0.0
+
+			str1 = kkli::to_string((double)(1234567.123));
+			str1.print("str1");					//1234567.123
+
+			str1 = kkli::to_string((double)(-1234567.123));
+			str1.print("str1");					//-1234567.123
+
+			str1 = kkli::to_string(std::numeric_limits<double>::max());
+			str1.print("str1");					//0xffffffff
+
+			str1 = kkli::to_string(std::numeric_limits<long>::min()+(double)(0.123));
+			str1.print("str1");					//
 		}
 	}
 }

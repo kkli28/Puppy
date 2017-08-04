@@ -362,6 +362,7 @@ namespace kkli {
 			string				substr(size_type pos = 0, size_type count = npos)const;
 			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos);
 			void				swap(string& rhs);
+			void				reverse();
 
 			void print(const std::string& prefix) const {
 				this->c_str();
@@ -811,6 +812,18 @@ namespace kkli {
 		__alloc = rhs.__alloc;
 		rhs.__alloc = alloc;
 	}
+
+	//reverse
+	template<typename CharType, typename Traits, typename Allocator>
+	void string<CharType, Traits, Allocator>::reverse() {
+		size_type size = this->size();
+		size_type mid_size = size / 2;
+		for (size_type i = 0; i < mid_size; ++i) {
+			value_type temp = __start[i];
+			__start[i] = __start[size - i - 1];
+			__start[size - i - 1] = temp;
+		}
+	}
 }
 
 //================================================================================
@@ -865,7 +878,7 @@ namespace kkli {
 
 	//operator +(value, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Allocator> operator+(CharType value, 
+	string<CharType, Allocator> operator+(CharType value,
 		const string<CharType, Traits, Allocator>& rhs) {
 		kkli::string<CharType, Traits, Allocator> str(rhs.size());
 		str.push_back(value);
@@ -1056,104 +1069,149 @@ namespace kkli {
 
 	//string to long long
 	template<typename CharType, typename Traits, typename Allocator>
-	long long stoll(const kkli::string<CharType, Traits, Allocator>& str,
+	long long stoll(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
 	//string to unsigned long long
 	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long long stoull(const kkli::string<CharType, Traits, Allocator>& str,
+	unsigned long long stoull(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
 	//string to long double
 	template<typename CharType, typename Traits, typename Allocator>
-	long double stold(const kkli::string<CharType, Traits, Allocator>& str,
+	long double stold(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0);
 
 	//下方的stox是通过调用上方的三个：stoll、stoull、stold 函数来实现的
 
 	//string to int
 	template<typename CharType, typename Traits, typename Allocator>
-	int stoi(const kkli::string<CharType, Traits, Allocator>& str,
+	int stoi(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoll(str, pos, base);		//先转化成long long，再窄化转型成int
 	}
 
 	//string to long
 	template<typename CharType, typename Traits, typename Allocator>
-	long stol(const kkli::string<CharType, Traits, Allocator>& str,
+	long stol(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoll(str, pos, base);		//先转化成long long，再窄化转型成long
 	}
 
 	//string to float
 	template<typename CharType, typename Traits, typename Allocator>
-	float stof(const kkli::string<CharType, Traits, Allocator>& str,
+	float stof(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0) {
 		return stoull(str, pos);			//先转化成long double，再窄化转型成float
 	}
 
 	//string to double
 	template<typename CharType, typename Traits, typename Allocator>
-	double stod(const kkli::string<CharType, Traits, Allocator>& str,
+	double stod(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0) {
 		return stold(str, pos);				//先转化成long double，再窄化转型成double
 	}
-	
+
 	//string to unsigned long
 	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long stoul(const kkli::string<CharType, Traits, Allocator>& str,
+	unsigned long stoul(const string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoull(str, pos, base);		//先转化成unsigned long long，再窄化转型成unsigned long
 	}
 
 	//============================== [to_string] ==============================
 
-	//to_string(long long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(long long value);
-
 	//to_string(unsigned long long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(unsigned long long value);
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(unsigned long long value) {
+		if (value == 0) return "0";
+
+		string<CharType, Traits, Allocator> result;
+		while (value != 0) {
+			unsigned long long val = value % 10;
+			result.push_back(static_cast<char>(val + 0x30));
+			value /= 10;
+		}
+		result.reverse();		//反转
+		return result;
+	}
+	
+	//to_string(long long)
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(long long value) {
+		using string = string<CharType, Traits, Allocator>;
+		string result;
+		if (value < 0) {
+			if(value == std::numeric_limits<long long>::min()) return "-9223372036854775808";
+			else {
+				result.push_back('-');	//负号
+				value = -value;			//对value取反
+			}
+		}
+		unsigned long long val = value;
+		result += to_string(val);		//调用to_string(unsigned long long)
+		return result;
+	}
 
 	//to_string(long double)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(long double value);
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(long double value) {
+		string<CharType, Traits, Allocator> result;
+		if (value < 0) {
+			result.push_back('-');
+			value = -value;
+		}
+		unsigned long long integer_part = static_cast<unsigned long long>(value);	//整数部分
+		unsigned long long decimal_part = (value - integer_part)*100000000;			//小数部分，放大1千万倍
+		
+		result += to_string(integer_part);			//整数部分，调用to_string(unsigned long long)
+		result.push_back('.');
+		result += to_string(decimal_part);			//小数部分，调用to_string(unsigned long long)
+		return result;
+	}
 
 	//to_string(int)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(int value) {
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(int value) {
 		return to_string(static_cast<long long>(value));
 	}
 
 	//to_sring(long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(long value) {
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(long value) {
 		return to_string(static_cast<long long>(value));
 	}
 
 	//to_string(unsigned)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(unsigned value) {
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(unsigned value) {
 		return to_string(static_cast<unsigned long long>(value));
 	}
 
 	//to_string(unsigned long)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(unsigned long value) {
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(unsigned long value) {
 		return to_string(static_cast<unsigned long long>(value));
 	}
 
 	//to_string(float)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(float value) {
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(float value) {
 		return to_string(static_cast<long double>(value));
 	}
 
 	//to_string(double)
-	template<typename CharType, typename Traits, typename Allocator>
-	kkli::string<CharType, Traits, Allocator> to_string(double value){
+	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
+		typename Allocator = kkli::allocator<CharType>>
+		string<CharType, Traits, Allocator> to_string(double value) {
 		return to_string(static_cast<long double>(value));
 	}
-
 }
