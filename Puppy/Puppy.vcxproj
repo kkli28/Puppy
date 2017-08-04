@@ -147,6 +147,8 @@
     <ClInclude Include="deque_uncomplete.h" />
     <ClInclude Include="forward_list.h" />
     <ClInclude Include="forward_list_test.h" />
+    <ClInclude Include="iterator.h" />
+    <ClInclude Include="iterator_traits.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="list_test.h" />
     <ClInclude Include="my_pair.h" />
