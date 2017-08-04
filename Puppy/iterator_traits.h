@@ -11,6 +11,7 @@ namespace kkli {
 	//defined in iterator.h
 	class random_access_iterator_tag;
 
+	//iterator_traits<Iterator>
 	template<typename Iterator>
 	class iterator_traits {
 	public:
@@ -22,6 +23,7 @@ namespace kkli {
 		typedef typename Iterator::iterator_category	iterator_category;
 	};
 
+	//iterator_traits<T*>
 	template<typename T>
 	class iterator_traits<T*> {
 	public:
@@ -33,6 +35,7 @@ namespace kkli {
 		typedef typename kkli::random_access_iterator_tag	iterator_category;
 	};
 
+	//iterator_traits<const T*>
 	template<typename T>
 	class iterator_traits<const T*> {
 	public:

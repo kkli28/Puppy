@@ -21,8 +21,8 @@ namespace kkli {
 	class input_iterator_tag {};
 	class output_iterator_tag {};
 	class forward_iterator_tag :public input_iterator_tag, public output_iterator_tag {};
-	class bidirectional_iterator_tag : public forward_iterator_tag {};
-	class random_access_iterator_tag : public bidirectional_iterator_tag {};
+	class bidirectional_iterator_tag :public forward_iterator_tag {};
+	class random_access_iterator_tag :public bidirectional_iterator_tag {};
 }
 
 //================================================================================
@@ -33,7 +33,6 @@ namespace kkli {
 
 	template<typename Iterator>
 	class reverse_iterator {
-
 	public:
 		//typedefs
 		typedef typename kkli::iterator_traits<Iterator>::value_type
@@ -47,8 +46,7 @@ namespace kkli {
 		typedef typename kkli::iterator_traits<Iterator>::iterator_category
 			iterator_category;
 
-	public:
-		typedef Iterator	iterator_type;
+		typedef Iterator iterator_type;
 
 	private:
 		Iterator current;
@@ -56,19 +54,20 @@ namespace kkli {
 	public:
 		//constructor
 		reverse_iterator() {}
-		explicit reverse_iterator(iterator_type it) :current(it) {}
+		explicit reverse_iterator(Iterator curr) :current(curr) {}
 
 		template<typename U>
 		reverse_iterator(const reverse_iterator<U>& rhs) : current(rhs.current) {}
+
+		//base
+		Iterator base()const { return current; }
 
 		//operator =
 		template<typename U>
 		reverse_iterator& operator=(const reverse_iterator<U>& rhs) {
 			current = rhs.current;
+			return *this;
 		}
-
-		//base
-		Iterator base() const { return current; }
 
 		//operator *
 		reference operator*()const {
@@ -89,7 +88,7 @@ namespace kkli {
 
 		//operator ++(int)
 		reverse_iterator operator++(int) {
-			reverse_iterator temp = current;
+			reverse_iterator temp(current);
 			--current;
 			return temp;
 		}
@@ -99,7 +98,7 @@ namespace kkli {
 			current -= n;
 			return *this;
 		}
-		
+
 		//operator +
 		reverse_iterator operator+(difference_type n) {
 			return reverse_iterator(current - n);
@@ -113,7 +112,7 @@ namespace kkli {
 
 		//operator --(int)
 		reverse_iterator operator--(int) {
-			reverse_iterator temp = current;
+			reverse_iterator temp(current);
 			++current;
 			return temp;
 		}
@@ -136,7 +135,7 @@ namespace kkli {
 		}
 	};
 
-	//non-member functions
+	//non-member function
 
 	//operator ==
 	template<typename Iterator1, typename Iterator2>
@@ -144,7 +143,7 @@ namespace kkli {
 		const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() == rhs.base();
 	}
-	
+
 	//operator !=
 	template<typename Iterator1, typename Iterator2>
 	inline bool operator!=(const reverse_iterator<Iterator1>& lhs,
@@ -175,22 +174,22 @@ namespace kkli {
 
 	//operator >=
 	template<typename Iterator1, typename Iterator2>
-	bool operator>=(const reverse_iterator<Iterator1>& lhs,
+	inline bool operator>=(const reverse_iterator<Iterator1>& lhs,
 		const reverse_iterator<Iterator2>& rhs) {
 		return !(lhs < rhs);
 	}
 
 	//operator +
 	template<typename Iterator>
-	reverse_iterator<Iterator> operator+(
+	inline  reverse_iterator<Iterator> operator+(
 		typename reverse_iterator<Iterator>::difference_type n,
 		const reverse_iterator<Iterator>& rhs) {
-		return reverse_iterator<Iterator>(rhs.base() - n);
+		return reverse_iterator(rhs.base() - n);
 	}
 
 	//operator -
 	template<typename Iterator1, typename Iterator2>
-	auto operator-(const reverse_iterator<Iterator1>& lhs,
+	inline auto operator>=(const reverse_iterator<Iterator1>& lhs,
 		const reverse_iterator<Iterator2>& rhs) -> decltype(lhs.base()-rhs.base()) {
 		return lhs.base() - rhs.base();
 	}
@@ -206,12 +205,13 @@ namespace kkli {
 	class back_insert_iterator {
 	public:
 		//typedefs
-		typedef void			value_type;
+		typedef	void			value_type;
 		typedef void			reference;
 		typedef void			pointer;
 		typedef void			difference_type;
-		typedef kkli::output_iterator_tag		iterator_category;
+		typedef kkli::output_iterator_tag	iterator_category;
 
+		typedef Container		container_type;
 	private:
 		Container* container;
 
@@ -220,27 +220,25 @@ namespace kkli {
 		explicit back_insert_iterator(Container& cont) :container(&cont) {}
 
 		//operator =(value)
-		back_insert_iterator<Container>& operator=(
-			typename Container::const_reference value) {
+		back_insert_iterator& operator=(const typename Container::value_type& value) {
 			container->push_back(value);
 			return *this;
 		}
 
 		//operator =(&&value)
-		back_insert_iterator<Container>& operator=(
-			typename Container::value_type&& value) {
+		back_insert_iterator& operator=(typename Container::value_type&& value) {
 			container->push_back(std::move(value));
 			return *this;
 		}
 
 		//operator *
-		back_insert_iterator<Container>& operator*() { return *this; }
-		
+		back_insert_iterator& operator*()const { return *this; }
+
 		//operator ++
-		back_insert_iterator<Container>& operator++() { return *this; }
+		back_insert_iterator& operator++() { return *this; }
 
 		//operator ++(int)
-		back_insert_iterator<Container>& operator++(int) { return *this; }
+		back_insert_iterator& operator++(int) { return *this; }
 	};
 
 	//non-member function
@@ -251,6 +249,7 @@ namespace kkli {
 		return back_insert_iterator<Container>(cont);
 	}
 }
+
 
 //================================================================================
 // front_insert_iterator<T> ¿‡∂®“Â
@@ -266,7 +265,9 @@ namespace kkli {
 		typedef void			reference;
 		typedef void			pointer;
 		typedef void			difference_type;
-		typedef kkli::output_iterator_tag		iterator_category;
+		typedef kkli::output_iterator_tag	iterator_category;
+
+		typedef Container		container_type;
 
 	private:
 		Container* container;
@@ -276,27 +277,25 @@ namespace kkli {
 		explicit front_insert_iterator(Container& cont) :container(&cont) {}
 
 		//operator =(value)
-		front_insert_iterator<Container>& operator=(
-			typename Container::const_reference value) {
-			container->push_front(value);
+		front_insert_iterator& operator=(const typename Container::value_type& value) {
+			container->push_back(value);
 			return *this;
 		}
 
-		//operator =(&&value)
-		front_insert_iterator<Container>& operator=(
-			typename Container::value_type&& value) {
-			container->push_front(std::move(value));
+		//operatpr =(&&value)
+		front_insert_iterator& operator=(typename Container::value_type&& value) {
+			container->push_back(std::move(value));
 			return *this;
 		}
 
 		//operator *
-		front_insert_iterator<Container>& operator*() { return *this; }
-
+		front_insert_iterator& operator*()const { return *this; }
+		
 		//operator ++
-		front_insert_iterator<Container>& operator++() { return *this; }
+		front_insert_iterator& operator++() { return *this; }
 
 		//operator ++(int)
-		front_insert_iterator<Container>& operator++(int) { return *this; }
+		front_insert_iterator& operator++(int) { return *this; }
 	};
 
 	//non-member function
@@ -324,9 +323,11 @@ namespace kkli {
 		typedef void			difference_type;
 		typedef kkli::output_iterator_tag		iterator_category;
 
+		typedef Container		container_type;
+
 	private:
-		typename Container::iterator iter;
 		Container* container;
+		typename Container::iterator iter;
 
 	public:
 		//constructor
@@ -334,22 +335,21 @@ namespace kkli {
 			:container(&cont), iter(it) {}
 
 		//operator =(value)
-		insert_iterator<Container>& operator=(
-			typename Container::const_reference value) {
+		insert_iterator& operator=(const typename Container::value_type& value) {
 			iter = container->insert(iter, value);
 			++iter;
 			return *this;
 		}
 
 		//operator =(&&value)
-		insert_iterator<Container>& operator=(
-			typename Container::value_type&& value) {
-			container->push_back(std::move(value));
+		insert_iterator& operator=(typename Container::value_type&& value) {
+			iter = container->insert(iter, std::move(value));
+			++iter;
 			return *this;
 		}
 
 		//operator *
-		insert_iterator<Container>& operator*() { return *this; }
+		insert_iterator<Container>& operator*()const { return *this; }
 
 		//operator ++
 		insert_iterator<Container>& operator++() { return *this; }
@@ -357,14 +357,6 @@ namespace kkli {
 		//operator ++(int)
 		insert_iterator<Container>& operator++(int) { return *this; }
 	};
-
-	//non-member function
-
-	//inserter
-	template<typename Container,typename Iterator>
-	inline insert_iterator<Container> inserter(Container& cont, Iterator it) {
-		return insert_iterator<Container>(cont, Container::iterator(it));
-	}
 }
 
 //================================================================================
@@ -372,15 +364,15 @@ namespace kkli {
 //================================================================================
 
 namespace kkli {
-	
-	template<typename T,class Distance=std::ptrdiff_t>
+
+	template<typename T, typename Distance = std::ptrdiff_t>
 	class istream_iterator {
 	public:
 		//typedefs
-		typedef T			value_type;
-		typedef const T*	pointer;
-		typedef const T&	reference;
-		typedef Distance	difference_type;
+		typedef T				value_type;
+		typedef const T&		reference;
+		typedef const T*		pointer;
+		typedef Distance		difference_type;
 		typedef kkli::input_iterator_tag	iterator_category;
 
 	private:
@@ -388,14 +380,13 @@ namespace kkli {
 		value_type value;
 
 		void read() {
-			if (end_marker) *stream >> value;
+			if (*stream) *stream >> value;
 		}
 
 	public:
-
 		//constructor
 		istream_iterator() :stream(&cin) {}
-		istream_iterator(std::istream& is) :stream(&is) { read(); }
+		istream_iterator(std::istream& is) :stream(&is) {}
 
 		//operator *
 		reference operator*()const { return value; }
@@ -404,18 +395,19 @@ namespace kkli {
 		pointer operator->()const { return &value; }
 
 		//operator ++
-		istream_iterator<T, Distance>& operator++() {
+		istream_iterator& operator++() {
 			read();
 			return *this;
 		}
 
 		//operator ++(int)
-		istream_iterator<T, Distance> operator++(int) {
-			istream_iterator<T, Distance> temp = *this;
+		istream_iterator& operator++(int) {
+			istream_iterator temp(*this);
 			read();
 			return temp;
 		}
 
+		//friend function
 		friend inline bool operator==(const istream_iterator<T, Distance>& lhs,
 			const istream_iterator<T, Distance>& rhs);
 
@@ -429,13 +421,13 @@ namespace kkli {
 	template<typename T,typename Distance>
 	inline bool operator==(const istream_iterator<T, Distance>& lhs,
 		const istream_iterator<T, Distance>& rhs) {
-		bool lhs_valid = (*(lhs.stream)) ? true : false;
-		bool rhs_valid = (*(rhs.stream)) ? true : false;
+		bool lhs_valid = *(lhs.stream) ? true : false;
+		bool rhs_valid = *(rhs.stream) ? true : false;
 		return (lhs.stream == rhs.stream) && (lhs_valid == rhs_valid);
 	}
 
 	//operator !=
-	template<typename T, typename Distance>
+	template<typename T,typename Distance>
 	inline bool operator!=(const istream_iterator<T, Distance>& lhs,
 		const istream_iterator<T, Distance>& rhs) {
 		return !(lhs == rhs);
@@ -452,10 +444,10 @@ namespace kkli {
 	class ostream_iterator {
 	public:
 		//typedefs
-		typedef void		value_type;
-		typedef void 		pointer;
-		typedef void		reference;
-		typedef void		difference_type;
+		typedef void			value_type;
+		typedef void			reference;
+		typedef void			pointer;
+		typedef void			difference_type;
 		typedef kkli::output_iterator_tag	iterator_category;
 
 	private:
@@ -463,30 +455,30 @@ namespace kkli {
 		const char* str;
 
 	public:
-
 		//constructor
 		ostream_iterator(std::ostream& os) :stream(&os) {}
-		ostream_iterator(std::ostream& is, const char* c) :stream(&os), str(c) {}
+		ostream_iterator(std::ostream& os, const char* c) :stream(&os), str(c) {}
 
 		//operator =
-		ostream_iterator<T>& operator=(const T& value) {
+		ostream_iterator& operator=(const T& value) {
 			*stream << value;
 			if (str) *stream << str;
 			return *this;
 		}
 
 		//operator *
-		ostream_iterator<T>& operator*()const { return *this; }
+		ostream_iterator& operator*()const { return *this; }
 
 		//operator ++
-		ostream_iterator<T>& operator++() { return *this; }
+		ostream_iterator& operator++() { return *this; }
 
 		//operator ++(int)
-		ostream_iterator<T> operator++(int) { return *this; }
+		ostream_iterator& operator++(int) { return *this; }
 
+		//friend function
 		friend inline bool operator==(const ostream_iterator<T>& lhs,
 			const ostream_iterator<T>& rhs);
-		
+
 		friend inline bool operator!=(const ostream_iterator<T>& lhs,
 			const ostream_iterator<T>& rhs);
 	};
