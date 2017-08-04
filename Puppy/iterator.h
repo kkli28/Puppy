@@ -54,7 +54,7 @@ namespace kkli {
 
 	public:
 		//constructor
-		reverse_iterator();
+		reverse_iterator() {}
 		explicit reverse_iterator(iterator_type it) :current(it) {}
 
 		template<typename U>
@@ -194,3 +194,186 @@ namespace kkli {
 		return lhs.base() - rhs.base();
 	}
 }
+
+//================================================================================
+// back_insert_iterator<T> 类定义
+//================================================================================
+
+namespace kkli {
+
+	template<typename Container>
+	class back_insert_iterator {
+	public:
+		//typedefs
+		typedef void			value_type;
+		typedef void			reference;
+		typedef void			pointer;
+		typedef void			difference_type;
+		typedef kkli::output_iterator_tag		iterator_category;
+
+	private:
+		Container* container;
+
+	public:
+		//constructor
+		explicit back_insert_iterator(Container& cont) :container(&cont) {}
+
+		//operator =(value)
+		back_insert_iterator<Container>& operator=(
+			typename Container::const_reference value) {
+			container->push_back(value);
+			return *this;
+		}
+
+		//operator =(&&value)
+		back_insert_iterator<Container>& operator=(
+			typename Container::value_type&& value) {
+			container->push_back(std::move(value));
+			return *this;
+		}
+
+		//operator *
+		back_insert_iterator<Container>& operator*() { return *this; }
+		
+		//operator ++
+		back_insert_iterator<Container>& operator++() { return *this; }
+
+		//operator ++(int)
+		back_insert_iterator<Container>& operator++(int) { return *this; }
+	};
+
+	//non-member function
+
+	//back_inserter
+	template<typename Container>
+	inline back_insert_iterator<Container> back_inserter(Container& cont) {
+		return back_insert_iterator<Container>(cont);
+	}
+}
+
+//================================================================================
+// front_insert_iterator<T> 类定义
+//================================================================================
+
+namespace kkli {
+
+	template<typename Container>
+	class front_insert_iterator {
+	public:
+		//typedefs
+		typedef void			value_type;
+		typedef void			reference;
+		typedef void			pointer;
+		typedef void			difference_type;
+		typedef kkli::output_iterator_tag		iterator_category;
+
+	private:
+		Container* container;
+
+	public:
+		//constructor
+		explicit front_insert_iterator(Container& cont) :container(&cont) {}
+
+		//operator =(value)
+		front_insert_iterator<Container>& operator=(
+			typename Container::const_reference value) {
+			container->push_front(value);
+			return *this;
+		}
+
+		//operator =(&&value)
+		front_insert_iterator<Container>& operator=(
+			typename Container::value_type&& value) {
+			container->push_front(std::move(value));
+			return *this;
+		}
+
+		//operator *
+		front_insert_iterator<Container>& operator*() { return *this; }
+
+		//operator ++
+		front_insert_iterator<Container>& operator++() { return *this; }
+
+		//operator ++(int)
+		front_insert_iterator<Container>& operator++(int) { return *this; }
+	};
+
+	//non-member function
+
+	//front_inserter
+	template<typename Container>
+	inline front_insert_iterator<Container> front_inserter(Container& cont) {
+		return front_insert_iterator<Container>(cont);
+	}
+}
+
+//================================================================================
+// insert_iterator<T> 类定义
+//================================================================================
+
+namespace kkli {
+
+	template<typename Container>
+	class insert_iterator {
+	public:
+		//typedefs
+		typedef void			value_type;
+		typedef void			reference;
+		typedef void			pointer;
+		typedef void			difference_type;
+		typedef kkli::output_iterator_tag		iterator_category;
+
+	private:
+		typename Container::iterator iter;
+		Container* container;
+
+	public:
+		//constructor
+		insert_iterator(Container& cont, typename Container::iterator it)
+			:container(&cont), iter(it) {}
+
+		//operator =(value)
+		insert_iterator<Container>& operator=(
+			typename Container::const_reference value) {
+			iter = container->insert(iter, value);
+			++iter;
+			return *this;
+		}
+
+		//operator =(&&value)
+		insert_iterator<Container>& operator=(
+			typename Container::value_type&& value) {
+			container->push_back(std::move(value));
+			return *this;
+		}
+
+		//operator *
+		insert_iterator<Container>& operator*() { return *this; }
+
+		//operator ++
+		insert_iterator<Container>& operator++() { return *this; }
+
+		//operator ++(int)
+		insert_iterator<Container>& operator++(int) { return *this; }
+	};
+
+	//non-member function
+
+	//inserter
+	template<typename Container,typename Iterator>
+	inline insert_iterator<Container> inserter(Container& cont, Iterator it) {
+		return insert_iterator<Container>(cont, Container::iterator(it));
+	}
+}
+
+//================================================================================
+// istream_iterator<T> 类定义
+//================================================================================
+
+//TODO: 
+
+//================================================================================
+// ostream_iterator<T> 类定义
+//================================================================================
+
+//TODO: 
