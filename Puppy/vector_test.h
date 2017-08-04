@@ -78,8 +78,8 @@ namespace test {
 			vec4.print("vec4: ");
 
 			//vector(InputIterator, InputIterator) -- 该构造没有定义，需要使用SFINAE，不会！！！
-			//vector<int> vec5(vec3.begin(), vec3.end());
-			//vec5.print("vec5: ");
+			//vector<int> vec(vec3.begin(), vec3.end());
+			//vec.print("vec5: ");
 
 			//vector(const vector&)
 			vector<int> vec5(vec1);

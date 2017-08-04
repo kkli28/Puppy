@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 #include "allocator.h"
+#include "iterator.h"
+#include "iterator_traits.h"
 
 //================================================================================
 // vector<T> 类定义
@@ -48,7 +50,8 @@ namespace kkli {
 		//解决本函数覆盖上方函数vector(size_type,const value_type&,const Allocator&)，需要使用SFINAE，然而我不会，so不定义这个函数
 		//以后升级了再来，先刷刷小怪
 		//template<typename InputIterator>
-		//vector(InputIterator first, InputIterator last, int);
+		//vector(InputIterator first, InputIterator last,
+		//	typename kkli::input_iterator_tag = typename kkli::iterator_traits<InputIterator>::iterator_category);
 
 		vector(const vector& rhs);
 		vector(vector&& rhs);

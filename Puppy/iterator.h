@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "iterator_traits.h"
 
 //================================================================================
 // iterator 类定义
@@ -370,10 +371,139 @@ namespace kkli {
 // istream_iterator<T> 类定义
 //================================================================================
 
-//TODO: 
+namespace kkli {
+	
+	template<typename T,class Distance=std::ptrdiff_t>
+	class istream_iterator {
+	public:
+		//typedefs
+		typedef T			value_type;
+		typedef const T*	pointer;
+		typedef const T&	reference;
+		typedef Distance	difference_type;
+		typedef kkli::input_iterator_tag	iterator_category;
+
+	private:
+		std::istream* stream;
+		value_type value;
+
+		void read() {
+			if (end_marker) *stream >> value;
+		}
+
+	public:
+
+		//constructor
+		istream_iterator() :stream(&cin) {}
+		istream_iterator(std::istream& is) :stream(&is) { read(); }
+
+		//operator *
+		reference operator*()const { return value; }
+
+		//operator ->
+		pointer operator->()const { return &value; }
+
+		//operator ++
+		istream_iterator<T, Distance>& operator++() {
+			read();
+			return *this;
+		}
+
+		//operator ++(int)
+		istream_iterator<T, Distance> operator++(int) {
+			istream_iterator<T, Distance> temp = *this;
+			read();
+			return temp;
+		}
+
+		friend inline bool operator==(const istream_iterator<T, Distance>& lhs,
+			const istream_iterator<T, Distance>& rhs);
+
+		friend inline bool operator!=(const istream_iterator<T, Distance>& lhs,
+			const istream_iterator<T, Distance>& rhs);
+	};
+
+	//non-member function
+
+	//operator ==
+	template<typename T,typename Distance>
+	inline bool operator==(const istream_iterator<T, Distance>& lhs,
+		const istream_iterator<T, Distance>& rhs) {
+		bool lhs_valid = (*(lhs.stream)) ? true : false;
+		bool rhs_valid = (*(rhs.stream)) ? true : false;
+		return (lhs.stream == rhs.stream) && (lhs_valid == rhs_valid);
+	}
+
+	//operator !=
+	template<typename T, typename Distance>
+	inline bool operator!=(const istream_iterator<T, Distance>& lhs,
+		const istream_iterator<T, Distance>& rhs) {
+		return !(lhs == rhs);
+	}
+}
 
 //================================================================================
 // ostream_iterator<T> 类定义
 //================================================================================
 
-//TODO: 
+namespace kkli {
+
+	template<typename T>
+	class ostream_iterator {
+	public:
+		//typedefs
+		typedef void		value_type;
+		typedef void 		pointer;
+		typedef void		reference;
+		typedef void		difference_type;
+		typedef kkli::output_iterator_tag	iterator_category;
+
+	private:
+		std::ostream* stream;
+		const char* str;
+
+	public:
+
+		//constructor
+		ostream_iterator(std::ostream& os) :stream(&os) {}
+		ostream_iterator(std::ostream& is, const char* c) :stream(&os), str(c) {}
+
+		//operator =
+		ostream_iterator<T>& operator=(const T& value) {
+			*stream << value;
+			if (str) *stream << str;
+			return *this;
+		}
+
+		//operator *
+		ostream_iterator<T>& operator*()const { return *this; }
+
+		//operator ++
+		ostream_iterator<T>& operator++() { return *this; }
+
+		//operator ++(int)
+		ostream_iterator<T> operator++(int) { return *this; }
+
+		friend inline bool operator==(const ostream_iterator<T>& lhs,
+			const ostream_iterator<T>& rhs);
+		
+		friend inline bool operator!=(const ostream_iterator<T>& lhs,
+			const ostream_iterator<T>& rhs);
+	};
+
+	//non-member function
+
+	//operator ==
+	template<typename T>
+	inline bool operator==(const ostream_iterator<T>& lhs,
+		const ostream_iterator<T>& rhs) {
+		return lhs.stream == rhs.stream;
+	}
+
+	//operator !=
+	template<typename T>
+	inline bool operator!=(const ostream_iterator<T>& lhs,
+		const ostream_iterator<T>& rhs) {
+		return !(lhs == rhs);
+	}
+}
