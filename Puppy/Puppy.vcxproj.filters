@@ -24,14 +24,8 @@
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="my_pair.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="my_pair_test.h">
-      <Filter>头文件\test</Filter>
     </ClInclude>
     <ClInclude Include="forward_list.h">
       <Filter>头文件</Filter>
@@ -50,9 +44,6 @@
     </ClInclude>
     <ClInclude Include="array_test.h">
       <Filter>头文件\test</Filter>
-    </ClInclude>
-    <ClInclude Include="allocator.h">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="vector.h">
       <Filter>头文件</Filter>
@@ -91,6 +82,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="iterator_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+    <ClInclude Include="memory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pair.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pair_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
   </ItemGroup>

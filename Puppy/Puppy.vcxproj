@@ -152,14 +152,14 @@
     <ClInclude Include="iterator_traits.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="list_test.h" />
-    <ClInclude Include="my_pair.h" />
-    <ClInclude Include="my_pair_test.h" />
+    <ClInclude Include="pair.h" />
+    <ClInclude Include="pair_test.h" />
     <ClInclude Include="set.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_test.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="allocator.h" />
+    <ClInclude Include="memory.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vector_test.h" />
   </ItemGroup>

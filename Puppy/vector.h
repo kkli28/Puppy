@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "allocator.h"
+#include "memory.h"
 #include "iterator.h"
 #include "iterator_traits.h"
 

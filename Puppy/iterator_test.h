@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "string.h"
 #include "char_traits.h"
-#include "allocator.h"
+#include "memory.h"
 #include "iterator.h"
 #include "list.h"
 
@@ -22,8 +22,8 @@ namespace test {
 		void test_back_insert_iterator();
 		void test_front_insert_iterator();
 		void test_insert_iterator();
-		void test_istream_iterator();
-		void test_ostream_iterator();
+		void test_istream_iterator();		//buggy
+		void test_ostream_iterator();		//buggy
 
 		//整体测试
 		void test() {
@@ -35,8 +35,8 @@ namespace test {
 			test_back_insert_iterator();
 			test_front_insert_iterator();
 			test_insert_iterator();
-			//test_istream_iterator();
-			//test_ostream_iterator();
+			//test_istream_iterator();		//程序不能找到istream_iterator的比较运算符!=
+			//test_ostream_iterator();		//同上6
 		}
 
 		//测试 reverse_iterator
@@ -113,6 +113,7 @@ namespace test {
 			lst2.print("str2");				//aabcdbcd
 		}
 
+		/*
 		//测试 istream_iterator
 		void test_istream_iterator() {
 			cout << "\ntest_istream_iterator()" << endl;
@@ -120,5 +121,22 @@ namespace test {
 			string str1((kkli::istream_iterator<char>(cin)), kkli::istream_iterator<char>());
 			str1.print("str1");
 		}
+		*/
+		
+		/*
+		//测试 ostream_iterator
+		void test_ostream_iterator() {
+			cout << "\ntest_ostream_iterator()" << endl;
+
+			string str1("abcd");
+			kkli::ostream_iterator<char> os1(cout, " ");
+			kkli::ostream_iterator<char> os2();
+			auto it = str1.begin();
+			for (auto iter = os1; iter != os2; ++iter) {
+				*iter = *it;
+				++it;
+			}
+		}
+		*/
 	}
 }

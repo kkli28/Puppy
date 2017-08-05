@@ -1,15 +1,15 @@
 #pragma once
 
 #include "stdafx.h"
-#include "my_pair.h"
+#include "pair.h"
 
 namespace test {
-	namespace my_pair_test {
+	namespace pair_test {
 		using std::cout;
 		using std::endl;
 		using std::string;
 
-		using kkli::my_pair;
+		using kkli::pair;
 		using kkli::swap;
 		using kkli::get;
 		using kkli::make_pair;
@@ -31,7 +31,7 @@ namespace test {
 		//整体测试
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: my_pair " << endl;
+			cout << "          test: pair " << endl;
 			cout << "========================================" << endl;
 
 			test_constructor();
@@ -45,37 +45,37 @@ namespace test {
 			test_tuple_element();
 		}
 
-		//测试 my_pair
+		//测试 pair
 		void test_constructor() {
 			cout << "\ntest_constructor()" << endl;
 
-			//my_pair()
+			//pair()
 			cout << "mp1: ";
-			my_pair<int, int> mp1;
+			pair<int, int> mp1;
 
-			//my_pair<const T1&, const T2&>
+			//pair<const T1&, const T2&>
 
-			//WRONG: 为何运行后全部都是my_pair<T1&&, T2&&> ???
+			//WRONG: 为何运行后全部都是pair<T1&&, T2&&> ???
 			//WRONG !!!!!!;
 
 			int ival = 1;
 			string sval = "C++";
 			cout << "mp2: ";
-			my_pair<int, string> mp2(ival, sval);
+			pair<int, string> mp2(ival, sval);
 			cout << "mp3: ";
-			my_pair<int, string> mp3 = mp2;
+			pair<int, string> mp3 = mp2;
 
-			//my_pair<T1&&, T2&&>
+			//pair<T1&&, T2&&>
 			cout << "mp4: ";
-			my_pair<int, int> mp4(1, 2);
+			pair<int, int> mp4(1, 2);
 			cout << "mp5: ";
-			my_pair<int, string> mp5(1, "mp3");
+			pair<int, string> mp5(1, "mp3");
 			cout << "mp6: ";
-			my_pair<string, int> mp6("mp4", 2);
+			pair<string, int> mp6("mp4", 2);
 			cout << "mp7: ";
-			my_pair<int, string> mp7(std::move(ival), std::move(sval));
+			pair<int, string> mp7(std::move(ival), std::move(sval));
 			cout << "mp8: ";
-			my_pair<int, string> mp8(std::move(mp7));
+			pair<int, string> mp8(std::move(mp7));
 		}
 
 		//测试 first_type/second_type/first/second
@@ -85,9 +85,9 @@ namespace test {
 			//first_type/second_type
 			
 			//first/second
-			my_pair<int, string> mp(i, str);
-			my_pair<int, string>::first_type ft = i;
-			my_pair<int, string>::second_type st = str;
+			pair<int, string> mp(i, str);
+			pair<int, string>::first_type ft = i;
+			pair<int, string>::second_type st = str;
 			
 			cout << "ft: " << i << "    st: " << st << endl;
 			cout << "first: " << mp.first << "    second: " << mp.second << endl;
@@ -98,8 +98,8 @@ namespace test {
 			cout << "\ntest_op_equal()" << endl;
 
 			//operator=
-			my_pair<int, string> mp1(i, str);
-			my_pair<int, string> mp2;
+			pair<int, string> mp1(i, str);
+			pair<int, string> mp2;
 			mp2 = mp1;
 			cout << "mp2.first: " << mp2.first << "    mp2.second: " << mp2.second << endl;
 		}
@@ -108,8 +108,8 @@ namespace test {
 		void test_swap() {
 			cout << "\ntest_swap()" << endl;
 
-			my_pair<int, string> mp1(i, str);
-			my_pair<int, string> mp2(2,"C#");
+			pair<int, string> mp1(i, str);
+			pair<int, string> mp2(2,"C#");
 
 			mp1.swap(mp2);
 			cout << "mp1.first: " << mp1.first << "    mp1.second: " << mp1.second << endl;
@@ -124,7 +124,7 @@ namespace test {
 		void test_make_pair() {
 			cout << "\ntest_make_pair()" << endl;
 
-			my_pair<int, string> mp = kkli::make_pair(i, str);
+			pair<int, string> mp = kkli::make_pair(i, str);
 			cout << "mp.first: " << mp.first << "    mp.second: " << mp.second << endl;
 		}
 
@@ -132,11 +132,11 @@ namespace test {
 		void test_op_logical() {
 			cout << "\ntest_op_logical()" << endl;
 
-			my_pair<int, string> mp1(i, str);
-			my_pair<int, string> mp2(i, str);
-			my_pair<int, string> mp3(i, str + "C++");
-			my_pair<int, int> mp4(1, 2);
-			my_pair<int, int> mp5(3, 4);
+			pair<int, string> mp1(i, str);
+			pair<int, string> mp2(i, str);
+			pair<int, string> mp3(i, str + "C++");
+			pair<int, int> mp4(1, 2);
+			pair<int, int> mp5(3, 4);
 
 			//operator ==
 			cout << (mp1 == mp1 ? "==" : "!=") << endl;
@@ -185,7 +185,7 @@ namespace test {
 		void test_get() {
 			cout << "\ntest_get()" << endl;
 
-			my_pair<int, string> mp(i, str);
+			pair<int, string> mp(i, str);
 			cout << "get<0>: " << get<0>(mp) << endl;
 			cout << "get<1>: " << get<1>(mp) << endl;
 		}
@@ -194,15 +194,15 @@ namespace test {
 		void test_tuple_size() {
 			cout << "\ntest_tuple_size()" << endl;
 
-			cout << kkli::tuple_size<my_pair<int, string>>::value << endl;
+			cout << kkli::tuple_size<pair<int, string>>::value << endl;
 		}
 
 		//测试 tuple_elememt
 		void test_tuple_element() {
 			cout << "\ntest_tuple_element()" << endl;
 
-			kkli::tuple_element<0, my_pair<int, string>>::type t1 = 1;
-			kkli::tuple_element<1, my_pair<int, string>>::type t2 = "C++";
+			kkli::tuple_element<0, pair<int, string>>::type t1 = 1;
+			kkli::tuple_element<1, pair<int, string>>::type t2 = "C++";
 			cout << t1 << " " << t2 << endl;
 		}
 	}
