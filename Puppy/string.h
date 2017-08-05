@@ -419,8 +419,9 @@ namespace kkli {
 	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::__set_value_by_range(
 		iterator addr, InputIteratorA first, InputIteratorB last) {
 		size_type index = 0;
-		for (auto iter = first; iter != last; ++iter) {
-			*(addr + index) = *iter;
+		for (; first != last; ++first) {
+			
+			*(addr + index) = *first;
 			++index;
 		}
 		return index;

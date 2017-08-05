@@ -389,22 +389,43 @@ namespace kkli {
 		value_type value;
 
 		void read() {
-			if (*stream) *stream >> value;
+			if (*stream) {
+				*stream >> value;
+			}
+			if ((*stream).fail()) {
+				(*stream).clear();
+				(*stream).ignore(std::numeric_limits<std::streampos>::max());
+				stream = nullptr;
+			}
 		}
 
 	public:
 		//constructor
-		istream_iterator() :stream(&cin) {}
-		istream_iterator(std::istream& is) :stream(&is) {}
+		istream_iterator() :stream(nullptr) {}
+		istream_iterator(std::istream& is) :stream(&is) {
+			read();
+		}
+		istream_iterator(const istream_iterator& rhs) {
+			stream = rhs.stream;
+			value = rhs.value;
+		}
 
 		//operator *
-		reference operator*()const { return value; }
+		reference operator*()const {
+			return value; 
+		}
 
 		//operator ->
-		pointer operator->()const { return &value; }
+		pointer operator->()const {
+			return &value; 
+		}
 
 		//operator ++
 		istream_iterator& operator++() {
+
+			//log
+			std::cout << "call operator++()" << endl;
+
 			read();
 			return *this;
 		}
@@ -416,31 +437,16 @@ namespace kkli {
 			return temp;
 		}
 
-		//friend function
-		friend bool operator==(const istream_iterator<T, Distance>& lhs,
-			const istream_iterator<T, Distance>& rhs);
+		//operator ==
+		bool operator==(const istream_iterator<T, Distance>& rhs) {
+			return stream == rhs.stream;
+		}
 
-		friend bool operator!=(const istream_iterator<T, Distance>& lhs,
-			const istream_iterator<T, Distance>& rhs);
+		//opertor !=
+		bool operator!=(const istream_iterator<T, Distance>& rhs) {
+			return stream != rhs.stream;
+		}
 	};
-
-	//non-member function
-
-	//operator ==
-	template<typename T,typename Distance>
-	inline bool operator==(const istream_iterator<T, Distance>& lhs,
-		const istream_iterator<T, Distance>& rhs) {
-		bool lhs_valid = *(lhs.stream) ? true : false;
-		bool rhs_valid = *(rhs.stream) ? true : false;
-		return (lhs.stream == rhs.stream) && (lhs_valid == rhs_valid);
-	}
-
-	//operator !=
-	template<typename T,typename Distance>
-	inline bool operator!=(const istream_iterator<T, Distance>& lhs,
-		const istream_iterator<T, Distance>& rhs) {
-		return !(lhs == rhs);
-	}
 }
 
 //================================================================================
@@ -483,28 +489,5 @@ namespace kkli {
 
 		//operator ++(int)
 		ostream_iterator& operator++(int) { return *this; }
-
-		//friend function
-		friend bool operator==(const ostream_iterator<T>& lhs,
-			const ostream_iterator<T>& rhs);
-
-		friend bool operator!=(const ostream_iterator<T>& lhs,
-			const ostream_iterator<T>& rhs);
 	};
-
-	//non-member function
-
-	//operator ==
-	template<typename T>
-	inline bool operator==(const ostream_iterator<T>& lhs,
-		const ostream_iterator<T>& rhs) {
-		return lhs.stream == rhs.stream;
-	}
-
-	//operator !=
-	template<typename T>
-	inline bool operator!=(const ostream_iterator<T>& lhs,
-		const ostream_iterator<T>& rhs) {
-		return !(lhs == rhs);
-	}
 }

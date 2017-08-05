@@ -3,30 +3,119 @@
 #include "stdafx.h"
 #include "iterator_traits.h"
 #include "pair.h"
-1111111111111111111111111111111111111	
+
+//================================================================================
+// shared_ptr<T> 类定义
+//================================================================================
+
+namespace kkli {
+
+	//前置声明：weak_ptr<T> 和 unique_ptr<T, Deleter>
+	template<typename T>
+	class weak_ptr;
+
+	template<typename T,typename Deleter>
+	class unique_ptr;
+
+	//shared_ptr<T>
+	template<typename T>
+	class shared_ptr {
+	public:
+		typedef T				element_type;
+		typedef weak_ptr<T>		weak_type;
+
+	private:
+		T* __ptr;
+		std::size_t* __use_count;
+
+		//deleter
+		using deleter_type = void(*)(T*);
+		deleter_type __deleter;
+
+	public:
+		//constructor
+		shared_ptr() :__ptr(nullptr), __use_count(0), __deleter(nullptr) {}
+		
+		template<typename U>
+		explicit shared_ptr(U* ptr) 
+			:__ptr(ptr), __use_count(new std::size_t(1)), __deleter(nullptr) {}
+
+		//__deleter被构造了两次，分别是__deleter(nullptr)和__deleter(&d)，可行吗？
+		template<typename U,typename Deleter>
+		shared_ptr(U* ptr, Deleter d) : shared_ptr(ptr), __deleter(&d) {}
+
+		template<typename Deleter>
+		shared_ptr(Deleter d) : shared_ptr(), __deleter(&d) {}
+
+		template<typename U>
+		shared_ptr(const shared_ptr<U>& rhs)
+			:__ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			++(*__use_count);
+		}
+
+		template<typename U>
+		shared_ptr(shared_ptr<U>&& rhs)
+			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			rhs.__ptr = nullptr;
+			rhs.__use_count = nullptr;
+			rhs.__deleter = nullptr;
+		}
+
+		template<typename U>
+		explicit shared_ptr(const weak_ptr<U>& wp) {
+			//TODO: ?
+		}
+
+		template<typename U,typename Deleter>
+		shared_ptr(unique_ptr<U, Deleter>&& up) {
+			//TODO: ?
+		}
+
+		//destructor
+		~shared_ptr() {
+			--(*__use_count);
+			if (*__use_count == 0) {
+				if (__deleter == nullptr) delete __ptr;
+				else __deleter(__ptr);
+				delete __use_count;
+			}
+		}
+
+		//operator =
+		template<typename U>
+		shared_ptr& operator=(const shared_ptr<U>& rhs) {
+			
+			if (--(*__use_count) == 0) {
+				if (__deleter == nullptr) delete __ptr;
+				else __deleter(__ptr);
+				delete __use_count;
+			}
+
+			++(*(rhs.__use_count));		//获得资源+1
+			__ptr = rhs.__ptr;
+			__use_count = rhs.__use_count;
+			__deleter = rhs.__deleter;
+			return *this;
+		}
+
+		//operator =
+		//TODO: 
+	};
+}
+
 //================================================================================
 // weak_ptr<T> 类定义
 //================================================================================
 
-//TODO:
 namespace kkli {
 	template<typename T>
 	class weak_ptr {
-	public:
-		typedef	T	element_type;
-
-	private:
-
+		//TODO: 
 	};
 }
 
 //================================================================================
 // unique_ptr<T> 类定义
-//================================================================================
-
-
-//================================================================================
-// shared_ptr<T> 类定义
 //================================================================================
 
 
@@ -106,6 +195,7 @@ namespace kkli{
 		for (; first != last; ++first, ++dest) {
 			::new (static_cast<void*>(addressof(*first))) typename iterator_traits<ForwardIt>::value_type(*first);
 		}
+		return dest;
 	}
 
 	//uninitialized_copy
@@ -114,6 +204,7 @@ namespace kkli{
 		for (; count > 0; --count, ++first, ++dest) {
 			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(*first);
 		}
+		return dest;
 	}
 
 	//uninitialized_fill
@@ -138,6 +229,7 @@ namespace kkli{
 		for (; first != last; ++first, ++dest) {
 			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(std::move(*first));
 		}
+		return dest;
 	}
 
 	//uninitialized_move_n
@@ -146,6 +238,7 @@ namespace kkli{
 		for (; count > 0; ++first, ++dest) {
 			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(*first);
 		}
+		return make_pair{ first,dest };
 	}
 
 	//uninitialized_default_construct
@@ -183,6 +276,7 @@ namespace kkli{
 		for (; count > 0; --count, ++first) {
 			destroy_at(addressof(*first));
 		}
+		return first;
 	}
 }
 
