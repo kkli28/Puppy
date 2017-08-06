@@ -17,56 +17,90 @@ namespace kkli {
 	template<typename T, typename Deleter>
 	class unique_ptr;
 
-	//shared_ptr<T>
+	//default_deleter
 	template<typename T>
+	class default_deleter {
+	public:
+		void operator()(const T* ptr) {
+			delete ptr;
+		}
+	};
+
+	//shared_ptr<T>
+	template<typename T, typename Deleter=default_deleter<T>>
 	class shared_ptr {
 	public:
 		typedef T				element_type;
 		typedef weak_ptr<T>		weak_type;
 
 	private:
-		T* __ptr;
-		std::size_t* __use_count;
-
-		//deleter
-		using deleter_type = void(*)(T*);
-		deleter_type __deleter;
+		T*				__ptr;
+		std::size_t*	__use_count;
+		Deleter			__deleter;
 
 	public:
 		//constructor
 		shared_ptr()
-			:__ptr(nullptr), __use_count(nullptr), __deleter(nullptr) {}
+			:__ptr(nullptr), __use_count(nullptr) {
 
-		template<typename U>
-		explicit shared_ptr(U* ptr)
-			:__ptr(ptr), __use_count(new std::size_t(1)), __deleter(nullptr) {}
+			//log
+			cout << "call 1" << endl;
 
-		template<typename U, typename Deleter>
-		shared_ptr(U* ptr, Deleter d)
-			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(nullptr) {}
-
-		template<typename Deleter>
-		shared_ptr(Deleter d)
-			: __ptr(nullptr), __use_count(nullptr), __deleter(&d) {}
-
-		template<typename U>
-		shared_ptr(const shared_ptr<U>& rhs)
-			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
-			++(*__use_count);
 		}
 
 		template<typename U>
-		shared_ptr(shared_ptr<U>&& rhs)
+		explicit shared_ptr(U* ptr)
+			:__ptr(ptr), __use_count(new std::size_t(1)) {
+		
+			//log
+			cout << "call 2" << endl;
+
+		}
+
+		template<typename U>
+		shared_ptr(U* ptr, Deleter d)
+			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(d) {
+
+			//log
+			cout << "call 3" << endl;
+
+		}
+
+		shared_ptr(std::nullptr_t ptr, Deleter d)
+			: __ptr(nullptr), __use_count(nullptr), __deleter(d) {
+
+			//log
+			cout << "call 4" << endl;
+		}
+
+		template<typename U>
+		shared_ptr(const shared_ptr<U, Deleter>& rhs)
 			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+
+			//log
+			cout << "call 5" << endl;
+
+			cout << "use_count: " << *(rhs.__use_count) << endl;
+			if(1){
+				++(*__use_count);
+				cout << "k" << endl;
+			}
+			cout << "use_count: " << *(rhs.__use_count) << endl;
+		}
+
+		template<typename U>
+		shared_ptr(shared_ptr<U, Deleter>&& rhs)
+			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			//log
+			cout << "call 6" << endl;
 			rhs.__ptr = nullptr;
 			rhs.__use_count = nullptr;
-			rhs.__deleter = nullptr;
 		}
 
 		template<typename U>
 		explicit shared_ptr(const weak_ptr<U>& wp);
 
-		template<typename U, typename Deleter>
+		template<typename U>
 		shared_ptr(unique_ptr<U, Deleter>&& up);
 
 		//destructor
@@ -74,23 +108,23 @@ namespace kkli {
 
 		//operator =
 		template<typename U>
-		shared_ptr& operator=(const shared_ptr<U>& rhs);
+		shared_ptr& operator=(const shared_ptr<U, Deleter>& rhs);
 
 		template<typename U>
-		shared_ptr& operator=(shared_ptr<U>&& rhs);
+		shared_ptr& operator=(shared_ptr<U, Deleter>&& rhs);
 
-		template<typename U, typename Deleter>
+		template<typename U>
 		shared_ptr& operator=(unique_ptr<U, Deleter>&& rhs);
-
+		
 		//reset
 		void reset();
 
 		template<typename U>
 		void reset(U* ptr);
 
-		template<typename U, typename Deleter>
+		template<typename U>
 		void reset(U* ptr, Deleter d);
-
+		
 		//swap
 		void swap(shared_ptr& rhs);
 
@@ -119,13 +153,13 @@ namespace kkli {
 
 		//owner_before
 		template<typename U>
-		bool owner_before(const shared_ptr<U>& rhs)const;
+		bool owner_before(const shared_ptr<U, Deleter>& rhs)const;
 
 		template<typename U>
-		bool owner_before(const weak_ptr<T>& rhs)const;
+		bool owner_before(const weak_ptr<U>& rhs)const;
 
 		//get_deleter
-		deleter_type* get_deleter()const { return __deleter; }
+		Deleter get_deleter()const { return __deleter; }
 	};
 }
 
@@ -133,22 +167,21 @@ namespace kkli {
 namespace kkli{
 
 	//~shared_ptr
-	template<typename T>
-	shared_ptr<T>::~shared_ptr() {
+	template<typename T, typename Deleter>
+	shared_ptr<T, Deleter>::~shared_ptr() {
+		if (__use_count == nullptr) return;
 		if (--(*__use_count) == 0) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 	}
 
 	//operator =(rhs)
-	template<typename T>
+	template<typename T,typename Deleter>
 	template<typename U>
-	shared_ptr<T>& shared_ptr<T>::operator=(const shared_ptr<U>& rhs) {
+	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(const shared_ptr<U, Deleter>& rhs) {
 		if (--(*__use_count) == 0) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 
@@ -160,12 +193,11 @@ namespace kkli{
 	}
 
 	//operator =(&&rhs)
-	template<typename T>
+	template<typename T, typename Deleter>
 	template<typename U>
-	shared_ptr<T>& shared_ptr<T>::operator=(shared_ptr<U>&& rhs) {
+	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(shared_ptr<U, Deleter>&& rhs) {
 		if (--(*__use_count) == 0) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 		__ptr = rhs.__ptr;
@@ -179,11 +211,10 @@ namespace kkli{
 	}
 
 	//reset()
-	template<typename T>
-	void shared_ptr<T>::reset() {
+	template<typename T, typename Deleter>
+	void shared_ptr<T, Deleter>::reset() {
 		if (--(*__use_count) == 0) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 		__ptr = nullptr;
@@ -192,12 +223,11 @@ namespace kkli{
 	}
 
 	//reset(ptr)
-	template<typename T>
+	template<typename T, typename Deleter>
 	template<typename U>
-	void shared_ptr<T>::reset(U* ptr) {
+	void shared_ptr<T, Deleter>::reset(U* ptr) {
 		if (--(*__use_count)) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 		__ptr = ptr;
@@ -206,12 +236,11 @@ namespace kkli{
 	}
 
 	//reset(ptr, d)
-	template<typename T>
-	template<typename U,typename Deleter>
-	void shared_ptr<T>::reset(U* ptr, Deleter d) {
+	template<typename T, typename Deleter>
+	template<typename U>
+	void shared_ptr<T,Deleter>::reset(U* ptr, Deleter d) {
 		if (--(*__use_count)) {
-			if (__deleter == nullptr) delete __ptr;
-			else __deleter(__ptr);
+			__deleter(__ptr);
 			delete __use_count;
 		}
 		__ptr = ptr;
@@ -220,8 +249,8 @@ namespace kkli{
 	}
 
 	//swap(rhs)
-	template<typename T>
-	void shared_ptr<T>::swap(shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	void shared_ptr<T, Deleter>::swap(shared_ptr<T, Deleter>& rhs) {
 		auto temp1 = __ptr;
 		__ptr = rhs.__ptr;
 		rhs.__ptr = temp1;
@@ -252,154 +281,154 @@ namespace kkli {
 	//下方的 xxx_cast 实现可能存在问题
 
 	//static_pointer_cast
-	template<typename T, typename U>
-	shared_ptr<T> static_pointer_cast(const shared_ptr<U>& rhs) {
-		return shared_ptr<T>(static_cast<T*>(rhs.get()));
+	template<typename T, typename U, typename Deleter>
+	shared_ptr<T, Deleter> static_pointer_cast(const shared_ptr<U, Deleter>& rhs) {
+		return shared_ptr<T, Deleter>(static_cast<T*>(rhs.get()));
 	}
 
 	//dynamic_pointer_cast
-	template<typename T, typename U>
-	shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U>& rhs) {
-		return shared_ptr<T>(dynamic_cast<T*>(rhs.get()));
+	template<typename T, typename U, typename Deleter>
+	shared_ptr<T, Deleter> dynamic_pointer_cast(const shared_ptr<U, Deleter>& rhs) {
+		return shared_ptr<T, Deleter>(dynamic_cast<T*>(rhs.get()));
 	}
 
 	//const_pointer_cast
-	template<typename T, typename U>
-	shared_ptr<T> const_pointer_cast(const shared_ptr<U>& rhs) {
-		return shared_ptr<T>(const_cast<T*>(rhs.get()));
+	template<typename T, typename U, typename Deleter>
+	shared_ptr<T, Deleter> const_pointer_cast(const shared_ptr<U, Deleter>& rhs) {
+		return shared_ptr<T, Deleter>(const_cast<T*>(rhs.get()));
 	}
 
 	//reinterpret_pointer_cast
-	template<typename T, typename U>
-	shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U>& rhs) {
-		return shared_ptr<T>(reinterpret_cast<T*>(rhs.get()));
+	template<typename T, typename U, typename Deleter>
+	shared_ptr<T, Deleter> reinterpret_pointer_cast(const shared_ptr<U, Deleter>& rhs) {
+		return shared_ptr<T, Deleter>(reinterpret_cast<T*>(rhs.get()));
 	}
 
 	//get_deleter
-	template<typename Deleter, typename T>
-	Deleter* get_deleter(const shared_ptr<T>& sp) {
+	template<typename T, typename Deleter>
+	Deleter* get_deleter(const shared_ptr<T, Deleter>& sp) {
 		return static_cast<Deleter*>(sp.get_deleter());
 	}
 
 	//operator ==
-	template<typename T, typename U>
-	inline bool operator==(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	inline bool operator==(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return lhs.get() == rhs.get();
 	}
 
 	//operator !=
-	template<typename T, typename U>
-	inline bool operator!=(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	inline bool operator!=(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	//operator <
-	template<typename T, typename U>
-	bool operator<(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	bool operator<(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return lhs.get() < rhs.get();
 	}
 
 	//operator >
-	template<typename T, typename U>
-	bool operator>(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	bool operator>(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return rhs < lhs;
 	}
 
 	//operator <=
-	template<typename T, typename U>
-	bool operator<=(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	bool operator<=(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	//operator >=
-	template<typename T, typename U>
-	bool operator>=(const shared_ptr<T>& lhs, const shared_ptr<U>& rhs) {
+	template<typename T, typename U, typename Deleter>
+	bool operator>=(const shared_ptr<T, Deleter>& lhs, const shared_ptr<U, Deleter>& rhs) {
 		return !(lhs < rhs);
 	}
 
 	//compare a shared_ptr with a null pointer
 
 	//operator ==(lhs, nullptr)
-	template<typename T>
-	bool operator==(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	template<typename T, typename Deleter>
+	bool operator==(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
 		return !lhs;
 	}
 
 	//operator ==(nullptr, rhs)
-	template<typename T>
-	bool operator==(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	bool operator==(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
 		return !rhs;
 	}
 
 	//operator !=(lhs, nullptr)
-	template<typename T>
-	bool operator!=(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	template<typename T, typename Deleter>
+	bool operator!=(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
 		return bool(lhs);
 	}
 
 	//operator !=(nullptr, rhs)
-	template<typename T>
-	bool operator!=(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	bool operator!=(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
 		return bool(rhs);
 	}
 
 	//operator <(lhs, nullptr)
-	template<typename T>
-	bool operator<(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
-		return std::less<shared_ptr<T>::element_type*>()(lhs.get(), rhs);
+	template<typename T, typename Deleter>
+	bool operator<(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
+		return std::less<shared_ptr<T, Deleter>::element_type*>()(lhs.get(), rhs);
 	}
 
 	//operator <(nullptr, rhs)
-	template<typename T>
-	bool operator<(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
-		return std::less<shared_ptr<T>::element_type*>()(lhs, rhs.get());
+	template<typename T, typename Deleter>
+	bool operator<(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
+		return std::less<shared_ptr<T, Deleter>::element_type*>()(lhs, rhs.get());
 	}
 
 	//operator >(lhs, nullptr)
-	template<typename T>
-	bool operator>(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	template<typename T, typename Deleter>
+	bool operator>(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
 		return rhs < lhs;
 	}
 
 	//operator >(nullptr, rhs)
-	template<typename T>
-	bool operator>(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	bool operator>(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
 		return rhs < lhs;
 	}
 
 	//operator <=(lhs, nullptr)
-	template<typename T>
-	bool operator<=(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	template<typename T, typename Deleter>
+	bool operator<=(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
 		return !(rhs < lhs);
 	}
 
 	//operator <=(nullptr, rhs)
-	template<typename T>
-	bool operator<=(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	bool operator<=(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
 		return !(rhs < lhs);
 	}
 
 	//operator >=(lhs, nullptr)
-	template<typename T>
-	bool operator>=(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	template<typename T, typename Deleter>
+	bool operator>=(const shared_ptr<T, Deleter>& lhs, std::nullptr_t rhs) {
 		return !(lhs < rhs);
 	}
 
 	//operator >=(nullptr, rhs)
-	template<typename T>
-	bool operator>=(std::nullptr_t lhs, const shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	bool operator>=(std::nullptr_t lhs, const shared_ptr<T, Deleter>& rhs) {
 		return !(lhs < rhs);
 	}
 
 	//operator <<
-	template<typename T>
-	std::ostream& operator<<(std::ostream& os, const shared_ptr<T>& sp) {
+	template<typename T, typename Deleter>
+	std::ostream& operator<<(std::ostream& os, const shared_ptr<T, Deleter>& sp) {
 		os << sp.get();
 	}
 
 	//swap
-	template<typename T>
-	void swap(shared_ptr<T>& lhs, shared_ptr<T>& rhs) {
+	template<typename T, typename Deleter>
+	void swap(shared_ptr<T, Deleter>& lhs, shared_ptr<T, Deleter>& rhs) {
 		return lhs.swap(rhs);
 	}
 }
@@ -591,10 +620,10 @@ namespace kkli{
 	//uninitialized_move_n
 	template<typename InputIt, typename Size, typename ForwardIt>
 	kkli::pair<InputIt, ForwardIt> uninitialized_move_n(InputIt first, Size count, ForwardIt dest) {
-		for (; count > 0; ++first, ++dest) {
-			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(*first);
+		for (; count > 0; --count, ++first, ++dest) {
+			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(std::move(*first));
 		}
-		return make_pair{ first,dest };
+		return make_pair(first, dest);
 	}
 
 	//uninitialized_default_construct

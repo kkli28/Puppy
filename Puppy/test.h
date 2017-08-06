@@ -3,30 +3,30 @@
 #include "stdafx.h"
 #include "string.h"
 
-//================================================================================
-// EXPECT_EQ : 确保参数相等
-//================================================================================
-
 namespace test {
 
-	//EXPECT_EQ_VAL: 比较值
+	//EXPECT_EQ_VAL: 确保值相等
 	template<typename T, typename U>
 	void EXPECT_EQ_VAL(const T& val1, const U& val2) {
-		if (val1 != val2) throw std::runtime_error();
+		if (val1 != val2) throw std::runtime_error("EXPECT_EQ_VAL");
 	}
 
-	//EXPECT_EQ_ARR: 比较数组
+	//EXPECT_EQ_ARR: 确保两个数组元素相等
 	template<typename T,typename U>
 	void EXPECT_EQ_ARR(const T& arr1, const U& arr2, std::size_t count) {
 		for (int i = 0; i < count; ++i)
-			if (arr1[i] != arr2[i]) throw std::runtime_error();
+			if (arr1[i] != arr2[i]) throw std::runtime_error("EXPECT_EQ_ARR");
 	}
 
-	//EXPECT_EQ_NVALS: 比较数组中的N个值
+	//EXPECT_EQ_NVALS: 确保数组中所有元素等于val
 	template<typename T,typename U>
 	void EXPECT_EQ_NVALS(const T& arr, std::size_t count, const U& val) {
+		
+		//log
+		std::cout << "arr[0]: " << arr[0] << "    val: " << val << std::endl;
+
 		for (int i = 0; i < count; ++i)
-			if (arr[i] != val) throw std::runtime_error();
+			if (arr[i] != val) throw std::runtime_error("EXPECT_EQ_NVALS");
 	}
 
 	//
