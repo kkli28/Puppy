@@ -41,20 +41,18 @@ namespace kkli {
 	public:
 		//constructor
 		shared_ptr()
-			:__ptr(nullptr), __use_count(nullptr) {
+			:__ptr(nullptr), __use_count(new std::size_t(1)) {
 
 			//log
-			cout << "call 1" << endl;
-
+			std::cout << "==== 1 ====" << endl;
 		}
 
 		template<typename U>
 		explicit shared_ptr(U* ptr)
 			:__ptr(ptr), __use_count(new std::size_t(1)) {
-		
-			//log
-			cout << "call 2" << endl;
 
+			//log
+			std::cout << "==== 2 ====" << endl;
 		}
 
 		template<typename U>
@@ -62,39 +60,34 @@ namespace kkli {
 			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(d) {
 
 			//log
-			cout << "call 3" << endl;
-
+			std::cout << "==== 3 ====" << endl;
 		}
 
 		shared_ptr(std::nullptr_t ptr, Deleter d)
-			: __ptr(nullptr), __use_count(nullptr), __deleter(d) {
+			: __ptr(nullptr), __use_count(new std::size_t(1)), __deleter(d) {
 
 			//log
-			cout << "call 4" << endl;
+			std::cout << "==== 4 ====" << endl;
 		}
 
+		//****************************** 出问题的复制构造函数在这里 ******************************
 		template<typename U>
-		shared_ptr(const shared_ptr<U, Deleter>& rhs)
+		shared_ptr<T,Deleter>(const shared_ptr<U, Deleter>& rhs)
 			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			++(*__use_count);
 
 			//log
-			cout << "call 5" << endl;
-
-			cout << "use_count: " << *(rhs.__use_count) << endl;
-			if(1){
-				++(*__use_count);
-				cout << "k" << endl;
-			}
-			cout << "use_count: " << *(rhs.__use_count) << endl;
+			std::cout << "==== 5 ====" << endl;
 		}
 
 		template<typename U>
 		shared_ptr(shared_ptr<U, Deleter>&& rhs)
 			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
-			//log
-			cout << "call 6" << endl;
 			rhs.__ptr = nullptr;
-			rhs.__use_count = nullptr;
+			rhs.__use_count = new std::size_t(1);
+
+			//log
+			std::cout << "==== 6 ====" << endl;
 		}
 
 		template<typename U>
@@ -169,7 +162,6 @@ namespace kkli{
 	//~shared_ptr
 	template<typename T, typename Deleter>
 	shared_ptr<T, Deleter>::~shared_ptr() {
-		if (__use_count == nullptr) return;
 		if (--(*__use_count) == 0) {
 			__deleter(__ptr);
 			delete __use_count;
@@ -205,8 +197,7 @@ namespace kkli{
 		__deleter = rhs.__deleter;
 
 		rhs.__ptr = nullptr;
-		rhs.__use_count = nullptr;
-		rhs.__deleter = nullptr;
+		rhs.__use_count = new std::size_t(1);
 		return *this;
 	}
 
@@ -218,8 +209,7 @@ namespace kkli{
 			delete __use_count;
 		}
 		__ptr = nullptr;
-		__use_count = nullptr;
-		__deleter = nullptr;
+		__use_count = new std::size_t(1);
 	}
 
 	//reset(ptr)
@@ -232,7 +222,6 @@ namespace kkli{
 		}
 		__ptr = ptr;
 		__use_count = new std::size_t(1);
-		__deleter = nullptr;
 	}
 
 	//reset(ptr, d)
