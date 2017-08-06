@@ -152,6 +152,7 @@
     <ClInclude Include="iterator_traits.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="list_test.h" />
+    <ClInclude Include="memory_test.h" />
     <ClInclude Include="pair.h" />
     <ClInclude Include="pair_test.h" />
     <ClInclude Include="set.h" />
@@ -160,6 +161,8 @@
     <ClInclude Include="string_test.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="memory.h" />
+    <ClInclude Include="test.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vector_test.h" />
   </ItemGroup>

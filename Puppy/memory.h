@@ -333,7 +333,7 @@ namespace kkli {
 
 	//operator !=(lhs, nullptr)
 	template<typename T>
-	bool operator==(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
+	bool operator!=(const shared_ptr<T>& lhs, std::nullptr_t rhs) {
 		return bool(lhs);
 	}
 
@@ -411,6 +411,61 @@ namespace kkli {
 namespace kkli {
 	template<typename T>
 	class weak_ptr {
+	public:
+		typedef T	element_type;
+
+	private:
+		element_type* __ptr;
+
+	public:
+		//constructor
+		constexpr weak_ptr() :_ptr(nullptr) {}
+
+		template<typename U>
+		weak_ptr(const weak_ptr<U>& rhs) : __ptr(rhs.__ptr) {}
+
+		template<typename U>
+		weak_ptr(const shared_ptr<U>& rhs) : __ptr(rhs.get()) {}
+		
+		template<typename U>
+		weak_ptr(weak_ptr<U>&& rhs) : __ptr(rhs.__ptr) {
+			rhs.__ptr = nullptr;
+		}
+
+		//destructor
+		~weak_ptr() { __ptr = nullptr; }
+
+		//operator =
+		template<typename U>
+		weak_ptr& operator=(const weak_ptr<U>& rhs) {
+			__ptr = rhs.__ptr;
+			return *this;
+		}
+
+		template<typename U>
+		weak_ptr& operator=(const shared_ptr<U>& rhs) {
+			__ptr = rhs.get();
+			return *this;
+		}
+
+		template<typename U>
+		weak_ptr& operator=(weak_ptr<U>&& rhs) {
+			__ptr = rhs.__ptr;
+			rhs.__ptr = nullptr;
+			return *this;
+		}
+
+		//reset
+		void reset() { __ptr = nullptr; }
+		
+		//swap
+		void swap(weak_ptr& r) {
+			auto temp = __ptr;
+			__ptr = r.__ptr;
+			r.__ptr = temp;
+		}
+
+		//use_count
 		//TODO: 
 	};
 }
@@ -487,19 +542,19 @@ namespace kkli{
 	T* addressof(T& val) {
 		return reinterpret_cast<T*>(
 			&const_cast<char&>(
-				reinterpret_cast<const volatile char&>(arg)));
+				reinterpret_cast<const volatile char&>(val)));
 	}
 
 	//uninitialized_copy
 	template<typename InputIt, typename ForwardIt>
 	ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
 		for (; first != last; ++first, ++dest) {
-			::new (static_cast<void*>(addressof(*first))) typename iterator_traits<ForwardIt>::value_type(*first);
+			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(*first);
 		}
 		return dest;
 	}
 
-	//uninitialized_copy
+	//uninitialized_copy_n
 	template<typename InputIt,typename Size,typename ForwardIt>
 	ForwardIt uninitialized_copy_n(InputIt first, Size count, ForwardIt dest) {
 		for (; count > 0; --count, ++first, ++dest) {
@@ -580,4 +635,3 @@ namespace kkli{
 		return first;
 	}
 }
-

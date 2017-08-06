@@ -14,7 +14,7 @@ namespace test {
 		using std::cout;
 		using std::endl;
 		using kkli::list;
-		using string = kkli::string<char, kkli::char_traits<char>, kkli::allocator<char>>;
+		using kkli::string;
 		using reverse_iterator = kkli::reverse_iterator<string::iterator>;
 
 		//Ç°ÖÃÉùÃ÷

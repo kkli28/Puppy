@@ -5,17 +5,27 @@
 #include "char_traits.h"
 
 //================================================================================
-// string<T> 类定义
+// basic_string<T> 类定义
 //================================================================================
 
 namespace kkli {
 
+	//typedef string
 	template<
-		typename CharType,
+		typename CharType = char,
 		typename Traits = kkli::char_traits<char>,
 		typename Allocator = kkli::allocator<CharType>
 	>
-		class string {
+		class basic_string;
+	typedef basic_string<char, char_traits<char>, allocator<char>> string;
+	
+	//basic_string
+	template<
+		typename CharType,
+		typename Traits,
+		typename Allocator
+	>
+		class basic_string {
 
 		public:
 
@@ -89,7 +99,6 @@ namespace kkli {
 				InputIterator first2, InputIterator last2);
 
 		public:
-
 			//获取data的有效字符个数
 			static size_type get_size(const_pointer data);
 
@@ -104,41 +113,41 @@ namespace kkli {
 		public:
 
 			//constructor
-			string(const Allocator& alloc = Allocator());
-			string(size_type count, value_type value, const Allocator& alloc = Allocator());
-			string(const string& rhs, size_type pos, size_type count = npos,
+			basic_string(const Allocator& alloc = Allocator());
+			basic_string(size_type count, value_type value, const Allocator& alloc = Allocator());
+			basic_string(const basic_string& rhs, size_type pos, size_type count = npos,
 				const Allocator& alloc = Allocator());
-			string(const_pointer data, size_type count = npos,
+			basic_string(const_pointer data, size_type count = npos,
 				const Allocator& alloc = Allocator());
-			string(size_type count, const Allocator& alloc = Allocator());
+			basic_string(size_type count, const Allocator& alloc = Allocator());
 
 			template<typename InputIterator>
-			string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator());
-			string(const string& rhs);
-			string(string&& rhs);
-			string(std::initializer_list<value_type> init, const Allocator& alloc = Allocator());
+			basic_string(InputIterator first, InputIterator last, const Allocator& alloc = Allocator());
+			basic_string(const basic_string& rhs);
+			basic_string(basic_string&& rhs);
+			basic_string(std::initializer_list<value_type> init, const Allocator& alloc = Allocator());
 
 			//destructor
-			~string();
+			~basic_string();
 
 			//get_allocator
 			allocator_type get_allocator()const { return __alloc; }
 
 			//operator =
-			string& operator=(const string& rhs) {
+			basic_string& operator=(const basic_string& rhs) {
 				if (this == &rhs) return *this;
 				__deallocate();
 				__allocate(rhs.size(), rhs.cbegin(), rhs.cend());
 				return *this;
 			}
-			string& operator=(string&& rhs);
-			string& operator=(const_pointer data) {
+			basic_string& operator=(basic_string&& rhs);
+			basic_string& operator=(const_pointer data) {
 				if (__start == data) return *this;
 				size_type size = get_size(data);
 				__allocate(size, data, data + size);
 				return *this;
 			}
-			string& operator=(std::initializer_list<value_type> init) {
+			basic_string& operator=(std::initializer_list<value_type> init) {
 				__deallocate();
 				__allocate(init.size(), init.begin(), init.end());
 				return *this;
@@ -149,20 +158,20 @@ namespace kkli {
 			const_reference operator[](size_type pos)const { return __start[pos]; }
 
 			//operator +=
-			string& operator+=(const string& rhs) {
+			basic_string& operator+=(const basic_string& rhs) {
 				__append(rhs.size(), rhs.cbegin(), rhs.cend());
 				return *this;
 			}
-			string& operator+=(value_type value) {
+			basic_string& operator+=(value_type value) {
 				this->push_back(value);
 				return *this;
 			}
-			string& operator+=(const_pointer data) {
+			basic_string& operator+=(const_pointer data) {
 				size_type size = get_size(data);
 				__append(size, data, data + size);
 				return *this;
 			}
-			string& operator+=(std::initializer_list<value_type> init) {
+			basic_string& operator+=(std::initializer_list<value_type> init) {
 				__append(init.size(), init.begin(), init.end());
 				return *this;
 			}
@@ -172,12 +181,12 @@ namespace kkli {
 				__deallocate();
 				__allocate(count, count, value);
 			}
-			void assign(const string& rhs) {
+			void assign(const basic_string& rhs) {
 				if (this == &rhs) return;
 				__assign(rhs.size(), rhs.cbegin(), rhs.cend());
 			}
-			void assign(string&& rhs) { operator=(std::move(rhs)); }
-			void assign(const string& rhs, size_type pos, size_type count = npos) {
+			void assign(basic_string&& rhs) { operator=(std::move(rhs)); }
+			void assign(const basic_string& rhs, size_type pos, size_type count = npos) {
 				if (count == npos) count = rhs.size() - pos;
 				__assign(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
 			}
@@ -199,7 +208,7 @@ namespace kkli {
 			template<typename InputIterator>
 			void insert(const_iterator pos, InputIterator first, InputIterator last);
 			void insert(const_iterator pos, size_type count, value_type value);
-			void insert(size_type index, const string& rhs, size_type index_rhs, size_type count = npos) {
+			void insert(size_type index, const basic_string& rhs, size_type index_rhs, size_type count = npos) {
 				if (count == npos) count = rhs.size() - index_rhs;
 				insert(__start + index, rhs.cbegin() + index_rhs, rhs.cbegin() + index_rhs + count);
 			}
@@ -208,7 +217,7 @@ namespace kkli {
 				insert(__start + index, data, data + count);
 			}
 
-			void insert(size_type index, const string& rhs) { return insert(__start + index, rhs.cbegin(), rhs.cend()); }
+			void insert(size_type index, const basic_string& rhs) { return insert(__start + index, rhs.cbegin(), rhs.cend()); }
 			void insert(size_type index, size_type count, value_type value) { insert(__start + index, count, value); }
 			void insert(const_iterator pos, value_type value) { insert(pos, 1, value); }
 			void insert(const_iterator pos, std::initializer_list<value_type> init) { return insert(pos, init.begin(), init.end()); }
@@ -227,7 +236,7 @@ namespace kkli {
 			iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
 			//append
-			void append(const string& rhs, size_type pos = 0, size_type count = npos) {
+			void append(const basic_string& rhs, size_type pos = 0, size_type count = npos) {
 				if (count == npos) count = rhs.size() - pos;
 				__append(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
 			}
@@ -245,11 +254,11 @@ namespace kkli {
 			void append(std::initializer_list<value_type> init) { __append(init.size(), init.begin(), init.end()); }
 
 			//compare
-			int compare(const string& rhs)const {
+			int compare(const basic_string& rhs)const {
 				return __compare(this->size(), __start, __end, rhs.size(), rhs.cbegin(), rhs.cend());
 			}
 			int compare(size_type pos1, size_type count1,
-				const string& rhs, size_type pos2 = 0, size_type count2 = npos)const {
+				const basic_string& rhs, size_type pos2 = 0, size_type count2 = npos)const {
 				if (count2 == npos) count2 = rhs.size() - pos2;
 				return __compare(count1, __start + pos1, __start + pos1 + count1, count2,
 					rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
@@ -271,7 +280,7 @@ namespace kkli {
 				__replace(first, last, npos, first2, last2);
 			}
 			void replace(const_iterator first, const_iterator last, size_type count2, value_type value);
-			void replace(const_iterator first, const_iterator last, const string& rhs) {
+			void replace(const_iterator first, const_iterator last, const basic_string& rhs) {
 				__replace(first, last, rhs.size(), rhs.cbegin(), rhs.cend());
 			}
 			void replace(const_iterator first, const_iterator last, const_pointer data, size_type count2 = npos) {
@@ -282,7 +291,7 @@ namespace kkli {
 				__replace(first, last, init.size(), init.begin(), init.end());
 			}
 			void replace(size_type pos, size_type count,
-				const string& rhs, size_type pos2 = 0, size_type count2 = npos) {
+				const basic_string& rhs, size_type pos2 = 0, size_type count2 = npos) {
 				if (count2 == npos) count2 = rhs.size() - pos2;
 				__replace(__start + pos, __start + pos + count, count2, rhs.cbegin() + pos2, rhs.cbegin() + pos2 + count2);
 			}
@@ -295,28 +304,28 @@ namespace kkli {
 			}
 
 			//find
-			size_type find(const string& rhs, size_type pos = 0)const;
+			size_type find(const basic_string& rhs, size_type pos = 0)const;
 			size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find(value_type value, size_type pos = 0)const;
 
 			//要不要实现 rfind？
-			size_type rfind(const string& rhs, size_type pos = npos, size_type count=npos)const;
+			size_type rfind(const basic_string& rhs, size_type pos = npos, size_type count = npos)const;
 			size_type rfind(const_pointer data, size_type pos = npos)const;
 			size_type rfind(value_type value, size_type pos = npos)const;
 
-			size_type find_first_of(const string& rhs, size_type pos = 0)const;
+			size_type find_first_of(const basic_string& rhs, size_type pos = 0)const;
 			size_type find_first_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_first_of(value_type value, size_type pos = 0)const;
 
-			size_type find_first_not_of(const string& rhs, size_type pos = 0)const;
+			size_type find_first_not_of(const basic_string& rhs, size_type pos = 0)const;
 			size_type find_first_not_of(const_pointer data, size_type pos, size_type count)const;
 			size_type find_first_not_of(value_type value, size_type pos = 0)const;
 
-			size_type find_last_of(const string& rhs, size_type pos = npos)const;
+			size_type find_last_of(const basic_string& rhs, size_type pos = npos)const;
 			size_type find_last_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_of(value_type value, size_type pos = npos)const;
 
-			size_type find_last_not_of(const string& rhs, size_type pos = npos)const;
+			size_type find_last_not_of(const basic_string& rhs, size_type pos = npos)const;
 			size_type find_last_not_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_not_of(value_type value, size_type pos = npos)const;
 
@@ -359,12 +368,12 @@ namespace kkli {
 			void				pop_back() { --__end; }
 
 			void				resize(size_type count, value_type value = value_type());
-			string				substr(size_type pos = 0, size_type count = npos)const;
+			basic_string				substr(size_type pos = 0, size_type count = npos)const;
 			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos);
-			void				swap(string& rhs);
+			void				swap(basic_string& rhs);
 			void				reverse();
 
-			void print(const std::string& prefix) const {
+			void print(const basic_string& prefix) const {
 				this->c_str();
 				std::cout << prefix << ": ";
 				size_type size = this->size();
@@ -378,7 +387,7 @@ namespace kkli {
 }
 
 //================================================================================
-// string<T> 成员函数定义
+// basic_string<T> 成员函数定义
 //================================================================================
 
 namespace kkli {
@@ -386,7 +395,7 @@ namespace kkli {
 	//__allocate(mem_size, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	void string<CharType, Traits, Allocator>::__allocate(size_type mem_size, InputIterator first, InputIterator last) {
+	void basic_string<CharType, Traits, Allocator>::__allocate(size_type mem_size, InputIterator first, InputIterator last) {
 		__start = __alloc.allocate(mem_size + 1);
 		size_type index = __set_value_by_range(__start, first, last);
 		__end = __start + index;
@@ -395,7 +404,7 @@ namespace kkli {
 
 	//__allocate(mem_size, count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::__allocate(size_type mem_size, size_type count, value_type value) {
+	void basic_string<CharType, Traits, Allocator>::__allocate(size_type mem_size, size_type count, value_type value) {
 		__start = __alloc.allocate(mem_size + 1);
 		__set_value_by_value(__start, count, value);
 		__end = __start + count;
@@ -404,7 +413,7 @@ namespace kkli {
 
 	//get_size(data)
 	template<typename CharType, typename Traits, typename Allocator>
-	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::get_size(const_pointer data) {
+	typename basic_string<CharType, Traits, Allocator>::size_type basic_string<CharType, Traits, Allocator>::get_size(const_pointer data) {
 		size_type size = 0;
 		if (data != NULL) {
 			for (;; ++size)
@@ -416,7 +425,7 @@ namespace kkli {
 	//__set_value_by_range(addr, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIteratorA, typename InputIteratorB>
-	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::__set_value_by_range(
+	typename basic_string<CharType, Traits, Allocator>::size_type basic_string<CharType, Traits, Allocator>::__set_value_by_range(
 		iterator addr, InputIteratorA first, InputIteratorB last) {
 		size_type index = 0;
 		for (; first != last; ++first) {
@@ -429,7 +438,7 @@ namespace kkli {
 
 	//__set_value_by_value(addr, count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::__set_value_by_value(iterator addr, size_type count, value_type value) {
+	void basic_string<CharType, Traits, Allocator>::__set_value_by_value(iterator addr, size_type count, value_type value) {
 		for (size_type i = 0; i < count; ++i) {
 			*(addr + i) = value;
 		}
@@ -438,7 +447,7 @@ namespace kkli {
 	//__append(size, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	void string<CharType, Traits, Allocator>::__append(size_type size, InputIterator first, InputIterator last) {
+	void basic_string<CharType, Traits, Allocator>::__append(size_type size, InputIterator first, InputIterator last) {
 		//剩余空间足够，直接将rhs的内容填充到后面
 		if (__capacity - __end >= size) {
 			__end += __set_value_by_range(__end, first, last);
@@ -462,7 +471,7 @@ namespace kkli {
 	//__compare(count1, first1, last1, count2, first2, last2)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIteratorA, typename InputIteratorB>
-	int string<CharType, Traits, Allocator>::__compare(size_type count1, InputIteratorA first1, InputIteratorA last1,
+	int basic_string<CharType, Traits, Allocator>::__compare(size_type count1, InputIteratorA first1, InputIteratorA last1,
 		size_type count2, InputIteratorB first2, InputIteratorB last2) const {
 		auto iter1 = first1;
 		auto iter2 = first2;
@@ -480,7 +489,7 @@ namespace kkli {
 	//__replace(first1, last1, size2, first2, last2)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	void string<CharType, Traits, Allocator>::__replace(const_iterator first1, const_iterator last1, size_type size2,
+	void basic_string<CharType, Traits, Allocator>::__replace(const_iterator first1, const_iterator last1, size_type size2,
 		InputIterator first2, InputIterator last2) {
 		size_type size1 = last1 - first1;
 		if (size2 == npos) size2 = get_size(first2, last2);
@@ -527,24 +536,24 @@ namespace kkli {
 		}
 	}
 
-	//string(alloc)
+	//basic_string(alloc)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const Allocator& alloc = Allocator())
+	basic_string<CharType, Traits, Allocator>::basic_string(const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__allocate(0, 0, value_type());
 	}
 
-	//string(count, value)
+	//basic_string(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(size_type count, value_type value,
+	basic_string<CharType, Traits, Allocator>::basic_string(size_type count, value_type value,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__allocate(count, count, value);
 	}
 
-	//string(rhs, pos, count)
+	//basic_string(rhs, pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const string& rhs, size_type pos,
+	basic_string<CharType, Traits, Allocator>::basic_string(const basic_string& rhs, size_type pos,
 		size_type count = npos, const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 
@@ -553,40 +562,40 @@ namespace kkli {
 		__allocate(count, rhs.cbegin() + pos, rhs.cbegin() + pos + count);
 	}
 
-	//string(data, count)
+	//basic_string(data, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const_pointer data, size_type count = npos,
+	basic_string<CharType, Traits, Allocator>::basic_string(const_pointer data, size_type count = npos,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		if (count == npos) count = get_size(data);
 		__allocate(count, data, data + count);
 	}
 
-	//string(first, last)
+	//basic_string(first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	string<CharType, Traits, Allocator>::string(InputIterator first, InputIterator last,
+	basic_string<CharType, Traits, Allocator>::basic_string(InputIterator first, InputIterator last,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__allocate(get_size(first, last), first, last);
 	}
 
-	//string(count)
+	//basic_string(count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(size_type count, const Allocator& alloc = Allocator())
+	basic_string<CharType, Traits, Allocator>::basic_string(size_type count, const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__allocate(count, 0, value_type());
 	}
 
-	//string(rhs)
+	//basic_string(rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(const string& rhs) {
+	basic_string<CharType, Traits, Allocator>::basic_string(const basic_string& rhs) {
 		__allocate(rhs.size(), rhs.cbegin(), rhs.cend());
 	}
 
-	//string(&&rhs)
+	//basic_string(&&rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(string&& rhs) {
+	basic_string<CharType, Traits, Allocator>::basic_string(basic_string&& rhs) {
 		__start = rhs.__start;
 		__end = rhs.__end;
 		__capacity = rhs.__capacity;
@@ -594,24 +603,24 @@ namespace kkli {
 		rhs.__reset_iterators();
 	}
 
-	//string(init)
+	//basic_string(init)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::string(std::initializer_list<value_type> init,
+	basic_string<CharType, Traits, Allocator>::basic_string(std::initializer_list<value_type> init,
 		const Allocator& alloc = Allocator())
 		:__alloc(alloc) {
 		__allocate(init.size(), init.begin(), init.end());
 	}
 
-	//~string
+	//~basic_string
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>::~string() {
+	basic_string<CharType, Traits, Allocator>::~basic_string() {
 		__deallocate();
 		__reset_iterators();
 	}
 
 	//operator =(&&rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator>& string<CharType, Traits, Allocator>::operator=(string&& rhs) {
+	basic_string<CharType, Traits, Allocator>& basic_string<CharType, Traits, Allocator>::operator=(basic_string&& rhs) {
 		if (this == &rhs) return *this;
 		__deallocate();
 		__start = rhs.__start;
@@ -625,7 +634,7 @@ namespace kkli {
 	//insert(pos, first, last)
 	template<typename CharType, typename Traits, typename Allocator>
 	template<typename InputIterator>
-	void string<CharType, Traits, Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last) {
+	void basic_string<CharType, Traits, Allocator>::insert(const_iterator pos, InputIterator first, InputIterator last) {
 		if (first == last) return;
 		size_type count = get_size(first, last);
 
@@ -669,7 +678,7 @@ namespace kkli {
 
 	//insert(pos, count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::insert(const_iterator pos, size_type count, value_type value) {
+	void basic_string<CharType, Traits, Allocator>::insert(const_iterator pos, size_type count, value_type value) {
 
 		//剩余空间足够
 		if (__capacity - __end >= count) {
@@ -708,7 +717,7 @@ namespace kkli {
 
 	//replace(first, last, count2, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::replace(const_iterator first1, const_iterator last1,
+	void basic_string<CharType, Traits, Allocator>::replace(const_iterator first1, const_iterator last1,
 		size_type count2, value_type value) {
 		size_type count1 = last1 - first1;
 
@@ -757,7 +766,7 @@ namespace kkli {
 
 	//reserve(new_cap)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::reserve(size_type new_cap = 0) {
+	void basic_string<CharType, Traits, Allocator>::reserve(size_type new_cap = 0) {
 		if (__capacity - __start >= new_cap) return;
 		size_type size = this->size();
 		auto addr = __allocate(new_cap);
@@ -770,7 +779,7 @@ namespace kkli {
 
 	//resize(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
+	void basic_string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
 		size_type size = this->size();
 		if (count < size) return;
 		reserve(count);
@@ -780,14 +789,14 @@ namespace kkli {
 
 	//substr(pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator> string<CharType, Traits, Allocator>::substr(size_type pos = 0, size_type count = npos)const {
+	basic_string<CharType, Traits, Allocator> basic_string<CharType, Traits, Allocator>::substr(size_type pos = 0, size_type count = npos)const {
 		if (count == npos) count = this->size() - pos;
-		return string(*this, pos, count);
+		return basic_string(*this, pos, count);
 	}
 
 	//copy(data, pos, count)
 	template<typename CharType, typename Traits, typename Allocator>
-	typename string<CharType, Traits, Allocator>::size_type string<CharType, Traits, Allocator>::copy(
+	typename basic_string<CharType, Traits, Allocator>::size_type basic_string<CharType, Traits, Allocator>::copy(
 		const_pointer data, size_type pos = 0, size_type count = npos) {
 		if (count == npos) count = get_size(data) - pos;
 		__assign(count, data + pos, data + pos + count);
@@ -796,7 +805,7 @@ namespace kkli {
 
 	//swap
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::swap(string& rhs) {
+	void basic_string<CharType, Traits, Allocator>::swap(basic_string& rhs) {
 		auto temp = __start;
 		__start = rhs.__start;
 		rhs.__start = temp;
@@ -816,7 +825,7 @@ namespace kkli {
 
 	//reverse
 	template<typename CharType, typename Traits, typename Allocator>
-	void string<CharType, Traits, Allocator>::reverse() {
+	void basic_string<CharType, Traits, Allocator>::reverse() {
 		size_type size = this->size();
 		size_type mid_size = size / 2;
 		for (size_type i = 0; i < mid_size; ++i) {
@@ -828,7 +837,7 @@ namespace kkli {
 }
 
 //================================================================================
-// string<T> 非成员函数定义
+// basic_string<T> 非成员函数定义
 //================================================================================
 
 namespace kkli {
@@ -837,9 +846,9 @@ namespace kkli {
 
 	//operator +(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator> operator+(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
-		kkli::string<CharType, Traits, Allocator> str(lhs.size() + rhs.size());
+	basic_string<CharType, Traits, Allocator> operator+(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
+		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size() + rhs.size());
 		str += lhs;
 		str += rhs;
 		return str;
@@ -847,10 +856,10 @@ namespace kkli {
 
 	//operator +(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator> operator+(const string<CharType, Traits, Allocator>& lhs,
+	basic_string<CharType, Traits, Allocator> operator+(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
-		auto data_size = string<CharType, Traits, Allocator>::__get_size(data);
-		kkli::string<CharType, Traits, Allocator> str(lhs.size() + data_size);
+		auto data_size = basic_string<CharType, Traits, Allocator>::__get_size(data);
+		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size() + data_size);
 		str += lhs;
 		str += data;
 		return str;
@@ -858,10 +867,10 @@ namespace kkli {
 
 	//operator +(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator> operator+(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
-		auto data_size = string<CharType, Traits, Allocator>::__get_size(data);
-		kkli::string<CharType, Traits, Allocator> str(lhs.size() + data_size);
+	basic_string<CharType, Traits, Allocator> operator+(const CharType* data,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
+		auto data_size = basic_string<CharType, Traits, Allocator>::__get_size(data);
+		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size() + data_size);
 		str += data;
 		str += lhs;
 		return str;
@@ -869,9 +878,9 @@ namespace kkli {
 
 	//operator +(lhs, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Traits, Allocator> operator+(const string<CharType, Traits, Allocator>& lhs,
+	basic_string<CharType, Traits, Allocator> operator+(const basic_string<CharType, Traits, Allocator>& lhs,
 		CharType value) {
-		kkli::string<CharType, Traits, Allocator> str(lhs.size());
+		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size());
 		str += lhs;
 		str.push_back(value);
 		return str;
@@ -879,9 +888,9 @@ namespace kkli {
 
 	//operator +(value, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	string<CharType, Allocator> operator+(CharType value,
-		const string<CharType, Traits, Allocator>& rhs) {
-		kkli::string<CharType, Traits, Allocator> str(rhs.size());
+	basic_string<CharType, Allocator> operator+(CharType value,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
+		kkli::basic_string<CharType, Traits, Allocator> str(rhs.size());
 		str.push_back(value);
 		str += rhs;
 		return str;
@@ -891,14 +900,14 @@ namespace kkli {
 
 	//operator ==(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator==(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator==(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return lhs.compare(rhs) == 0;
 	}
 
 	//operator ==(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator==(const string<CharType, Traits, Allocator>& lhs,
+	bool operator==(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return lhs.compare(data) == 0;
 	}
@@ -906,20 +915,20 @@ namespace kkli {
 	//operator ==(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator==(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return rhs.compare(data) == 0;
 	}
 
 	//operator !=(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator!=(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator!=(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	//operator !=(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator!=(const string<CharType, Traits, Allocator>& lhs,
+	bool operator!=(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return !(lhs == data);
 	}
@@ -927,20 +936,20 @@ namespace kkli {
 	//operator !=(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator!=(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(data == rhs);
 	}
 
 	//operator <(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator<(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return lhs.compare(rhs) == -1;
 	}
 
 	//operator <(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<(const string<CharType, Traits, Allocator>& lhs,
+	bool operator<(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return lhs.compare(data) == -1;
 	}
@@ -948,20 +957,20 @@ namespace kkli {
 	//operator <(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return rhs.compare(data) == 1;		//data<rhs，则rhs>data
 	}
 
 	//operator >(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator>(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator>(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return lhs.compare(rhs) == 1;
 	}
 
 	//operator >(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator>(const string<CharType, Traits, Allocator>& lhs,
+	bool operator>(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return lhs.compare(data) == 1;
 	}
@@ -969,20 +978,20 @@ namespace kkli {
 	//operator >(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return rhs.compare(data) == -1;			//data>rhs，则rhs<data
 	}
 
 	//operator <=(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator<=(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	//operator <=(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator<=(const string<CharType, Traits, Allocator>& lhs,
+	bool operator<=(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return !(lhs > data);
 	}
@@ -990,20 +999,20 @@ namespace kkli {
 	//operator <=(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator<=(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(data > rhs);
 	}
 
 	//operator >=(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator>=(const string<CharType, Traits, Allocator>& lhs,
-		const string<CharType, Traits, Allocator>& rhs) {
+	bool operator>=(const basic_string<CharType, Traits, Allocator>& lhs,
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(lhs < rhs);
 	}
 
 	//operator >=(lhs, data)
 	template<typename CharType, typename Traits, typename Allocator>
-	bool operator>=(const string<CharType, Traits, Allocator>& lhs,
+	bool operator>=(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
 		return !(lhs < data);
 	}
@@ -1011,7 +1020,7 @@ namespace kkli {
 	//operator >=(data, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
 	bool operator>=(const CharType* data,
-		const string<CharType, Traits, Allocator>& rhs) {
+		const basic_string<CharType, Traits, Allocator>& rhs) {
 		return !(data < rhs);
 	}
 
@@ -1020,8 +1029,8 @@ namespace kkli {
 
 	//swap(lhs, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	void swap(string<CharType, Traits, Allocator>& lhs,
-		string<CharType, Traits, Allocator>& rhs) {
+	void swap(basic_string<CharType, Traits, Allocator>& lhs,
+		basic_string<CharType, Traits, Allocator>& rhs) {
 		lhs.swap(rhs);
 	}
 
@@ -1032,7 +1041,7 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	std::istream& getline(
 		std::istream& is,
-		string<CharType, Traits, Allocator>& str, CharType delim = '\n') {
+		basic_string<CharType, Traits, Allocator>& str, CharType delim = '\n') {
 		str = "";
 		is >> std::noskipws;
 		char c;
@@ -1053,14 +1062,14 @@ namespace kkli {
 	//operator <<
 	template<typename CharType, typename Traits, typename Allocator>
 	std::ostream& operator<<(std::ostream& os,
-		const string<CharType, Traits, Allocator>& str) {
+		const basic_string<CharType, Traits, Allocator>& str) {
 		os << str.c_str();
 		return os;
 	}
 
 	//operator >>
 	template<typename CharType, typename Traits, typename Allocator>
-	std::istream& operator>>(std::istream& is, string<CharType, Traits,
+	std::istream& operator>>(std::istream& is, basic_string<CharType, Traits,
 		Allocator>& str) {
 		return getline(is, str);
 	}
@@ -1068,54 +1077,54 @@ namespace kkli {
 
 	//==================== [stox]: 不想实现，好麻烦！！ ====================
 
-	//string to long long
+	//basic_string to long long
 	template<typename CharType, typename Traits, typename Allocator>
-	long long stoll(const string<CharType, Traits, Allocator>& str,
+	long long stoll(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
-	//string to unsigned long long
+	//basic_string to unsigned long long
 	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long long stoull(const string<CharType, Traits, Allocator>& str,
+	unsigned long long stoull(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10);
 
-	//string to long double
+	//basic_string to long double
 	template<typename CharType, typename Traits, typename Allocator>
-	long double stold(const string<CharType, Traits, Allocator>& str,
+	long double stold(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0);
 
 	//下方的stox是通过调用上方的三个：stoll、stoull、stold 函数来实现的
 
-	//string to int
+	//basic_string to int
 	template<typename CharType, typename Traits, typename Allocator>
-	int stoi(const string<CharType, Traits, Allocator>& str,
+	int stoi(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoll(str, pos, base);		//先转化成long long，再窄化转型成int
 	}
 
-	//string to long
+	//basic_string to long
 	template<typename CharType, typename Traits, typename Allocator>
-	long stol(const string<CharType, Traits, Allocator>& str,
+	long stol(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoll(str, pos, base);		//先转化成long long，再窄化转型成long
 	}
 
-	//string to float
+	//basic_string to float
 	template<typename CharType, typename Traits, typename Allocator>
-	float stof(const string<CharType, Traits, Allocator>& str,
+	float stof(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0) {
 		return stoull(str, pos);			//先转化成long double，再窄化转型成float
 	}
 
-	//string to double
+	//basic_string to double
 	template<typename CharType, typename Traits, typename Allocator>
-	double stod(const string<CharType, Traits, Allocator>& str,
+	double stod(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0) {
 		return stold(str, pos);				//先转化成long double，再窄化转型成double
 	}
 
-	//string to unsigned long
+	//basic_string to unsigned long
 	template<typename CharType, typename Traits, typename Allocator>
-	unsigned long stoul(const string<CharType, Traits, Allocator>& str,
+	unsigned long stoul(const basic_string<CharType, Traits, Allocator>& str,
 		std::size_t* pos = 0, int base = 10) {
 		return stoull(str, pos, base);		//先转化成unsigned long long，再窄化转型成unsigned long
 	}
@@ -1125,10 +1134,10 @@ namespace kkli {
 	//to_string(unsigned long long)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(unsigned long long value) {
+		basic_string<CharType, Traits, Allocator> to_string(unsigned long long value) {
 		if (value == 0) return "0";
 
-		string<CharType, Traits, Allocator> result;
+		basic_string<CharType, Traits, Allocator> result;
 		while (value != 0) {
 			unsigned long long val = value % 10;
 			result.push_back(static_cast<char>(val + 0x30));
@@ -1141,9 +1150,9 @@ namespace kkli {
 	//to_string(long long)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(long long value) {
-		using string = string<CharType, Traits, Allocator>;
-		string result;
+		basic_string<CharType, Traits, Allocator> to_string(long long value) {
+		using basic_string = basic_string<CharType, Traits, Allocator>;
+		basic_string result;
 		if (value < 0) {
 			if(value == std::numeric_limits<long long>::min()) return "-9223372036854775808";
 			else {
@@ -1159,8 +1168,8 @@ namespace kkli {
 	//to_string(long double)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(long double value) {
-		string<CharType, Traits, Allocator> result;
+		basic_string<CharType, Traits, Allocator> to_string(long double value) {
+		basic_string<CharType, Traits, Allocator> result;
 		if (value < 0) {
 			result.push_back('-');
 			value = -value;
@@ -1177,42 +1186,42 @@ namespace kkli {
 	//to_string(int)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(int value) {
+		basic_string<CharType, Traits, Allocator> to_string(int value) {
 		return to_string(static_cast<long long>(value));
 	}
 
 	//to_sring(long)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(long value) {
+		basic_string<CharType, Traits, Allocator> to_string(long value) {
 		return to_string(static_cast<long long>(value));
 	}
 
 	//to_string(unsigned)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(unsigned value) {
+		basic_string<CharType, Traits, Allocator> to_string(unsigned value) {
 		return to_string(static_cast<unsigned long long>(value));
 	}
 
 	//to_string(unsigned long)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(unsigned long value) {
+		basic_string<CharType, Traits, Allocator> to_string(unsigned long value) {
 		return to_string(static_cast<unsigned long long>(value));
 	}
 
 	//to_string(float)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(float value) {
+		basic_string<CharType, Traits, Allocator> to_string(float value) {
 		return to_string(static_cast<long double>(value));
 	}
 
 	//to_string(double)
 	template<typename CharType = char, typename Traits = kkli::char_traits<CharType>,
 		typename Allocator = kkli::allocator<CharType>>
-		string<CharType, Traits, Allocator> to_string(double value) {
+		basic_string<CharType, Traits, Allocator> to_string(double value) {
 		return to_string(static_cast<long double>(value));
 	}
 }

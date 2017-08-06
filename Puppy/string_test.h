@@ -9,8 +9,8 @@ namespace test {
 		using std::cin;
 		using std::cout;
 		using std::endl;
-		using string = kkli::string<char, kkli::char_traits<char>, kkli::allocator<char>>;
-#define npos kkli::string<char>::npos
+		using kkli::string;
+#define npos kkli::string::npos
 
 		//前置声明：成员函数
 		void test_constructor();
@@ -56,7 +56,6 @@ namespace test {
 			cout << "========================================" << endl;
 
 			//测试：成员函数
-			/*
 			test_constructor();
 			test_op_assign();			//operator =
 			test_op_square_bracket();	//operator []
@@ -91,7 +90,6 @@ namespace test {
 			//test_getline();
 			//test_op_stream();			//operator << >>
 			//test_stox();				//函数暂未实现
-			*/
 			test_to_string();
 		}
 

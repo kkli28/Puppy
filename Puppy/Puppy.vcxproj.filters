@@ -93,6 +93,15 @@
     <ClInclude Include="pair_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="memory_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+    <ClInclude Include="utility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
