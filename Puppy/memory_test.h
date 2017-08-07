@@ -136,8 +136,40 @@ namespace test {
 			EXPECT_EQ_VAL(sp7.get(), nullptr);
 			EXPECT_EQ_VAL(sp7.use_count(), 1);
 
-			//shared_ptr(weak_ptr<U>)
-			//shared_ptr(unique_ptr<U>)
+			//**** shared_ptr(weak_ptr<U>) ****
+			//**** shared_ptr(unique_ptr<U>) ****
+
+			//operator =(rhs)
+			shared_ptr<int> sp9(new int(1));
+			sp9 = sp2;
+			EXPECT_EQ_VAL(sp9.get(), nullptr);
+			EXPECT_EQ_VAL(sp9.use_count(), 2);
+			sp9 = sp6;
+			EXPECT_EQ_VAL(*sp9, 2);
+			EXPECT_EQ_VAL(sp9.use_count(), 3);
+
+			//**** operator =(rhs<U>) ****
+
+			//operator =(&&rhs)
+			shared_ptr<int, decltype(deleter)> sp10(new int(1), deleter);
+			sp10 = std::move(sp5);
+			EXPECT_EQ_VAL(sp10.get(), nullptr);
+			EXPECT_EQ_VAL(sp10.use_count(), 1);
+			EXPECT_EQ_VAL(sp5.get(), nullptr);
+			EXPECT_EQ_VAL(sp5.use_count(), 1);
+			shared_ptr<int,decltype(deleter)> sp_move1(new int(2), deleter);
+			decltype(sp_move1) sp_move2 = sp_move1;
+			sp10 = std::move(sp_move1);
+			EXPECT_EQ_VAL(*sp10, 2);
+			EXPECT_EQ_VAL(sp10.use_count(), 2);
+			EXPECT_EQ_VAL(sp_move1.get(), nullptr);
+			EXPECT_EQ_VAL(sp_move1.use_count(), 1);
+			EXPECT_EQ_VAL(*sp_move2, 2);
+			EXPECT_EQ_VAL(sp_move2.use_count(), 2);
+			
+			//**** operator =(rhs<U>) ****
+
+			//**** operator =(unique_ptr<U>) ****
 
 			//reset
 			sp3.reset();
@@ -149,33 +181,32 @@ namespace test {
 			EXPECT_EQ_VAL(sp3.use_count(), 1);
 
 			//swap
-			shared_ptr<int, decltype(deleter)> sp9(new int[8], deleter);
+			shared_ptr<int, decltype(deleter)> sp11(new int[8], deleter);
 			for (int i = 4; i < 12; ++i)
-				sp9.get()[i - 4] = i;
-			swap(sp4, sp9);
+				sp11.get()[i - 4] = i;
+			swap(sp4, sp11);
 			EXPECT_EQ_ARR(sp4.get(), comp2, 8);
-			EXPECT_EQ_ARR(sp9.get(), comp1, 4);
+			EXPECT_EQ_ARR(sp11.get(), comp1, 4);
 			EXPECT_EQ_VAL(sp4.use_count(), 1);
-			EXPECT_EQ_VAL(sp9.use_count(), 1);
+			EXPECT_EQ_VAL(sp11.use_count(), 1);
 
 			//operator []
-			EXPECT_EQ_VAL(sp9[0], 0);
-			EXPECT_EQ_VAL(sp9[1], 1);
-			EXPECT_EQ_VAL(sp9[2], 2);
-			EXPECT_EQ_VAL(sp9[3], 3);
+			EXPECT_EQ_VAL(sp11[0], 0);
+			EXPECT_EQ_VAL(sp11[1], 1);
+			EXPECT_EQ_VAL(sp11[2], 2);
+			EXPECT_EQ_VAL(sp11[3], 3);
 
 			//unique
 			EXPECT_EQ_VAL(sp4.unique(), true);
-			EXPECT_EQ_VAL(sp9.unique(), true);
+			EXPECT_EQ_VAL(sp11.unique(), true);
 
 			//operator bool
 			EXPECT_EQ_VAL(bool(sp4), true);
-			EXPECT_EQ_VAL(bool(sp9), true);
+			EXPECT_EQ_VAL(bool(sp11), true);
 
-			//get_deleter
-			int* new_arr = new int[4]{ 1,2,3,4 };
-			sp9.get_deleter()(new_arr);
+			//**** owner_before ****
 
+			//**** get_deleter ****
 		}
 
 		//测试 shared_ptr 非成员函数
@@ -183,13 +214,21 @@ namespace test {
 			cout << "\ntest_shared_ptr_non_member_function()" << endl;
 
 			auto deleter = [](const int* ptr) {delete[] ptr; };
-			int comp1[4]{ 0,1,2,3 };
-			int comp2[8]{ 4,5,6,7,8,9,10,11 };
 
 			//make_shared
 			shared_ptr<int> sp1 = kkli::make_shared<int>(1);
 			EXPECT_EQ_VAL(*sp1, 1);
 			EXPECT_EQ_VAL(sp1.use_count(), 1);
+
+			//**** static_pointer_cast ****
+			//**** dynamic_pointer_cast ****
+			//**** const_pointer_cast ****
+			//**** reinterpret_pointer_cast ****
+
+			//**** get_allocator ****
+
+			//operator == != < <= > >=
+			//TODO: 
 		}
 	}
 }

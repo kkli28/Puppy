@@ -162,7 +162,7 @@ namespace kkli {
 		bool owner_before(const weak_ptr<U>& rhs)const;
 
 		//get_deleter
-		Deleter get_deleter()const { return __deleter; }
+		Deleter get_deleter() { return __deleter; }
 	};
 }
 
