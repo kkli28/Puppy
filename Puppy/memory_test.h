@@ -32,7 +32,7 @@ namespace test {
 			test_shared_ptr_non_member_function();
 			test_weak_ptr();
 			test_unique_ptr_member_function();
-			//test_unique_ptr_non_member_function();
+			test_unique_ptr_non_member_function();
 		}
 
 		//测试 uninitialized_x
@@ -224,11 +224,7 @@ namespace test {
 			EXPECT_EQ_VAL(*sp1, 1);
 			EXPECT_EQ_VAL(sp1.use_count(), 1);
 
-			//**** static_pointer_cast ****
-			//**** dynamic_pointer_cast ****
-			//**** const_pointer_cast ****
-			//**** reinterpret_pointer_cast ****
-
+			//**** xxxx_pointer_cast ****
 			//**** get_allocator ****
 
 			//operator ==
@@ -358,7 +354,7 @@ namespace test {
 			EXPECT_EQ_VAL(*sp4, 2);
 		}
 
-		//测试 unique_ptr
+		//测试 unique_ptr 成员函数
 		void test_unique_ptr_member_function() {
 			cout << "\ntest_unique_ptr_member_function()" << endl;
 
@@ -426,6 +422,47 @@ namespace test {
 			EXPECT_EQ_VAL(up12[1], 1);
 			EXPECT_EQ_VAL(up12[2], 2);
 			EXPECT_EQ_VAL(up12[3], 3);
+		}
+
+		//测试 unique_ptr 非成员函数
+		void test_unique_ptr_non_member_function() {
+			cout << "\ntest_unique_ptr_non_member_function()" << endl;
+
+			auto deleter = [](const int* ptr) {delete[] ptr; };
+
+			//make_unique
+			unique_ptr<int> up1 = kkli::make_unique<int>(1); //make_unique
+			EXPECT_EQ_VAL(*up1, 1);
+			
+			//operator ==
+			unique_ptr<int> up2;
+			unique_ptr<int> up3(new int(1));
+			unique_ptr<int> up4(new int(2));
+
+			EXPECT_EQ_VAL(up2 == up2, true);
+			EXPECT_EQ_VAL(up2 == up3, false);
+			EXPECT_EQ_VAL(up2 == up4, false);
+			EXPECT_EQ_VAL(up2 == nullptr, true);
+			EXPECT_EQ_VAL(nullptr == up2, true);
+
+			EXPECT_EQ_VAL(up3 == up2, false);
+			EXPECT_EQ_VAL(up3 == up3, true);
+			EXPECT_EQ_VAL(up3 == up4, false);
+			EXPECT_EQ_VAL(up3 == nullptr, false);
+			EXPECT_EQ_VAL(nullptr == up3, false);
+
+			EXPECT_EQ_VAL(up4 == up2, false);
+			EXPECT_EQ_VAL(up4 == up3, false);
+			EXPECT_EQ_VAL(up4 == up4, true);
+			EXPECT_EQ_VAL(up4 == nullptr, false);
+			EXPECT_EQ_VAL(nullptr == up4, false);
+
+			//**** operator < <= > >= ****
+
+			//swap
+			swap(up2, up3);
+			EXPECT_EQ_VAL(*up2, 1);
+			EXPECT_EQ_VAL(up3.get(), nullptr);
 		}
 	}
 }

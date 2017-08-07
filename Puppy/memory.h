@@ -270,8 +270,6 @@ namespace kkli {
 	template<typename T, typename Alloc, typename... Args>
 	shared_ptr<T> allocate_shared(const Alloc& alloc, Args&&... args);
 
-	//下方的 xxx_cast 实现可能存在问题
-
 	//static_pointer_cast
 	template<typename T, typename U, typename Deleter>
 	shared_ptr<T, Deleter> static_pointer_cast(const shared_ptr<U, Deleter>& rhs) {
@@ -498,7 +496,6 @@ namespace kkli {
 			rhs.__sp = temp;
 		}
 
-		//use_count !!!! 可能存在问题，当__sp被删除时，__sp不会为0
 		std::size_t use_count()const {
 			if (__sp != nullptr) {
 				return __sp->use_count();
@@ -535,7 +532,6 @@ namespace kkli {
 
 namespace kkli {
 
-	//unique_ptr<T, Deleter>
 	template<typename T, typename Deleter = default_deleter<T>>
 	class unique_ptr {
 	public:
@@ -636,14 +632,16 @@ namespace kkli {
 	//make_unique
 	template<typename T, typename... Args>
 	unique_ptr<T> make_unique(Args&&... args) {
-		return unique_ptr<T>(new T(args));
+		return unique_ptr<T>(new T(args...));
 	}
 
 	//make_unique : only for array types with unknow bound
+	/*
 	template<typename T>
-	unique_ptr<T> make_unique(std::size_t size) {
-		return unique_ptr<T>(new T[size]);
+	unique_ptr<T[]> make_unique(std::size_t size) {
+		return unique_ptr<T[]>(new T[size]);
 	}
+	*/
 
 	//make_unique : only for array types with known bound
 	/*
@@ -653,32 +651,32 @@ namespace kkli {
 
 	//operator == != < <= > >= (lhs, rhs)
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator==(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator==(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return lhs.get() == rhs.get();
 	}
 
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator!=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator!=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator<(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator<(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return lhs.get() < rhs.get();
 	}
 
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator>(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator>(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return lhs.get() > rhs.get();
 	}
 
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator<=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator<=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	template<typename T1, typename D1, typename T2, typename D2>
-	bool operator>=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+	bool operator>=(const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs) {
 		return !(lhs < rhs);
 	}
 
@@ -750,11 +748,7 @@ namespace kkli {
 	}
 }
 
-/*
-如何特化unique_ptr？
-template<typename T, typename Deleter>
-unique_ptr<T[], Deleter>
-*/
+//如何特化unique_ptr<T[], Deleter>？全部重写一遍？好绝望！
 
 //================================================================================
 // allocator<T> 类定义
