@@ -135,8 +135,6 @@ namespace kkli {
 		}
 	};
 
-	//non-member function
-
 	//operator ==
 	template<typename Iterator1, typename Iterator2>
 	inline bool operator==(const reverse_iterator<Iterator1>& lhs,
@@ -241,8 +239,6 @@ namespace kkli {
 		back_insert_iterator& operator++(int) { return *this; }
 	};
 
-	//non-member function
-
 	//back_inserter
 	template<typename Container>
 	inline back_insert_iterator<Container> back_inserter(Container& cont) {
@@ -297,8 +293,6 @@ namespace kkli {
 		//operator ++(int)
 		front_insert_iterator& operator++(int) { return *this; }
 	};
-
-	//non-member function
 
 	//front_inserter
 	template<typename Container>
@@ -357,8 +351,6 @@ namespace kkli {
 		//operator ++(int)
 		insert_iterator<Container>& operator++(int) { return *this; }
 	};
-
-	//non-member function
 
 	//inserter
 	template<typename Container>
@@ -422,10 +414,6 @@ namespace kkli {
 
 		//operator ++
 		istream_iterator& operator++() {
-
-			//log
-			std::cout << "call operator++()" << endl;
-
 			read();
 			return *this;
 		}

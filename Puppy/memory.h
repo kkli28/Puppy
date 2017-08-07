@@ -97,10 +97,11 @@ namespace kkli {
 		}
 
 		template<typename U>
-		explicit shared_ptr(const weak_ptr<U>& rhs);
+		explicit shared_ptr(const weak_ptr<U>& rhs) {}
 
 		template<typename U>
-		shared_ptr(unique_ptr<U, Deleter>&& rhs);
+		shared_ptr(unique_ptr<U, Deleter>&& rhs)
+			:__ptr = rhs.release(), __use_count = new std::size_t(1), __deleter = rhs.get_deleter() {}
 
 		//destructor
 		~shared_ptr();

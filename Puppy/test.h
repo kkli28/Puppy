@@ -25,5 +25,19 @@ namespace test {
 			if (arr[i] != val) throw std::runtime_error("EXPECT_EQ_NVALS");
 	}
 
-	//
+	//EXPECT_EQ_ITER: 确保迭代器范围内的所有元素相等
+	template<typename InputIt>
+	void EXPECT_EQ_ITER(InputIt first1, InputIt last1, InputIt first2, InputIt last2) {
+		auto iter1 = first1;
+		auto iter2 = first2;
+		for (; iter1 != last1; ++iter1, ++iter2)
+			if (*iter1 != *iter2) throw std::runtime_error("EXPECT_EQ_ITER");
+	}
+
+	//EXPECT_EQ_ITERVAL: 确保迭代器范围内的所有元素等于val
+	template<typename InputIt,typename V>
+	void EXPECT_EQ_ITERVAL(InputIt first, InputIt last, const V& val) {
+		for (auto iter=first; iter != last; ++iter)
+			if (*iter != val) throw std::runtime_error("EXPECT_EQ_ITER");
+	}
 }

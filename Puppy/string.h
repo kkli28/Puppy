@@ -103,8 +103,8 @@ namespace kkli {
 			static size_type get_size(const_pointer data);
 
 			//获取[first, last)的字符个数
-			template<typename InputIterator>
-			static size_type get_size(InputIterator first, InputIterator last) {
+			template<typename InputIteratorA,typename InputIteratorB>
+			static size_type get_size(InputIteratorA first, InputIteratorB last) {
 				size_type size = 0;
 				for (auto iter = first; iter != last; ++size, ++iter);
 				return size;
@@ -207,7 +207,7 @@ namespace kkli {
 			//insert
 			template<typename InputIterator>
 			void insert(const_iterator pos, InputIterator first, InputIterator last);
-			void insert(const_iterator pos, size_type count, value_type value);
+			iterator insert(const_iterator pos, size_type count, value_type value);
 			void insert(size_type index, const basic_string& rhs, size_type index_rhs, size_type count = npos) {
 				if (count == npos) count = rhs.size() - index_rhs;
 				insert(__start + index, rhs.cbegin() + index_rhs, rhs.cbegin() + index_rhs + count);
@@ -219,7 +219,7 @@ namespace kkli {
 
 			void insert(size_type index, const basic_string& rhs) { return insert(__start + index, rhs.cbegin(), rhs.cend()); }
 			void insert(size_type index, size_type count, value_type value) { insert(__start + index, count, value); }
-			void insert(const_iterator pos, value_type value) { insert(pos, 1, value); }
+			iterator insert(const_iterator pos, value_type value) { return insert(pos, 1, value); }
 			void insert(const_iterator pos, std::initializer_list<value_type> init) { return insert(pos, init.begin(), init.end()); }
 
 			//erase
@@ -429,7 +429,6 @@ namespace kkli {
 		iterator addr, InputIteratorA first, InputIteratorB last) {
 		size_type index = 0;
 		for (; first != last; ++first) {
-			
 			*(addr + index) = *first;
 			++index;
 		}
@@ -678,7 +677,8 @@ namespace kkli {
 
 	//insert(pos, count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void basic_string<CharType, Traits, Allocator>::insert(const_iterator pos, size_type count, value_type value) {
+	typename basic_string<CharType, Traits, Allocator>::iterator  basic_string<CharType, Traits, Allocator>::insert(
+		const_iterator pos, size_type count, value_type value) {
 
 		//剩余空间足够
 		if (__capacity - __end >= count) {
@@ -691,11 +691,12 @@ namespace kkli {
 				--src_iter;
 				--dst_iter;
 			}
-
+			
 			//将值写入到pos位置
 			auto iter = __start + (pos - __start);
 			__set_value_by_value(iter, count, value);
 			__end += count;
+			return __start + (pos - __start);
 		}
 
 		//剩余空间不足
@@ -705,13 +706,15 @@ namespace kkli {
 			auto addr = __allocate(capacity);
 			size_type index = 0;
 			index = __set_value_by_range(addr, __start, pos);			//将[0, pos)标示字符写入
+			auto ret = addr + index;
 			__set_value_by_value(addr + index, count, value);				//将插入字符写入
 			index += count;
-			__set_value_by_range(addr + index, pos, __end);			//将后续字符写入
+			index += __set_value_by_range(addr + index, pos, __end);			//将后续字符写入
 			__deallocate();				//释放原有内存
 			__start = addr;
 			__end = __start + index;
 			__capacity = __start + capacity;
+			return ret;
 		}
 	}
 

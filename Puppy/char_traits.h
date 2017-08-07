@@ -11,7 +11,7 @@ namespace kkli {
 	template<typename CharType>
 	class char_traits {};
 
-	// CharType = char 的偏特化
+	//char_traits<char>
 	template<>
 	class char_traits<char> {
 	public:
@@ -106,7 +106,7 @@ namespace kkli {
 		}
 	};
 
-	// CharType = wchar_t  的偏特化
-	// CharType = char16_t 的偏特化
-	// CharType = char32_t 的偏特化
+	//char_traits<wchar_t>
+	//char_traits<char16_t>
+	//char_traits<char32_t>
 }
