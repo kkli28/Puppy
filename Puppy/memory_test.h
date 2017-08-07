@@ -14,6 +14,7 @@ namespace test {
 		using std::endl;
 		using kkli::string;
 		using kkli::shared_ptr;
+		using kkli::weak_ptr;
 
 		//«∞÷√…˘√˜
 		void test_uninitialized_x();
@@ -27,8 +28,8 @@ namespace test {
 			test_uninitialized_x();
 			test_shared_ptr_member_function();
 			test_shared_ptr_non_member_function();
-			//test_weak_ptr();
-			//test_unique_ptr();
+			test_weak_ptr();
+			test_unique_ptr();
 		}
 
 		//≤‚ ‘ uninitialized_x
@@ -227,8 +228,134 @@ namespace test {
 
 			//**** get_allocator ****
 
-			//operator == != < <= > >=
-			//TODO: 
+			//operator ==
+			shared_ptr<int> sp2(sp1);
+			shared_ptr<int> sp3(new int(2));
+			shared_ptr<int> sp4(nullptr);
+
+			EXPECT_EQ_VAL(sp1 == sp1, true);
+			EXPECT_EQ_VAL(sp1 == sp2, true);
+			EXPECT_EQ_VAL(sp1 == sp3, false);
+			EXPECT_EQ_VAL(sp1 == sp4, false);
+
+			EXPECT_EQ_VAL(sp2 == sp1, true);
+			EXPECT_EQ_VAL(sp2 == sp2, true);
+			EXPECT_EQ_VAL(sp2 == sp3, false);
+			EXPECT_EQ_VAL(sp2 == sp4, false);
+
+			EXPECT_EQ_VAL(sp3 == sp1, false);
+			EXPECT_EQ_VAL(sp3 == sp2, false);
+			EXPECT_EQ_VAL(sp3 == sp3, true);
+			EXPECT_EQ_VAL(sp3 == sp4, false);
+			
+			EXPECT_EQ_VAL(sp4 == sp1, false);
+			EXPECT_EQ_VAL(sp4 == sp2, false);
+			EXPECT_EQ_VAL(sp4 == sp3, false);
+			EXPECT_EQ_VAL(sp4 == sp4, true);
+
+			//operator !=
+			EXPECT_EQ_VAL(sp1 != sp1, false);
+			EXPECT_EQ_VAL(sp1 != sp2, false);
+			EXPECT_EQ_VAL(sp1 != sp3, true);
+			EXPECT_EQ_VAL(sp1 != sp4, true);
+
+			EXPECT_EQ_VAL(sp2 != sp1, false);
+			EXPECT_EQ_VAL(sp2 != sp2, false);
+			EXPECT_EQ_VAL(sp2 != sp3, true);
+			EXPECT_EQ_VAL(sp2 != sp4, true);
+
+			EXPECT_EQ_VAL(sp3 != sp1, true);
+			EXPECT_EQ_VAL(sp3 != sp2, true);
+			EXPECT_EQ_VAL(sp3 != sp3, false);
+			EXPECT_EQ_VAL(sp3 != sp4, true);
+
+			EXPECT_EQ_VAL(sp4 != sp1, true);
+			EXPECT_EQ_VAL(sp4 != sp2, true);
+			EXPECT_EQ_VAL(sp4 != sp3, true);
+			EXPECT_EQ_VAL(sp4 != sp4, false);
+
+			//**** operator < <= > >= ****
+
+			//operator << ---- success
+			/*
+			cout << sp1 << endl;
+			cout << sp2 << endl;
+			cout << sp3 << endl;
+			cout << sp4 << endl;
+			*/
 		}
+
+		//≤‚ ‘ weak_ptr
+		void test_weak_ptr() {
+			cout << "\ntest_weak_ptr()" << endl;
+
+			//shared_ptr
+			shared_ptr<int> sp1 = kkli::make_shared<int>(1);
+			shared_ptr<int> sp2(new int(2));
+			shared_ptr<int> sp3(sp2);
+
+			//constructor + use_count + expired
+			weak_ptr<int> wp1;		//weak_ptr()
+			EXPECT_EQ_VAL(wp1.use_count(), 0);
+			EXPECT_EQ_VAL(wp1.expired(), true);
+
+			weak_ptr<int> wp2(sp1); //weak_ptr(sp)
+			EXPECT_EQ_VAL(wp2.use_count(), 1);
+			EXPECT_EQ_VAL(wp2.expired(), false);
+
+			weak_ptr<int> wp3(wp2);		//weak_ptr(rhs)
+			EXPECT_EQ_VAL(wp3.use_count(), 1);
+			
+			weak_ptr<int> wp_move1(wp3);		//weak_ptr(&&rhs)
+			weak_ptr<int> wp4(std::move(wp_move1));
+			EXPECT_EQ_VAL(wp4.use_count(), 1);
+			EXPECT_EQ_VAL(wp_move1.use_count(), 0);
+			EXPECT_EQ_VAL(wp_move1.expired(), true);
+
+			//**** weak_ptr(rhs<U>) ****
+
+			//operator =
+			weak_ptr<int> wp5;
+			wp5 = wp4;		//operator =(rhs)
+			EXPECT_EQ_VAL(wp5.use_count(), 1);
+			
+			weak_ptr<int> wp_move2(sp2);
+			wp5 = std::move(wp_move2);		//operator =(&&rhs)
+			EXPECT_EQ_VAL(wp5.use_count(), 2);
+			EXPECT_EQ_VAL(wp_move2.use_count(), 0);
+
+			//**** operator =(rhs<U>) ****
+			//**** operator =(&&rhs<U>) ****
+
+			weak_ptr<int> wp6;
+			wp6 = sp2;		//operator =(sp)
+			EXPECT_EQ_VAL(wp6.use_count(), 2);
+			
+			//reset
+			weak_ptr<int> wp7(sp2);
+			EXPECT_EQ_VAL(wp7.use_count(), 2);
+			wp7.reset();
+			EXPECT_EQ_VAL(wp7.use_count(), 0);
+			EXPECT_EQ_VAL(wp7.expired(), true);
+
+			//swap
+			weak_ptr<int> wp8;
+			weak_ptr<int> wp9(sp2);
+			wp8.swap(wp9);		//lhs.swap(rhs)
+			EXPECT_EQ_VAL(wp8.use_count(), 2);
+			EXPECT_EQ_VAL(wp9.use_count(), 0);
+			swap(wp8, wp9);		//swap(lhs, rhs)
+			EXPECT_EQ_VAL(wp8.use_count(), 0);
+			EXPECT_EQ_VAL(wp9.use_count(), 2);
+
+			//lock
+			weak_ptr<int> wp10(sp2);
+			shared_ptr<int> sp4 = wp10.lock();
+			EXPECT_EQ_VAL(sp4.use_count(), 3);
+			EXPECT_EQ_VAL(*sp4, 2);
+		}
+
+		//≤‚ ‘ unique_ptr
+		//TODO: 
 	}
 }

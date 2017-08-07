@@ -415,6 +415,7 @@ namespace kkli {
 	template<typename T, typename Deleter>
 	std::ostream& operator<<(std::ostream& os, const shared_ptr<T, Deleter>& sp) {
 		os << sp.get();
+		return os;
 	}
 
 	//swap
@@ -435,59 +436,96 @@ namespace kkli {
 		typedef T	element_type;
 
 	private:
-		element_type* __ptr;
+		const shared_ptr<T>* __sp;
 
 	public:
 		//constructor
-		constexpr weak_ptr() :_ptr(nullptr) {}
+		constexpr weak_ptr() :__sp(nullptr) {}
+		weak_ptr(const weak_ptr& rhs) :__sp(rhs.__sp) {}
+		weak_ptr(weak_ptr&& rhs) :__sp(rhs.__sp) { rhs.__sp = nullptr; }
 
 		template<typename U>
-		weak_ptr(const weak_ptr<U>& rhs) : __ptr(rhs.__ptr) {}
+		weak_ptr(const weak_ptr<U>& rhs) : __sp(rhs.__sp) {}
 
 		template<typename U>
-		weak_ptr(const shared_ptr<U>& rhs) : __ptr(rhs.get()) {}
-		
+		weak_ptr(const shared_ptr<U>& rhs) : __sp(&rhs) {}
+
 		template<typename U>
-		weak_ptr(weak_ptr<U>&& rhs) : __ptr(rhs.__ptr) {
-			rhs.__ptr = nullptr;
-		}
+		weak_ptr(weak_ptr<U>&& rhs) : __sp(rhs.__sp) { rhs.__sp = nullptr; }
 
 		//destructor
-		~weak_ptr() { __ptr = nullptr; }
+		~weak_ptr() { __sp = nullptr; }
 
 		//operator =
+		weak_ptr& operator=(const weak_ptr& rhs) {
+			__sp = rhs.__sp;
+			return *this;
+		}
+
+		weak_ptr& operator=(weak_ptr&& rhs) {
+			__sp = rhs.__sp;
+			rhs.__sp = nullptr;
+			return *this;
+		}
+
 		template<typename U>
 		weak_ptr& operator=(const weak_ptr<U>& rhs) {
-			__ptr = rhs.__ptr;
+			__sp = rhs.__sp;
 			return *this;
 		}
 
 		template<typename U>
 		weak_ptr& operator=(const shared_ptr<U>& rhs) {
-			__ptr = rhs.get();
+			__sp = &rhs;
 			return *this;
 		}
 
 		template<typename U>
 		weak_ptr& operator=(weak_ptr<U>&& rhs) {
-			__ptr = rhs.__ptr;
-			rhs.__ptr = nullptr;
+			__sp = rhs.__sp;
+			rhs.__sp = nullptr;
 			return *this;
 		}
 
 		//reset
-		void reset() { __ptr = nullptr; }
+		void reset() { __sp = nullptr; }
 		
 		//swap
-		void swap(weak_ptr& r) {
-			auto temp = __ptr;
-			__ptr = r.__ptr;
-			r.__ptr = temp;
+		void swap(weak_ptr& rhs) {
+			auto temp = __sp;
+			__sp = rhs.__sp;
+			rhs.__sp = temp;
 		}
 
-		//use_count
-		//TODO: 
+		//use_count !!!! 可能存在问题，当__sp被删除时，__sp不会为0
+		std::size_t use_count()const {
+			if (__sp != nullptr) {
+				return __sp->use_count();
+			}
+			else return 0;
+		}
+
+		//expired
+		bool expired()const { return use_count()==0; }
+
+		//lock
+		shared_ptr<T> lock()const {
+			return expired() ? shared_ptr<T>() : shared_ptr<T>(*__sp);
+		}
+
+		//owner_before
+		template<typename U>
+		bool owner_before(const weak_ptr<U>& rhs)const;
+
+		template<typename U>
+		bool owner_before(const shared_ptr<T>& rhs)const;
 	};
+
+	//swap
+	template<typename T>
+	void swap(weak_ptr<T>& lhs, weak_ptr<T>& rhs) {
+		lhs.swap(rhs);
+	}
 }
 
 //================================================================================
