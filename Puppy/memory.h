@@ -162,7 +162,8 @@ namespace kkli {
 		bool owner_before(const weak_ptr<U>& rhs)const;
 
 		//get_deleter
-		Deleter get_deleter() { return __deleter; }
+		Deleter& get_deleter() { return __deleter; }
+		const Deleter& get_deleter()const { return __deleter; }
 	};
 }
 
@@ -532,6 +533,129 @@ namespace kkli {
 // unique_ptr<T> 类定义
 //================================================================================
 
+namespace kkli {
+
+	//unique_ptr<T, Deleter>
+	template<typename T, typename Deleter = default_deleter<T>>
+	class unique_ptr {
+	public:
+		typedef T		element_type;
+		typedef T*		pointer;
+		typedef Deleter deleter_type;
+
+	private:
+		pointer __ptr;
+		Deleter __deleter;
+
+	public:
+		//constructor
+		constexpr unique_ptr() :__ptr(nullptr) {}
+		constexpr unique_ptr(std::nullptr_t ptr) : __ptr(ptr) {}
+		explicit unique_ptr(pointer ptr) :__ptr(ptr) {}
+		unique_ptr(pointer ptr, Deleter d) :__ptr(ptr), __deleter(d) {}
+		unique_ptr(unique_ptr&& rhs)
+			:__ptr(rhs.__ptr) {
+			__rhs.__ptr = nullptr;
+		}
+
+		template<typename U, typename D>
+		unique_ptr(unique_ptr<U, E>&& rhs)
+			: __ptr(rhs.__ptr), __deleter(rhs.__deleter) {}
+
+		//destructor
+		~unique_ptr() { __deleter(__ptr); }
+
+		//operator =
+		unique_ptr& operator=(unique_ptr&& rhs) {
+			__ptr = rhs.__ptr;
+			rhs.__ptr = nullptr;
+		}
+		unique_ptr& operator=(std::nullptr_t ptr) {
+			__deleter(__ptr);
+			__ptr = ptr;
+		}
+
+		template<typename U, typename D>
+		unique_ptr& operator= (unique_ptr<U, D>&& rhs) {
+			__ptr = rhs.__ptr;
+			__deleter = rhs.__deleter;
+			rhs.__ptr = nullptr;
+		}
+
+		//release
+		pointer release() {
+			pointer ptr = __ptr;
+			__ptr = nullptr;
+			return ptr;
+		}
+
+		//reset
+		void reset(pointer ptr = pointer()) {
+			__deleter(__ptr);
+			__ptr = ptr;
+		}
+
+		//swap
+		void swap(unique_ptr& rhs) {
+			auto ptr = __ptr;
+			__ptr = rhs.__ptr;
+			rhs.__ptr = ptr;
+
+			auto deleter = __deleter;
+			__deleter = rhs.__deleter;
+			rhs.__deleter = deleter;
+		}
+
+		//get
+		pointer get()const { return __ptr; }
+
+		//get_deleter
+		Deleter& get_deleter() { return __deleter; }
+		const Deleter& get_deleter()const { return __deleter; }
+
+		//operator bool
+		explicit operator bool()const { return __ptr != nullptr; }
+
+		//operator *
+		T& operator*()const { return *__ptr; }
+
+		//operator ->
+		pointer operator->()const { return __ptr; }
+
+		//operator []
+		T& operator[](std::size_t idx)const { return get()[i]; }
+	};
+}
+
+//非成员函数定义
+namespace kkli {
+	//make_unique
+	template<typename T,typename... Args>
+	unique_ptr<T> make_unique(Args&&... args) {
+		return unique_ptr<T>(new T(args));
+	}
+
+	//make_unique : only for array types with unknow bound
+	template<typename T>
+	unique_ptr<T> make_unique(std::size_t size) {
+		return unique_ptr<T>(new T[size]);
+	}
+
+	//make_unique : only for array types with known bound
+	/*
+	template<typename T, class... Args>
+	// unspecified // make_unique(Args&&... args) = delete;
+	*/
+
+	//operators
+	//TODO: 
+}
+
+/*
+如何特化unique_ptr？
+template<typename T, typename Deleter>
+unique_ptr<T[], Deleter>
+*/
 
 //================================================================================
 // allocator<T> 类定义
