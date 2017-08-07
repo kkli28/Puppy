@@ -21,10 +21,6 @@ namespace test {
 	//EXPECT_EQ_NVALS: 确保数组中所有元素等于val
 	template<typename T,typename U>
 	void EXPECT_EQ_NVALS(const T& arr, std::size_t count, const U& val) {
-		
-		//log
-		std::cout << "arr[0]: " << arr[0] << "    val: " << val << std::endl;
-
 		for (int i = 0; i < count; ++i)
 			if (arr[i] != val) throw std::runtime_error("EXPECT_EQ_NVALS");
 	}

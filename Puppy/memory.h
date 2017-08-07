@@ -38,46 +38,55 @@ namespace kkli {
 		std::size_t*	__use_count;
 		Deleter			__deleter;
 
+		//不再管理当前对象
+		void no_longer_management() {
+			if (--(*__use_count) == 0) {
+				__deleter(__ptr);
+				delete __use_count;
+			}
+		}
+
+		//从其他对象获得资源
+		template<typename U>
+		void copy_from_others(const shared_ptr<U,Deleter>& rhs) {
+			__ptr = rhs.__ptr;
+			__use_count = rhs.__use_count;
+		}
 	public:
 		//constructor
 		shared_ptr()
-			:__ptr(nullptr), __use_count(new std::size_t(1)) {
+			:__ptr(nullptr), __use_count(new std::size_t(1)) {}
 
-			//log
-			std::cout << "==== 1 ====" << endl;
-		}
-
+		shared_ptr(std::nullptr_t) :__ptr(nullptr), __use_count(new std::size_t(1)) {}
+		
 		template<typename U>
 		explicit shared_ptr(U* ptr)
-			:__ptr(ptr), __use_count(new std::size_t(1)) {
-
-			//log
-			std::cout << "==== 2 ====" << endl;
-		}
+			:__ptr(ptr), __use_count(new std::size_t(1)) {}
 
 		template<typename U>
 		shared_ptr(U* ptr, Deleter d)
-			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(d) {
-
-			//log
-			std::cout << "==== 3 ====" << endl;
-		}
+			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(d) {}
 
 		shared_ptr(std::nullptr_t ptr, Deleter d)
-			: __ptr(nullptr), __use_count(new std::size_t(1)), __deleter(d) {
+			: __ptr(nullptr), __use_count(new std::size_t(1)), __deleter(d) {}
 
-			//log
-			std::cout << "==== 4 ====" << endl;
+		template<typename U>
+		shared_ptr(const shared_ptr<U, Deleter>& rhs, element_type* ptr)
+			: __ptr(ptr), __use_count(new std::size_t(1)), __deleter(rhs.__deleter) {}
+
+		shared_ptr(const shared_ptr& rhs)
+			:__ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			++*(__use_count);
 		}
 
-		//****************************** 出问题的复制构造函数在这里 ******************************
 		template<typename U>
-		shared_ptr<T,Deleter>(const shared_ptr<U, Deleter>& rhs)
-			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
-			++(*__use_count);
+		shared_ptr(const shared_ptr<U, Deleter>& rhs) 
+			: __ptr(ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {}
 
-			//log
-			std::cout << "==== 5 ====" << endl;
+		shared_ptr(shared_ptr&& rhs)
+			:__ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
+			rhs.__ptr = nullptr;
+			rhs.__use_count = new std::size_t(1);
 		}
 
 		template<typename U>
@@ -85,23 +94,24 @@ namespace kkli {
 			: __ptr(rhs.__ptr), __use_count(rhs.__use_count), __deleter(rhs.__deleter) {
 			rhs.__ptr = nullptr;
 			rhs.__use_count = new std::size_t(1);
-
-			//log
-			std::cout << "==== 6 ====" << endl;
 		}
 
 		template<typename U>
-		explicit shared_ptr(const weak_ptr<U>& wp);
+		explicit shared_ptr(const weak_ptr<U>& rhs);
 
 		template<typename U>
-		shared_ptr(unique_ptr<U, Deleter>&& up);
+		shared_ptr(unique_ptr<U, Deleter>&& rhs);
 
 		//destructor
 		~shared_ptr();
 
 		//operator =
+		shared_ptr& operator=(const shared_ptr& rhs);
+
 		template<typename U>
 		shared_ptr& operator=(const shared_ptr<U, Deleter>& rhs);
+
+		shared_ptr& operator=(shared_ptr&& rhs);
 
 		template<typename U>
 		shared_ptr& operator=(shared_ptr<U, Deleter>&& rhs);
@@ -162,40 +172,44 @@ namespace kkli{
 	//~shared_ptr
 	template<typename T, typename Deleter>
 	shared_ptr<T, Deleter>::~shared_ptr() {
-		if (--(*__use_count) == 0) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
+		no_longer_management();
 	}
 
 	//operator =(rhs)
+	template<typename T, typename Deleter>
+	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(const shared_ptr& rhs) {
+		no_longer_management();
+		++(*(rhs.__use_count));		//获得资源+1
+		copy_from_others(rhs);
+		return *this;
+	}
+
+	//operator =(rhs<U>)
 	template<typename T,typename Deleter>
 	template<typename U>
 	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(const shared_ptr<U, Deleter>& rhs) {
-		if (--(*__use_count) == 0) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
-
+		no_longer_management();
 		++(*(rhs.__use_count));		//获得资源+1
-		__ptr = rhs.__ptr;
-		__use_count = rhs.__use_count;
-		__deleter = rhs.__deleter;
+		copy_from_others(rhs);
 		return *this;
 	}
 
 	//operator =(&&rhs)
 	template<typename T, typename Deleter>
+	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(shared_ptr&& rhs) {
+		no_longer_management();
+		copy_from_others(rhs);
+		rhs.__ptr = nullptr;
+		rhs.__use_count = new std::size_t(1);
+		return *this;
+	}
+
+	//operator =(&&rhs<U>)
+	template<typename T, typename Deleter>
 	template<typename U>
 	shared_ptr<T, Deleter>& shared_ptr<T, Deleter>::operator=(shared_ptr<U, Deleter>&& rhs) {
-		if (--(*__use_count) == 0) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
-		__ptr = rhs.__ptr;
-		__use_count = rhs.__use_count;
-		__deleter = rhs.__deleter;
-
+		no_longer_management();
+		copy_from_others(rhs);
 		rhs.__ptr = nullptr;
 		rhs.__use_count = new std::size_t(1);
 		return *this;
@@ -204,10 +218,7 @@ namespace kkli{
 	//reset()
 	template<typename T, typename Deleter>
 	void shared_ptr<T, Deleter>::reset() {
-		if (--(*__use_count) == 0) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
+		no_longer_management();
 		__ptr = nullptr;
 		__use_count = new std::size_t(1);
 	}
@@ -216,10 +227,8 @@ namespace kkli{
 	template<typename T, typename Deleter>
 	template<typename U>
 	void shared_ptr<T, Deleter>::reset(U* ptr) {
-		if (--(*__use_count)) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
+		no_longer_management();
+
 		__ptr = ptr;
 		__use_count = new std::size_t(1);
 	}
@@ -228,10 +237,7 @@ namespace kkli{
 	template<typename T, typename Deleter>
 	template<typename U>
 	void shared_ptr<T,Deleter>::reset(U* ptr, Deleter d) {
-		if (--(*__use_count)) {
-			__deleter(__ptr);
-			delete __use_count;
-		}
+		no_longer_management();
 		__ptr = ptr;
 		__use_count = new std::size_t(1);
 		__deleter = &d;
@@ -247,10 +253,6 @@ namespace kkli{
 		auto temp2 = __use_count;
 		__use_count = rhs.__use_count;
 		rhs.__use_count = temp2;
-
-		auto temp3 = __deleter;
-		__deleter = rhs.__deleter;
-		rhs.__deleter = temp3;
 	}
 }
 
