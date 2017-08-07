@@ -15,13 +15,15 @@ namespace test {
 		using kkli::string;
 		using kkli::shared_ptr;
 		using kkli::weak_ptr;
+		using kkli::unique_ptr;
 
 		//«∞÷√…˘√˜
 		void test_uninitialized_x();
 		void test_shared_ptr_member_function();
 		void test_shared_ptr_non_member_function();
 		void test_weak_ptr();
-		void test_unique_ptr();
+		void test_unique_ptr_member_function();
+		void test_unique_ptr_non_member_function();
 
 		//’˚ÃÂ≤‚ ‘
 		void test() {
@@ -29,7 +31,8 @@ namespace test {
 			test_shared_ptr_member_function();
 			test_shared_ptr_non_member_function();
 			test_weak_ptr();
-			test_unique_ptr();
+			test_unique_ptr_member_function();
+			//test_unique_ptr_non_member_function();
 		}
 
 		//≤‚ ‘ uninitialized_x
@@ -356,6 +359,73 @@ namespace test {
 		}
 
 		//≤‚ ‘ unique_ptr
-		//TODO: 
+		void test_unique_ptr_member_function() {
+			cout << "\ntest_unique_ptr_member_function()" << endl;
+
+			auto deleter = [](const int* ptr) {delete[] ptr; };
+
+			//constructor + get + operator*
+			unique_ptr<int> up1;		//unique_ptr()
+			EXPECT_EQ_VAL(up1.get(), nullptr);
+
+			unique_ptr<int> up2(nullptr); //unique_ptr(nullptr)
+			EXPECT_EQ_VAL(up2.get(), nullptr);
+			
+			unique_ptr<int> up3(new int(1)); //unique_ptr(ptr)
+			EXPECT_EQ_VAL(*up3, 1);
+
+			unique_ptr<int, decltype(deleter)> up4(new int(2), deleter); //unique_ptr(ptr, d)
+			EXPECT_EQ_VAL(*up4, 2);
+
+			unique_ptr<int> up_move1(new int(3));
+			unique_ptr<int> up5(std::move(up_move1));
+			EXPECT_EQ_VAL(*up5, 3);
+			EXPECT_EQ_VAL(up_move1.get(), nullptr);
+
+			//operator =
+			unique_ptr<int> up6;
+			unique_ptr<int> up7(new int(1));
+			up6 = std::move(up7);		//operator =(&&rhs)
+			EXPECT_EQ_VAL(*up6, 1);
+			EXPECT_EQ_VAL(up7.get(), nullptr);
+			
+			up6 = nullptr;	//operator =(nullptr)
+			EXPECT_EQ_VAL(up6.get(), nullptr);
+
+			//**** operator =(rhs<U,D>) ****
+
+			//release
+			unique_ptr<int> up8(new int(1));
+			int* pi1 = up8.release();
+			EXPECT_EQ_VAL(up8.get(), nullptr);
+			EXPECT_EQ_VAL(*pi1, 1);
+
+			//reset
+			unique_ptr<int> up9(new int(1));
+			up9.reset(new int(2));
+			EXPECT_EQ_VAL(*up9, 2);
+			up9.reset(nullptr);
+			EXPECT_EQ_VAL(up9.get(), nullptr);
+
+			//swap
+			unique_ptr<int> up10(new int(1));
+			unique_ptr<int> up11(new int(2));
+			up10.swap(up11);	//lhs.swap(rhs)
+			EXPECT_EQ_VAL(*up10, 2);
+			EXPECT_EQ_VAL(*up11, 1);
+
+			//operator bool
+			EXPECT_EQ_VAL(bool(up10), true);
+
+			//operator ->
+			EXPECT_EQ_VAL(up10.get(), up10.operator->());
+
+			//operator []
+			unique_ptr<int, decltype(deleter)> up12(new int[4]{ 0,1,2,3 }, deleter);
+			EXPECT_EQ_VAL(up12[0], 0);
+			EXPECT_EQ_VAL(up12[1], 1);
+			EXPECT_EQ_VAL(up12[2], 2);
+			EXPECT_EQ_VAL(up12[3], 3);
+		}
 	}
 }

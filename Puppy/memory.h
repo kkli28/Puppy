@@ -555,11 +555,11 @@ namespace kkli {
 		unique_ptr(pointer ptr, Deleter d) :__ptr(ptr), __deleter(d) {}
 		unique_ptr(unique_ptr&& rhs)
 			:__ptr(rhs.__ptr) {
-			__rhs.__ptr = nullptr;
+			rhs.__ptr = nullptr;
 		}
 
 		template<typename U, typename D>
-		unique_ptr(unique_ptr<U, E>&& rhs)
+		unique_ptr(unique_ptr<U, D>&& rhs)
 			: __ptr(rhs.__ptr), __deleter(rhs.__deleter) {}
 
 		//destructor
@@ -567,12 +567,15 @@ namespace kkli {
 
 		//operator =
 		unique_ptr& operator=(unique_ptr&& rhs) {
+			__deleter(__ptr);
 			__ptr = rhs.__ptr;
 			rhs.__ptr = nullptr;
+			return *this;
 		}
 		unique_ptr& operator=(std::nullptr_t ptr) {
 			__deleter(__ptr);
 			__ptr = ptr;
+			return *this;
 		}
 
 		template<typename U, typename D>
@@ -580,6 +583,7 @@ namespace kkli {
 			__ptr = rhs.__ptr;
 			__deleter = rhs.__deleter;
 			rhs.__ptr = nullptr;
+			return *this;
 		}
 
 		//release
@@ -623,14 +627,14 @@ namespace kkli {
 		pointer operator->()const { return __ptr; }
 
 		//operator []
-		T& operator[](std::size_t idx)const { return get()[i]; }
+		T& operator[](std::size_t idx)const { return get()[idx]; }
 	};
 }
 
 //非成员函数定义
 namespace kkli {
 	//make_unique
-	template<typename T,typename... Args>
+	template<typename T, typename... Args>
 	unique_ptr<T> make_unique(Args&&... args) {
 		return unique_ptr<T>(new T(args));
 	}
@@ -647,8 +651,103 @@ namespace kkli {
 	// unspecified // make_unique(Args&&... args) = delete;
 	*/
 
-	//operators
-	//TODO: 
+	//operator == != < <= > >= (lhs, rhs)
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator==(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return lhs.get() == rhs.get();
+	}
+
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator!=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return !(lhs == rhs);
+	}
+
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator<(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return lhs.get() < rhs.get();
+	}
+
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator>(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return lhs.get() > rhs.get();
+	}
+
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator<=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return !(lhs > rhs);
+	}
+
+	template<typename T1, typename D1, typename T2, typename D2>
+	bool operator>=(const unique_ptr<T1, D1> lhs, const unique_ptr<T2, D2>& rhs) {
+		return !(lhs < rhs);
+	}
+
+	//operator == != < <= > >= (lhs, nullptr) / (nullptr, rhs)
+	template<typename T, typename D>
+	bool operator==(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return !lhs;
+	}
+
+	template<typename T, typename D>
+	bool operator==(std::nullptr_t, const unique_ptr<T, D>& rhs) {
+		return !rhs;
+	}
+
+	template<typename T, typename D>
+	bool operator!=(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return bool(lhs);
+	}
+
+	template<typename T, typename D>
+	bool operator!=(std::nullptr_t, unique_ptr<T, D>& rhs) {
+		return bool(rhs);
+	}
+
+	template<typename T, typename D>
+	bool operator<(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return lhs.get() < nullptr;
+	}
+
+	template<typename T, typename D>
+	bool operator<(std::nullptr_t, const unique_ptr<T, D>& rhs) {
+		return nullptr < rhs.get();
+	}
+
+	template<typename T, typename D>
+	bool operator>(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return lhs.get() > nullptr;
+	}
+
+	template<typename T, typename D>
+	bool operator>(std::nullptr_t, const unique_ptr<T, D>& rhs) {
+		return nullptr > rhs.get();
+	}
+
+	template<typename T, typename D>
+	bool operator<=(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return !(lhs.get() > nullptr);
+	}
+
+	template<typename T, typename D>
+	bool operator<=(std::nullptr_t, const unique_ptr<T, D>& rhs) {
+		return !(nullptr > rhs.get());
+	}
+
+	template<typename T, typename D>
+	bool operator>=(const unique_ptr<T, D>& lhs, std::nullptr_t) {
+		return !(lhs.get() < nullptr);
+	}
+
+	template<typename T, typename D>
+	bool operator>=(std::nullptr_t, const unique_ptr<T, D>& rhs) {
+		return !(nullptr < rhs.get());
+	}
+
+	//swap
+	template<typename T,typename D>
+	void swap(unique_ptr<T, D>& lhs, unique_ptr<T, D>& rhs) {
+		lhs.swap(rhs);
+	}
 }
 
 /*
