@@ -33,7 +33,7 @@ namespace kkli {
 		}
 
 		//operator ==
-		bool operator==(const forward_list<T>& rhs) {
+		bool operator==(const list_node<T>& rhs) {
 			return (value == rhs.value && next == rhs.next && prev == rhs.prev);
 		}
 	};
