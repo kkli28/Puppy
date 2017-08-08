@@ -15,15 +15,15 @@
 using namespace std;
 
 int main() {
-	//test::pair_test::test();
+	test::iterator_test::test();
+	test::memory_test::test();
+	test::pair_test::test();
 	//test::forward_list_test::test();
 	//test::avl_tree_test::test();
 	//test::array_test::test();
 	//test::vector_test::test();
 	//test::list_test::test();
 	//test::string_test::test();
-	test::iterator_test::test();
-	//test::memory_test::test();
 	system("pause");
     return 0;
 }

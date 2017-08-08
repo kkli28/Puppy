@@ -28,6 +28,8 @@ namespace test {
 
 		//ÕûÌå²âÊÔ
 		void test() {
+			cout << "\n========== test: iterator.h ==========" << endl;
+
 			test_reverse_iterator();
 			test_back_insert_iterator();
 			test_front_insert_iterator();
@@ -38,7 +40,7 @@ namespace test {
 
 		//²âÊÔ reverse_iterator
 		void test_reverse_iterator() {
-			cout << "test: reverse_iterator";
+			cout << "test: reverse_iterator" << endl;
 
 			string str1("abcd");
 			auto rbeg = reverse_iterator(str1.end());
@@ -50,13 +52,11 @@ namespace test {
 
 			string str2(rbeg, rend);
 			EXPECT_EQ_ARR(str2.c_str(), "dcba", 4);
-
-			cout << " ---- succeed!" << endl;
 		}
 
 		//²âÊÔ back_insert_iterator
 		void test_back_insert_iterator() {
-			cout << "test: back_insert_iterator";
+			cout << "test: back_insert_iterator" << endl;
 
 			string str1;
 			string str2("abcd");
@@ -68,13 +68,11 @@ namespace test {
 
 			EXPECT_EQ_ARR(str1.c_str(), "abcd", 4);
 			EXPECT_EQ_ARR(str2.c_str(), "abcdabcd", 8);
-
-			cout << " ---- succeed!" << endl;
 		}
 
 		//²âÊÔ front_insert_iterator
 		void test_front_insert_iterator() {
-			cout << "test: front_insert_iterator";
+			cout << "test: front_insert_iterator" << endl;
 
 			list<char> lst1;
 			list<char> lst2{ 'a','b','c','d' };
@@ -88,13 +86,11 @@ namespace test {
 			lmd(kkli::front_inserter(lst2));
 			EXPECT_EQ_ITER(lst1.begin(), lst1.end(), comp1.begin(), comp1.end());
 			EXPECT_EQ_ITER(lst2.begin(), lst2.end(), comp2.begin(), comp2.end());
-			
-			cout << " ---- succeed!" << endl;
 		}
 
 		//²âÊÔ insert_iterator
 		void test_insert_iterator() {
-			cout << "test: insert_iterator";
+			cout << "test: insert_iterator" << endl;
 
 			string str1;
 			string str2("abcd");
@@ -108,8 +104,6 @@ namespace test {
 			lmd(kkli::inserter(str2,str2.begin()));
 			EXPECT_EQ_ITER(str1.begin(), str1.end(), comp1.begin(), comp1.end());
 			EXPECT_EQ_ITER(str2.begin(), str2.end(), comp2.begin(), comp2.end());
-
-			cout << " ---- succeed!" << endl;
 		}
 
 		//²âÊÔ istream_iterator

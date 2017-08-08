@@ -870,7 +870,7 @@ namespace kkli{
 		for (; count > 0; --count, ++first, ++dest) {
 			::new (static_cast<void*>(addressof(*dest))) typename iterator_traits<ForwardIt>::value_type(std::move(*first));
 		}
-		return make_pair(first, dest);
+		return make_pair(std::move(first), std::move(dest));
 	}
 
 	//uninitialized_default_construct

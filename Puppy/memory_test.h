@@ -19,25 +19,38 @@ namespace test {
 
 		//前置声明
 		void test_uninitialized_x();
+
 		void test_shared_ptr_member_function();
 		void test_shared_ptr_non_member_function();
-		void test_weak_ptr();
-		void test_unique_ptr_member_function();
-		void test_unique_ptr_non_member_function();
-
-		//整体测试
-		void test() {
-			test_uninitialized_x();
+		void test_shared_ptr() {
+			cout << "test: shared_ptr" << endl;
 			test_shared_ptr_member_function();
 			test_shared_ptr_non_member_function();
-			test_weak_ptr();
+		}
+
+		void test_weak_ptr();
+
+		void test_unique_ptr_member_function();
+		void test_unique_ptr_non_member_function();
+		void test_unique_ptr() {
+			cout << "test: unique_ptr" << endl;
 			test_unique_ptr_member_function();
 			test_unique_ptr_non_member_function();
 		}
 
+		//整体测试
+		void test() {
+			cout << "\n========== test: memory.h ==========" << endl;
+
+			test_uninitialized_x();
+			test_shared_ptr();
+			test_weak_ptr();
+			test_unique_ptr();
+		}
+
 		//测试 uninitialized_x
 		void test_uninitialized_x() {
-			cout << "\ntest_uninitalized_x()" << endl;
+			cout << "test: uninitalized_x()" << endl;
 
 			int arr[8] = { 1,2,3,4,5,6,7,8 };
 
@@ -98,8 +111,6 @@ namespace test {
 
 		//测试 shared_ptr 成员函数
 		void test_shared_ptr_member_function() {
-			cout << "\ntest_shared_ptr_member_function()" << endl;
-
 			auto deleter = [](const int* ptr) {delete[] ptr; };
 			int comp1[4]{ 0,1,2,3 };
 			int comp2[8]{ 4,5,6,7,8,9,10,11 };
@@ -188,7 +199,7 @@ namespace test {
 			shared_ptr<int, decltype(deleter)> sp11(new int[8], deleter);
 			for (int i = 4; i < 12; ++i)
 				sp11.get()[i - 4] = i;
-			swap(sp4, sp11);
+			kkli::swap(sp4, sp11);
 			EXPECT_EQ_ARR(sp4.get(), comp2, 8);
 			EXPECT_EQ_ARR(sp11.get(), comp1, 4);
 			EXPECT_EQ_VAL(sp4.use_count(), 1);
@@ -215,8 +226,6 @@ namespace test {
 
 		//测试 shared_ptr 非成员函数
 		void test_shared_ptr_non_member_function() {
-			cout << "\ntest_shared_ptr_non_member_function()" << endl;
-
 			auto deleter = [](const int* ptr) {delete[] ptr; };
 
 			//make_shared
@@ -286,7 +295,7 @@ namespace test {
 
 		//测试 weak_ptr
 		void test_weak_ptr() {
-			cout << "\ntest_weak_ptr()" << endl;
+			cout << "test: weak_ptr" << endl;
 
 			//shared_ptr
 			shared_ptr<int> sp1 = kkli::make_shared<int>(1);
@@ -356,8 +365,6 @@ namespace test {
 
 		//测试 unique_ptr 成员函数
 		void test_unique_ptr_member_function() {
-			cout << "\ntest_unique_ptr_member_function()" << endl;
-
 			auto deleter = [](const int* ptr) {delete[] ptr; };
 
 			//constructor + get + operator*
@@ -426,8 +433,6 @@ namespace test {
 
 		//测试 unique_ptr 非成员函数
 		void test_unique_ptr_non_member_function() {
-			cout << "\ntest_unique_ptr_non_member_function()" << endl;
-
 			auto deleter = [](const int* ptr) {delete[] ptr; };
 
 			//make_unique

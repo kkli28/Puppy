@@ -2,24 +2,19 @@
 
 #include "stdafx.h"
 #include "pair.h"
+#include "string.h"
+#include "test.h"
 
 namespace test {
 	namespace pair_test {
+
 		using std::cout;
 		using std::endl;
-		using std::string;
-
 		using kkli::pair;
-		using kkli::swap;
-		using kkli::get;
-		using kkli::make_pair;
-
-		int i = 1;
-		string str = "C++";
+		using kkli::string;
 
 		//∫Ø ˝«∞÷√…˘√˜
 		void test_constructor();
-		void test_types();
 		void test_op_equal();
 		void test_swap();
 		void test_make_pair();
@@ -30,12 +25,9 @@ namespace test {
 
 		//’˚ÃÂ≤‚ ‘
 		void test() {
-			cout << "\n========================================" << endl;
-			cout << "          test: pair " << endl;
-			cout << "========================================" << endl;
+			cout << "\n========== test: pair.h ==========" << endl;
 
 			test_constructor();
-			test_types();
 			test_op_equal();
 			test_swap();
 			test_make_pair();
@@ -47,163 +39,314 @@ namespace test {
 
 		//≤‚ ‘ pair
 		void test_constructor() {
-			cout << "\ntest_constructor()" << endl;
+			cout << "test: constructor()" << endl;
 
-			//pair()
-			cout << "mp1: ";
-			pair<int, int> mp1;
+			//constructor
+			pair<int, string> p1;		//pair()
+			EXPECT_EQ_VAL(p1.first, 0);
+			EXPECT_EQ_VAL(p1.second, "");
 
-			//pair<const T1&, const T2&>
+			int i1 = 1;
+			string str1 = "abcd";
+			pair<int, string> p2(i1, str1); //pair(f,s)
+			EXPECT_EQ_VAL(p2.first, 1);
+			EXPECT_EQ_VAL(p2.second, "abcd");
 
-			//WRONG: Œ™∫Œ‘À––∫Û»´≤ø∂º «pair<T1&&, T2&&> ???
-			//WRONG !!!!!!;
+			pair<int, string> p3(std::move(i1), std::move(str1)); //pair(&&f, &&s)
+			EXPECT_EQ_VAL(p3.first, 1);
+			EXPECT_EQ_VAL(p3.second, "abcd");
 
-			int ival = 1;
-			string sval = "C++";
-			cout << "mp2: ";
-			pair<int, string> mp2(ival, sval);
-			cout << "mp3: ";
-			pair<int, string> mp3 = mp2;
+			pair<int, string> aux_p4(2, "abcd");
+			pair<int, string> p4(aux_p4);	//pair(rhs)
+			EXPECT_EQ_VAL(p4.first, 2);
+			EXPECT_EQ_VAL(p4.second, "abcd");
 
-			//pair<T1&&, T2&&>
-			cout << "mp4: ";
-			pair<int, int> mp4(1, 2);
-			cout << "mp5: ";
-			pair<int, string> mp5(1, "mp3");
-			cout << "mp6: ";
-			pair<string, int> mp6("mp4", 2);
-			cout << "mp7: ";
-			pair<int, string> mp7(std::move(ival), std::move(sval));
-			cout << "mp8: ";
-			pair<int, string> mp8(std::move(mp7));
-		}
-
-		//≤‚ ‘ first_type/second_type/first/second
-		void test_types() {
-			cout << "\ntest_types()" << endl;
-
-			//first_type/second_type
-			
-			//first/second
-			pair<int, string> mp(i, str);
-			pair<int, string>::first_type ft = i;
-			pair<int, string>::second_type st = str;
-			
-			cout << "ft: " << i << "    st: " << st << endl;
-			cout << "first: " << mp.first << "    second: " << mp.second << endl;
+			pair<int, string> p5(std::move(aux_p4)); //pair(&&rhs)
+			EXPECT_EQ_VAL(p5.first, 2);
+			EXPECT_EQ_VAL(p5.second, "abcd");
 		}
 
 		//≤‚ ‘ operator=
 		void test_op_equal() {
-			cout << "\ntest_op_equal()" << endl;
+			cout << "test: operator=()" << endl;
 
 			//operator=
-			pair<int, string> mp1(i, str);
-			pair<int, string> mp2;
-			mp2 = mp1;
-			cout << "mp2.first: " << mp2.first << "    mp2.second: " << mp2.second << endl;
+			pair<int, string> p1(1, "abcd");
+			pair<int, string> p2;
+			p2 = p1;		//operator =(rhs)
+			EXPECT_EQ_VAL(p2.first, 1);
+			EXPECT_EQ_VAL(p2.second, "abcd");
+			
+			pair<int, string> p3;		//operator =(&&rhs)
+			p3 = std::move(p1);
+			EXPECT_EQ_VAL(p3.first, 1);
+			EXPECT_EQ_VAL(p3.second, "abcd");
 		}
 		
 		//≤‚ ‘ member swap/non-member swap
 		void test_swap() {
-			cout << "\ntest_swap()" << endl;
+			cout << "test: swap()" << endl;
 
-			pair<int, string> mp1(i, str);
-			pair<int, string> mp2(2,"C#");
+			int i1 = 1;
+			string str1 = "abcd";
+			int i2 = 2;
+			string str2 = "efgh";
+			pair<int, string> p1(i1, str1);
+			pair<int, string> p2(i2, str2);
 
-			mp1.swap(mp2);
-			cout << "mp1.first: " << mp1.first << "    mp1.second: " << mp1.second << endl;
-			cout << "mp2.first: " << mp2.first << "    mp2.second: " << mp2.second << endl;
+			p1.swap(p2);
+			EXPECT_EQ_VAL(p1.first, 2);
+			EXPECT_EQ_VAL(p1.second, "efgh");
+			EXPECT_EQ_VAL(p2.first, 1);
+			EXPECT_EQ_VAL(p2.second, "abcd");
 
-			swap(mp1, mp2);
-			cout << "mp1.first: " << mp1.first << "    mp1.second: " << mp1.second << endl;
-			cout << "mp2.first: " << mp2.first << "    mp2.second: " << mp2.second << endl;
+			kkli::swap(p1, p2);
+			EXPECT_EQ_VAL(p1.first, 1);
+			EXPECT_EQ_VAL(p1.second, "abcd");
+			EXPECT_EQ_VAL(p2.first, 2);
+			EXPECT_EQ_VAL(p2.second, "efgh");
 		}
 
 		//≤‚ ‘ make_pair
 		void test_make_pair() {
-			cout << "\ntest_make_pair()" << endl;
+			cout << "test: make_pair()" << endl;
 
-			pair<int, string> mp = kkli::make_pair(i, str);
-			cout << "mp.first: " << mp.first << "    mp.second: " << mp.second << endl;
+			pair<int, string> p1 = kkli::make_pair<int, string>(1, "abcd");
+			EXPECT_EQ_VAL(p1.first, 1);
+			EXPECT_EQ_VAL(p1.second, "abcd");
+			pair<int, double> p2 = kkli::make_pair<int, double>(2, 2.2);
+			EXPECT_EQ_VAL(p2.first, 2);
+			EXPECT_EQ_VAL(p2.second, 2.2);
 		}
 
-		//≤‚ ‘ operator < <= > >= == !=
+		//≤‚ ‘ operators
 		void test_op_logical() {
-			cout << "\ntest_op_logical()" << endl;
+			cout << "test: operators(==/!=...)" << endl;
 
-			pair<int, string> mp1(i, str);
-			pair<int, string> mp2(i, str);
-			pair<int, string> mp3(i, str + "C++");
-			pair<int, int> mp4(1, 2);
-			pair<int, int> mp5(3, 4);
+			pair<int, string> p1(1, "");
+			pair<int, string> p2(1, "abcd");
+			pair<int, string> p3(1, "abcdef");
+			pair<int, string> p4(1, "aceg");
+			pair<int, string> p5(2, "");
 
 			//operator ==
-			cout << (mp1 == mp1 ? "==" : "!=") << endl;
-			cout << (mp1 == mp2 ? "==" : "!=") << endl;
-			cout << (mp1 == mp3 ? "==" : "!=") << endl;
-			cout << (mp4 == mp4 ? "==" : "!=") << endl;
-			cout << (mp4 == mp5 ? "==" : "!=") << endl << endl;
+			EXPECT_EQ_VAL(p1 == p1, true);
+			EXPECT_EQ_VAL(p1 == p2, false);
+			EXPECT_EQ_VAL(p1 == p3, false);
+			EXPECT_EQ_VAL(p1 == p4, false);
+			EXPECT_EQ_VAL(p1 == p5, false);
+
+			EXPECT_EQ_VAL(p2 == p1, false);
+			EXPECT_EQ_VAL(p2 == p2, true);
+			EXPECT_EQ_VAL(p2 == p3, false);
+			EXPECT_EQ_VAL(p2 == p4, false);
+			EXPECT_EQ_VAL(p2 == p5, false);
+
+			EXPECT_EQ_VAL(p3 == p1, false);
+			EXPECT_EQ_VAL(p3 == p2, false);
+			EXPECT_EQ_VAL(p3 == p3, true);
+			EXPECT_EQ_VAL(p3 == p4, false);
+			EXPECT_EQ_VAL(p3 == p5, false);
+
+			EXPECT_EQ_VAL(p4 == p1, false);
+			EXPECT_EQ_VAL(p4 == p2, false);
+			EXPECT_EQ_VAL(p4 == p3, false);
+			EXPECT_EQ_VAL(p4 == p4, true);
+			EXPECT_EQ_VAL(p4 == p5, false);
+
+			EXPECT_EQ_VAL(p5 == p1, false);
+			EXPECT_EQ_VAL(p5 == p2, false);
+			EXPECT_EQ_VAL(p5 == p3, false);
+			EXPECT_EQ_VAL(p5 == p4, false);
+			EXPECT_EQ_VAL(p5 == p5, true);
 
 			//operator !=
-			cout << (mp1 != mp1 ? "!=" : "==") << endl;
-			cout << (mp1 != mp2 ? "!=" : "==") << endl;
-			cout << (mp1 != mp3 ? "!=" : "==") << endl;
-			cout << (mp4 != mp4 ? "!=" : "==") << endl;
-			cout << (mp4 != mp5 ? "!=" : "==") << endl << endl;
+			EXPECT_EQ_VAL(p1 != p1, false);
+			EXPECT_EQ_VAL(p1 != p2, true);
+			EXPECT_EQ_VAL(p1 != p3, true);
+			EXPECT_EQ_VAL(p1 != p4, true);
+			EXPECT_EQ_VAL(p1 != p5, true);
+
+			EXPECT_EQ_VAL(p2 != p1, true);
+			EXPECT_EQ_VAL(p2 != p2, false);
+			EXPECT_EQ_VAL(p2 != p3, true);
+			EXPECT_EQ_VAL(p2 != p4, true);
+			EXPECT_EQ_VAL(p2 != p5, true);
+
+			EXPECT_EQ_VAL(p3 != p1, true);
+			EXPECT_EQ_VAL(p3 != p2, true);
+			EXPECT_EQ_VAL(p3 != p3, false);
+			EXPECT_EQ_VAL(p3 != p4, true);
+			EXPECT_EQ_VAL(p3 != p5, true);
+
+			EXPECT_EQ_VAL(p4 != p1, true);
+			EXPECT_EQ_VAL(p4 != p2, true);
+			EXPECT_EQ_VAL(p4 != p3, true);
+			EXPECT_EQ_VAL(p4 != p4, false);
+			EXPECT_EQ_VAL(p4 != p5, true);
+
+			EXPECT_EQ_VAL(p5 != p1, true);
+			EXPECT_EQ_VAL(p5 != p2, true);
+			EXPECT_EQ_VAL(p5 != p3, true);
+			EXPECT_EQ_VAL(p5 != p4, true);
+			EXPECT_EQ_VAL(p5 != p5, false);
 
 			//operator <
-			cout << (mp1 < mp1 ? "<" : ">=") << endl;
-			cout << (mp1 < mp2 ? "<" : ">=") << endl;
-			cout << (mp1 < mp3 ? "<" : ">=") << endl;
-			cout << (mp4 < mp4 ? "<" : ">=") << endl;
-			cout << (mp4 < mp5 ? "<" : ">=") << endl << endl;
+			EXPECT_EQ_VAL(p1 < p1, false);
+			EXPECT_EQ_VAL(p1 < p2, true);
+			EXPECT_EQ_VAL(p1 < p3, true);
+			EXPECT_EQ_VAL(p1 < p4, true);
+			EXPECT_EQ_VAL(p1 < p5, true);
+
+			EXPECT_EQ_VAL(p2 < p1, false);
+			EXPECT_EQ_VAL(p2 < p2, false);
+			EXPECT_EQ_VAL(p2 < p3, true);
+			EXPECT_EQ_VAL(p2 < p4, true);
+			EXPECT_EQ_VAL(p2 < p5, true);
+
+			EXPECT_EQ_VAL(p3 < p1, false);
+			EXPECT_EQ_VAL(p3 < p2, false);
+			EXPECT_EQ_VAL(p3 < p3, false);
+			EXPECT_EQ_VAL(p3 < p4, true);
+			EXPECT_EQ_VAL(p3 < p5, true);
+
+			EXPECT_EQ_VAL(p4 < p1, false);
+			EXPECT_EQ_VAL(p4 < p2, false);
+			EXPECT_EQ_VAL(p4 < p3, false);
+			EXPECT_EQ_VAL(p4 < p4, false);
+			EXPECT_EQ_VAL(p4 < p5, true);
+
+			EXPECT_EQ_VAL(p5 < p1, false);
+			EXPECT_EQ_VAL(p5 < p2, false);
+			EXPECT_EQ_VAL(p5 < p3, false);
+			EXPECT_EQ_VAL(p5 < p4, false);
+			EXPECT_EQ_VAL(p5 < p5, false);
 
 			//operator <=
-			cout << (mp1 <= mp1 ? "<=" : ">") << endl;
-			cout << (mp1 <= mp2 ? "<=" : ">") << endl;
-			cout << (mp1 <= mp3 ? "<=" : ">") << endl;
-			cout << (mp4 <= mp4 ? "<=" : ">") << endl;
-			cout << (mp4 <= mp5 ? "<=" : ">") << endl << endl;
+			EXPECT_EQ_VAL(p1 <= p1, true);
+			EXPECT_EQ_VAL(p1 <= p2, true);
+			EXPECT_EQ_VAL(p1 <= p3, true);
+			EXPECT_EQ_VAL(p1 <= p4, true);
+			EXPECT_EQ_VAL(p1 <= p5, true);
+
+			EXPECT_EQ_VAL(p2 <= p1, false);
+			EXPECT_EQ_VAL(p2 <= p2, true);
+			EXPECT_EQ_VAL(p2 <= p3, true);
+			EXPECT_EQ_VAL(p2 <= p4, true);
+			EXPECT_EQ_VAL(p2 <= p5, true);
+
+			EXPECT_EQ_VAL(p3 <= p1, false);
+			EXPECT_EQ_VAL(p3 <= p2, false);
+			EXPECT_EQ_VAL(p3 <= p3, true);
+			EXPECT_EQ_VAL(p3 <= p4, true);
+			EXPECT_EQ_VAL(p3 <= p5, true);
+
+			EXPECT_EQ_VAL(p4 <= p1, false);
+			EXPECT_EQ_VAL(p4 <= p2, false);
+			EXPECT_EQ_VAL(p4 <= p3, false);
+			EXPECT_EQ_VAL(p4 <= p4, true);
+			EXPECT_EQ_VAL(p4 <= p5, true);
+
+			EXPECT_EQ_VAL(p5 <= p1, false);
+			EXPECT_EQ_VAL(p5 <= p2, false);
+			EXPECT_EQ_VAL(p5 <= p3, false);
+			EXPECT_EQ_VAL(p5 <= p4, false);
+			EXPECT_EQ_VAL(p5 <= p5, true);
 
 			//operator >
-			cout << (mp1 > mp1 ? ">" : "<=") << endl;
-			cout << (mp1 > mp2 ? ">" : "<=") << endl;
-			cout << (mp1 > mp3 ? ">" : "<=") << endl;
-			cout << (mp4 > mp4 ? ">" : "<=") << endl;
-			cout << (mp4 > mp5 ? ">" : "<=") << endl << endl;
+			EXPECT_EQ_VAL(p1 > p1, false);
+			EXPECT_EQ_VAL(p1 > p2, false);
+			EXPECT_EQ_VAL(p1 > p3, false);
+			EXPECT_EQ_VAL(p1 > p4, false);
+			EXPECT_EQ_VAL(p1 > p5, false);
+
+			EXPECT_EQ_VAL(p2 > p1, true);
+			EXPECT_EQ_VAL(p2 > p2, false);
+			EXPECT_EQ_VAL(p2 > p3, false);
+			EXPECT_EQ_VAL(p2 > p4, false);
+			EXPECT_EQ_VAL(p2 > p5, false);
+
+			EXPECT_EQ_VAL(p3 > p1, true);
+			EXPECT_EQ_VAL(p3 > p2, true);
+			EXPECT_EQ_VAL(p3 > p3, false);
+			EXPECT_EQ_VAL(p3 > p4, false);
+			EXPECT_EQ_VAL(p3 > p5, false);
+
+			EXPECT_EQ_VAL(p4 > p1, true);
+			EXPECT_EQ_VAL(p4 > p2, true);
+			EXPECT_EQ_VAL(p4 > p3, true);
+			EXPECT_EQ_VAL(p4 > p4, false);
+			EXPECT_EQ_VAL(p4 > p5, false);
+
+			EXPECT_EQ_VAL(p5 > p1, true);
+			EXPECT_EQ_VAL(p5 > p2, true);
+			EXPECT_EQ_VAL(p5 > p3, true);
+			EXPECT_EQ_VAL(p5 > p4, true);
+			EXPECT_EQ_VAL(p5 > p5, false);
 
 			//operator >=
-			cout << (mp1 >= mp1 ? ">=" : "<") << endl;
-			cout << (mp1 >= mp2 ? ">=" : "<") << endl;
-			cout << (mp1 >= mp3 ? ">=" : "<") << endl;
-			cout << (mp4 >= mp4 ? ">=" : "<") << endl;
-			cout << (mp4 >= mp5 ? ">=" : "<") << endl << endl;
+			EXPECT_EQ_VAL(p1 >= p1, true);
+			EXPECT_EQ_VAL(p1 >= p2, false);
+			EXPECT_EQ_VAL(p1 >= p3, false);
+			EXPECT_EQ_VAL(p1 >= p4, false);
+			EXPECT_EQ_VAL(p1 >= p5, false);
+
+			EXPECT_EQ_VAL(p2 >= p1, true);
+			EXPECT_EQ_VAL(p2 >= p2, true);
+			EXPECT_EQ_VAL(p2 >= p3, false);
+			EXPECT_EQ_VAL(p2 >= p4, false);
+			EXPECT_EQ_VAL(p2 >= p5, false);
+
+			EXPECT_EQ_VAL(p3 >= p1, true);
+			EXPECT_EQ_VAL(p3 >= p2, true);
+			EXPECT_EQ_VAL(p3 >= p3, true);
+			EXPECT_EQ_VAL(p3 >= p4, false);
+			EXPECT_EQ_VAL(p3 >= p5, false);
+
+			EXPECT_EQ_VAL(p4 >= p1, true);
+			EXPECT_EQ_VAL(p4 >= p2, true);
+			EXPECT_EQ_VAL(p4 >= p3, true);
+			EXPECT_EQ_VAL(p4 >= p4, true);
+			EXPECT_EQ_VAL(p4 >= p5, false);
+
+			EXPECT_EQ_VAL(p5 >= p1, true);
+			EXPECT_EQ_VAL(p5 >= p2, true);
+			EXPECT_EQ_VAL(p5 >= p3, true);
+			EXPECT_EQ_VAL(p5 >= p4, true);
+			EXPECT_EQ_VAL(p5 >= p5, true);
+			EXPECT_EQ_VAL(p5 >= p5, true);
 		}
 
 		//≤‚ ‘ get
 		void test_get() {
-			cout << "\ntest_get()" << endl;
+			cout << "test: get()" << endl;
 
-			pair<int, string> mp(i, str);
-			cout << "get<0>: " << get<0>(mp) << endl;
-			cout << "get<1>: " << get<1>(mp) << endl;
+			pair<int, string> p1(1, "abcd");
+			EXPECT_EQ_VAL(kkli::get<0>(p1), 1);
+			EXPECT_EQ_VAL(kkli::get<1>(p1), "abcd");
+
+			pair<double, char> p2(2.2, 'a');
+			EXPECT_EQ_VAL(kkli::get<0>(p2), 2.2);
+			EXPECT_EQ_VAL(kkli::get<1>(p2), 'a');
 		}
 
 		//≤‚ ‘ tuple_size
 		void test_tuple_size() {
-			cout << "\ntest_tuple_size()" << endl;
-
-			cout << kkli::tuple_size<pair<int, string>>::value << endl;
+			cout << "test: tuple_size()" << endl;
+						
+			EXPECT_EQ_VAL(kkli::tuple_size<pair<int, string>>::value, 2);
+			EXPECT_EQ_VAL(kkli::tuple_size<pair<int, double>>::value, 2);
 		}
 
-		//≤‚ ‘ tuple_elememt
+		//≤‚ ‘ tuple_element
 		void test_tuple_element() {
-			cout << "\ntest_tuple_element()" << endl;
+			cout << "test: tuple_element()" << endl;
 
-			kkli::tuple_element<0, pair<int, string>>::type t1 = 1;
-			kkli::tuple_element<1, pair<int, string>>::type t2 = "C++";
-			cout << t1 << " " << t2 << endl;
+			pair<int, string> p1;
+			kkli::tuple_element<0, pair<int, string>>::type i = 1;
+			kkli::tuple_element<1, pair<int, string>>::type str = "abcd";
+			EXPECT_EQ_VAL(i, 1);
+			EXPECT_EQ_VAL(str, "abcd");
 		}
 	}
 }

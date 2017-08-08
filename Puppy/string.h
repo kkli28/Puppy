@@ -598,7 +598,6 @@ namespace kkli {
 		__start = rhs.__start;
 		__end = rhs.__end;
 		__capacity = rhs.__capacity;
-		__alloc = rhs.__alloc;
 		rhs.__reset_iterators();
 	}
 
