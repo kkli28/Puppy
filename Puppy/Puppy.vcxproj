@@ -164,6 +164,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="test_algorithm.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vector_test.h" />

@@ -15,26 +15,7 @@ namespace kkli {
 	class function;
 
 	template<typename R, typename... Args>
-	class function<R(Args...)> {
-	public:
-		typedef R result_type;
-
-	private:
-		void(*)(Args...) __func;
-
-	public:
-		//constructor
-		function() :__func(nullptr) {}
-		function(std::nullptr_t ptr) :__func(ptr) {}
-		function(const function& rhs) :__func(rhs.__func) {}
-		function(function&& rhs) :__func(rhs.__func) {
-			rhs.__func = nullptr;
-		}
-
-		template<typename F>
-		function(F f) : __func(f) {}
-		//TODO:
-	};
+	class function<R(Args...)>;
 }
 
 //Function Objects
