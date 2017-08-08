@@ -108,7 +108,7 @@
     <ClInclude Include="functional_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
-    <ClInclude Include="test_algorithm.h">
+    <ClInclude Include="algorithm_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
   </ItemGroup>
