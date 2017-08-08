@@ -49,7 +49,7 @@ namespace kkli {
 		InputIt first, InputIt last, const T& value) {
 		typename iterator_traits<InputIt>::difference_type cnt = 0;
 		for (; first != last; ++first)
-			if (kkli::equal_to(*first, value)) ++cnt;
+			if (kkli::equal_to<typename iterator_traits<InputIt>::value_type>()(*first, value)) ++cnt;
 		return cnt;
 	}
 
@@ -57,7 +57,7 @@ namespace kkli {
 	template<typename InputIt, typename UnaryPredicate>
 	typename iterator_traits<InputIt>::difference_type count_if(
 		InputIt first, InputIt last, UnaryPredicate pred) {
-		typename iterator_trait<InputIt>::difference_type cnt = 0;
+		typename iterator_traits<InputIt>::difference_type cnt = 0;
 		for (; first != last; ++first)
 			if (pred(*first)) ++cnt;
 		return cnt;
@@ -68,9 +68,9 @@ namespace kkli {
 	kkli::pair<InputIt1, InputIt2> mismatch(
 		InputIt1 first1, InputIt1 last1, InputIt2 first2) {
 		for (; first1 != last1; ++first1, ++first2) {
-			if (!kkli::equal_to(*first1, *first2)) break;
+			if (!kkli::equal_to<typename iterator_traits<InputIt1>::value_type>()(*first1, *first2)) break;
 		}
-		return kkli::make_pair<InputIt1, InputIt2>(first1, first2);
+		return kkli::make_pair<InputIt1, InputIt2>(std::move(first1), std::move(first2));
 	}
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	kkli::pair<InputIt1, InputIt2> mismatch(
@@ -78,7 +78,7 @@ namespace kkli {
 		for (; first1 != last1; ++first1, ++first2) {
 			if (pred(*first1, *first2)) break;
 		}
-		return kkli::make_pair<InputIt1, InputIt2>(first1, first2);
+		return kkli::make_pair<InputIt1, InputIt2>(std::move(first1), std::move(first2));
 	}
 	template<typename InputIt1, typename InputIt2>
 	kkli::pair<InputIt1, InputIt2> mismatch(
@@ -96,7 +96,7 @@ namespace kkli {
 	template<typename InputIt1, typename InputIt2>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
 		for (; first1 != last1; ++first1, ++first2)
-			if (!kkli::equal_to(*first1, *first2)) return false;
+			if (!kkli::equal_to<typename iterator_traits<InputIt1>::value_type>()(*first1, *first2)) return false;
 		return true;
 	}
 	template<typename InputIt1, typename InputIt2>
@@ -106,7 +106,7 @@ namespace kkli {
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate pred) {
 		for (; first1 != last1; ++first1, ++first2)
-			if (!kkli::equal_to(*first1, *fist2)) return false;
+			if (!pred(*first1, *first2)) return false;
 		return true;
 	}
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
@@ -119,7 +119,7 @@ namespace kkli {
 	template<typename InputIt, typename T>
 	InputIt find(InputIt first, InputIt last, const T& value) {
 		for (; first != last; ++first)
-			if (kkli::equal_to(*first, val)) break;
+			if (kkli::equal_to<typename iterator_traits<InputIt>::value_type>()(*first, value)) break;
 		return first;
 	}
 
@@ -144,6 +144,7 @@ namespace kkli {
 	template<typename ForwardIt1, typename ForwardIt2>
 	ForwardIt1 find_end(ForwardIt1 first, ForwardIt1 last,
 		ForwardIt2 s_first, ForwardIt2 s_last) {
+		if (first == last) return first;
 		auto end = first;	//[first, end)用于与[s_first, s_last)比较
 		for (auto iter = s_first; iter != s_last; ++iter, ++end);
 		auto result = last;
@@ -155,6 +156,7 @@ namespace kkli {
 	template<typename ForwardIt1, typename ForwardIt2, typename BinaryPredicate>
 	ForwardIt1 find_end(ForwardIt1 first, ForwardIt1 last,
 		ForwardIt2 s_first, ForwardIt2 s_last, BinaryPredicate pred) {
+		if (first == last) return first;
 		auto end = first;	//[first, end)用于与[s_first, s_last)比较
 		for (auto iter = s_first; iter != s_last; ++iter, ++end);
 		auto result = last;
@@ -176,18 +178,18 @@ namespace kkli {
 	}
 
 	//======== [find_first_of], O(n*m) ========
-	template<typename ForwardIt1, typename ForwardIt2>
-	ForwardIt1 find_first_of(ForwardIt1 first, ForwardIt1 last,
-		ForwardIt2 s_first, ForwardIt2 s_last) {
+	template<typename InputIt, typename ForwardIt>
+	InputIt find_first_of(InputIt first, InputIt last,
+		ForwardIt s_first, ForwardIt s_last) {
 		for (; first != last; ++first) {
 			for (auto iter = s_first; iter != s_last; ++iter)
-				if (kkli::equal_to(*first, *iter)) return first;
+				if (kkli::equal_to<typename iterator_traits<InputIt>::value_type>()(*first, *iter)) return first;
 		}
 		return last;
 	}
-	template<typename ForwardIt1, typename ForwardIt2,typename BinaryPredicate>
-	ForwardIt1 find_first_of(ForwardIt1 first, ForwardIt1 last,
-		ForwardIt2 s_first, ForwardIt2 s_last,BinaryPredicate pred) {
+	template<typename InputIt, typename ForwardIt,typename BinaryPredicate>
+	InputIt find_first_of(InputIt first, InputIt last,
+		ForwardIt s_first, ForwardIt s_last,BinaryPredicate pred) {
 		for (; first != last; ++first) {
 			for (auto iter = s_first; iter != s_last; ++iter)
 				if (pred(*first, *iter)) return first;
@@ -202,7 +204,7 @@ namespace kkli {
 		auto iter = first;
 		++iter;
 		for (; iter != last; ++first, ++iter)
-			if (kkli::equal_to(*first, *iter)) return first;
+			if (kkli::equal_to<typename iterator_traits<ForwardIt>::value_type>()(*first, *iter)) return first;
 		return last;
 	}
 	template<typename ForwardIt,typename BinaryPredicate>
@@ -220,19 +222,28 @@ namespace kkli {
 	ForwardIt1 search(ForwardIt1 first, ForwardIt2 last,
 		ForwardIt2 s_first, ForwardIt2 s_last) {
 		if (s_first == s_last) return first;
-		auto end = first; //[first, end) vs [s_first, s_last)
+		auto result = last;
+		auto end = first;	//[first, end) vs [s_first, s_last)
 		for (auto iter = s_first; iter != s_last; ++iter, ++end);
+
+		++last;	//当end==last时，[first, end)是合法范围，但是下方循环会退出，因此将last后移
 		for (; end != last; ++first,++end) {
-			if (equal(first, end, s_first, s_last)) return first;
+			if (equal(first, end, s_first, s_last)) {
+				result = first;
+				break;
+			}
 		}
-		return last;
+		return result;
 	}
 	template<typename ForwardIt1, typename ForwardIt2,typename BinaryPredicate>
 	ForwardIt1 search(ForwardIt1 first, ForwardIt2 last,
 		ForwardIt2 s_first, ForwardIt2 s_last,BinaryPredicate pred) {
 		if (s_first == s_last) return first;
+		auto result = last;
 		auto end = first; //[first, end) vs [s_first, s_last)
 		for (auto iter = s_first; iter != s_last; ++iter, ++end);
+
+		++last;		//见上方
 		for (; end != last; ++first, ++end) {
 			bool equal = true;
 			auto iter1 = first;
@@ -245,36 +256,47 @@ namespace kkli {
 				++iter1;
 				++iter2;
 			}
-			if (equal) return first;
+			if (equal) {
+				result = first;
+				break;
+			}
 		}
-		return last;
+		return result;
 	}
 
 	//======== [search_n], O(n*m) ========
 	template<typename ForwardIt,typename Size,typename T>
 	ForwardIt search_n(ForwardIt first, ForwardIt last, Size count, const T& value) {
+		if (first == last) return last;
 		auto end = first;
 		for (Size i = 0; i < count; ++i, ++end); //[first, end) vs [count values]
+
+		auto old_last = last;
+		++last;
 		for (; end != last; ++first, ++end) {
 			bool equal = true;
-			for (auto iter = first; iter != last; ++iter) {
-				if (!kkli::equal_to(*iter, value)) {
+			for (auto iter = first; iter != end; ++iter) {
+				if (!kkli::equal_to<typename iterator_traits<ForwardIt>::value_type>()(*iter, value)) {
 					equal = false;
 					break;
 				}
 			}
 			if (equal) return first;
 		}
-		return last;
+		return old_last;
 	}
 	template<typename ForwardIt, typename Size, typename T,typename BinaryPredicate>
 	ForwardIt search_n(ForwardIt first, ForwardIt last, Size count, const T& value,
 		BinaryPredicate pred) {
+		if (first == last) return last;
 		auto end = first;
 		for (Size i = 0; i < count; ++i, ++end); //[first, end) vs [count values]
+
+		auto old_last = last;
+		++last;
 		for (; end != last; ++first, ++end) {
 			bool equal = true;
-			for (auto iter = first; iter != last; ++iter) {
+			for (auto iter = first; iter != end; ++iter) {
 				if (!pred(*iter, value)) {
 					equal = false;
 					break;
@@ -282,7 +304,7 @@ namespace kkli {
 			}
 			if (equal) return first;
 		}
-		return last;
+		return old_last;
 	}
 }
 
