@@ -32,6 +32,7 @@ int main() {
 	test::list_test::test();
 	test::string_test::test();
 	*/
+
 	system("pause");
     return 0;
 }

@@ -308,6 +308,82 @@ namespace kkli {
 	}
 }
 
+//================================================================================
+//part2: modifying sequence operations
+//================================================================================
+
+namespace kkli {
+
+	//======== [copy], O(n) ========
+	template<typename InputIt, typename OutputIt>
+	OutputIt copy(InputIt first, InputIt last, OutputIt dest) {
+		for (; first != last; ++first, ++dest) *dest = *first;
+		return first;
+	}
+
+	//======== [copy_if], O(n) ========
+	template<typename InputIt, typename OutputIt, typename UnaryPredicate >
+	OuputIt copy_if(InputIt first, InputIt last, OuputIt dest, UnaryPredicate pred) {
+		for (; first != last; ++first)
+			if (pred(*first)) {
+				*dest = *first;
+				++dest;
+			}
+	}
+
+	//======== [copy_n], O(n) ========
+	template<typename InputIt,typename Size, typename OutputIt>
+	OutputIt copy_n(InputIt first, Size count, OuputIt dest) {
+		for (; count > 0; --count, ++first, ++dest) *dest = *first;
+	}
+
+	//======== [copy_backward], O(n) ========
+	template<typename BidirectIt1,typename BidirectIt2>
+	BidirectIt2 copy_forward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
+		while (first != last) *(--dest) = *(--last);
+		return dest;
+	}
+
+	//======== [move], O(n) ========
+	template<typename InputIt, typename OutputIt>
+	OutputIt move(InputIt first, InputIt last, OutputIt dest) {
+		for (; first != last; ++first, ++dest) *dest = std::move(*first);
+		return dest;
+	}
+
+	//======== [move_backward], O(n) ========
+	template<typename BidirectIt1,typename BidirectIt2>
+	BidirectIt2 move_backward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
+		while (first != last) *(--dest) = std::move(*(--last));
+		return dest;
+	}
+
+	//======== [fill], O(n) ========
+	template<typename ForwardIt,typename T>
+	void fill(ForwardIt first, ForwardIt last, const T& value) {
+		for (; first != last; ++first) *first = value;
+	}
+
+	//======== [fill_n], O(n) ========
+	template<typename OutputIt,typename Size,typename T>
+	void fill_n(OutputIt first, Size count, const T& value) {
+		for (; count > 0; --count, ++first) *first = value;
+	}
+
+	//======== [transform], O(n) ========
+	template<typename InputIt, typename OutputIt, typename UnaryOperation>
+	OutputIt transform(InputIt first, InputIt last, OutputIt dest, UnaryOperator unary_op) {
+		for (; first != last; ++first, ++dest) *dest = unary_op(*first);
+	}
+
+	//======== [generate], O(n) ========
+	template<typename ForwardIt, typename Generate>
+	void generate(ForwardIt first, Forward last, Generate g) {
+		for (; first != last; ++first) *first = g();
+	}
+
+	//
+}
 
 //注释格式需要更改
 //================================================================================
