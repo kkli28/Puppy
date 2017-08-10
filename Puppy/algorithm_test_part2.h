@@ -65,15 +65,14 @@ namespace test {
 			test_replace_if();
 			test_replace_copy();
 			test_replace_copy_if();
-
-			//test_swap();
-			//test_swap_ranges();
-			//test_iter_swap();
-			//test_reverse();
-			//test_reverse_copy();
-			//test_rotate();
-			//test_rotate_copy();
-			//test_unique();
+			test_swap();
+			test_swap_ranges();
+			test_iter_swap();
+			test_reverse();
+			test_reverse_copy();
+			test_rotate();
+			test_rotate_copy();
+			test_unique();
 			//test_unique_copy();
 		}
 
@@ -394,6 +393,118 @@ namespace test {
 			EXPECT_EQ_VAL(str_dest2, "abzz");
 			EXPECT_EQ_VAL(iter1, str_dest1.begin());
 			EXPECT_EQ_VAL(iter2, str_dest2.end());
+		}
+
+		//≤‚ ‘ swap
+		void test_swap() {
+			cout << "test: swap()" << endl;
+
+			int i1 = 1;
+			int i2 = 2;
+			string str1("abcd");
+			string str2("qwer");
+			int arr1[4] = { 1,2,3,4 };
+			int arr2[4] = { 5,6,7,8 };
+			int arr_comp1[4] = { 1,2,3,4 };
+			int arr_comp2[4] = { 5,6,7,8 };
+			kkli::swap(i1, i2);
+			kkli::swap(*(str1.begin()), *(str2.begin()));
+			kkli::swap(arr1, arr2);
+			EXPECT_EQ_VAL(i1, i2 + 1);
+			EXPECT_EQ_VAL(str1, "qbcd");
+			EXPECT_EQ_VAL(str2, "awer");
+			EXPECT_EQ_ARR(arr1, arr_comp2, 4);
+			EXPECT_EQ_ARR(arr2, arr_comp1, 4);
+		}
+
+		//≤‚ ‘ swap_ranges
+		void test_swap_ranges() {
+			cout << "test: swap_ranges()" << endl;
+
+			string str1("aaaa");
+			string str2("abcd");
+			auto iter1 = kkli::swap_ranges(str1.begin(), str1.end(), str2.begin());
+			EXPECT_EQ_VAL(str1, "abcd");
+			EXPECT_EQ_VAL(str2, "aaaa");
+		}
+
+		//≤‚ ‘ iter_swap
+		void test_iter_swap() {
+			cout << "test: iter_swap()" << endl;
+
+			string str1("ab");
+			kkli::iter_swap(str1.begin(), str1.begin() + 1);
+			EXPECT_EQ_VAL(str1, "ba");
+		}
+
+		//≤‚ ‘ reverse
+		void test_reverse() {
+			cout << "test: reverse()" << endl;
+
+			string str1("abcd");
+			kkli::reverse(str1.begin(), str1.begin());
+			EXPECT_EQ_VAL(str1, "abcd");
+
+			kkli::reverse(str1.begin(), str1.end());
+			EXPECT_EQ_VAL(str1, "dcba");
+		}
+
+		//≤‚ ‘ reverse_copy
+		void test_reverse_copy() {
+			cout << "test: reverse_copy()" << endl;
+
+			string str1("abcd");
+			string str2("qwer");
+			auto iter1 = kkli::reverse_copy(str1.begin(), str1.begin(), str2.begin());
+			EXPECT_EQ_VAL(str2, "qwer");
+			EXPECT_EQ_VAL(iter1, str2.begin());
+			
+			iter1 = kkli::reverse_copy(str1.begin(), str1.end(), str2.begin());
+			EXPECT_EQ_VAL(str2, "dcba");
+			EXPECT_EQ_VAL(iter1, str2.end());
+		}
+
+		//≤‚ ‘ rotate
+		void test_rotate() {
+			cout << "test: rotate()" << endl;
+
+			string str1("abcdefgh");
+			kkli::rotate(str1.begin(), str1.begin() + 2, str1.end());
+			EXPECT_EQ_VAL(str1, "cdefghab");
+			kkli::rotate(str1.begin(), str1.begin(), str1.end());
+			EXPECT_EQ_VAL(str1, "cdefghab");
+			kkli::rotate(str1.begin(), str1.end(), str1.end());
+			EXPECT_EQ_VAL(str1, "cdefghab");
+		}
+
+		//≤‚ ‘ rotate_copy
+		void test_rotate_copy() {
+			cout << "test: rotate_copy()" << endl;
+
+			string str1("abcd");
+			string str2("aaaa");
+			auto iter1 = kkli::rotate_copy(str1.begin(), str1.begin() + 1,
+				str1.end(), str2.begin());
+			EXPECT_EQ_VAL(str2, "bcda");
+			EXPECT_EQ_VAL(iter1, str2.end());
+			iter1 = kkli::rotate_copy(str1.begin(), str1.begin() + 2,
+				str1.end(), str2.begin());
+			EXPECT_EQ_VAL(str2, "cdab");
+			EXPECT_EQ_VAL(iter1, str2.end());
+		}
+
+		//≤‚ ‘ unique
+		void test_unique() {
+			cout << "test: unique()" << endl;
+
+			string str1;
+			string str2("aabbccdd");
+			auto iter1 = kkli::unique(str1.begin(), str1.end());
+			auto iter2 = kkli::unique(str2.begin(), str2.end());
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "abcdccdd");
+			EXPECT_EQ_VAL(iter1, str1.begin());
+			EXPECT_EQ_VAL(iter2, str2.begin() + 4);
 		}
 	}
 }

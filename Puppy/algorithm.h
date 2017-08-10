@@ -502,7 +502,7 @@ namespace kkli {
 
 	//======== [reverse], O(n) ========
 	template<typename BidirectIt>
-	void reverse(BidirectIt first, BidirectIt dest) {
+	void reverse(BidirectIt first, BidirectIt last) {
 		while (first != last && first != (--last))
 			kkli::iter_swap(first++, last);
 	}
@@ -551,7 +551,7 @@ namespace kkli {
 		while (++first != last) {
 			if ((!(*result == *first)) && ++result != first) *result = std::move(*first);
 		}
-		return result;
+		return ++result;
 	}
 
 	//======== [unique_copy], O(n) ========
@@ -561,6 +561,7 @@ namespace kkli {
 		*dest = *first;
 		while (++first != last) {
 			if (!(*dest == *first)) *dest = *first;
+			++dest;
 		}
 		return dest;
 	}

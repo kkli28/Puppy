@@ -14,7 +14,7 @@ namespace test {
 	//EXPECT_EQ_ARR: 确保两个数组元素相等
 	template<typename T,typename U>
 	void EXPECT_EQ_ARR(const T& arr1, const U& arr2, std::size_t count) {
-		for (int i = 0; i < count; ++i)
+		for (int i = 0; i < count; ++i) 
 			if (arr1[i] != arr2[i]) throw std::runtime_error("EXPECT_EQ_ARR");
 	}
 
