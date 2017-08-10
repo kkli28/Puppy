@@ -385,6 +385,7 @@ namespace kkli {
 	template<typename InputIt, typename OutputIt, typename UnaryOperation>
 	OutputIt transform(InputIt first, InputIt last, OutputIt dest, UnaryOperation unary_op) {
 		for (; first != last; ++first, ++dest) *dest = unary_op(*first);
+		return dest;
 	}
 
 	//======== [generate], O(n) ========
@@ -435,7 +436,7 @@ namespace kkli {
 	OutputIt remove_copy_if(InputIt first, InputIt last, OutputIt dest, UnaryPredicate pred) {
 		for (; first != last; ++first)
 			if (!pred(*first)) *(dest++) = *first;
-		return first;
+		return dest;
 	}
 
 	//======== [replace], O(n) ========

@@ -50,21 +50,22 @@ namespace test {
 			test_copy_if();
 			test_copy_n();
 			test_copy_backward();
-			//test_move();
-			//test_move_backward();
-			//test_fill();
-			//test_fill_n();
-			//test_transform();
-			//test_generate();
-			//test_generate_n();
-			//test_remove();
-			//test_remove_if();
-			//test_remove_copy();
-			//test_remove_copy_if();
-			//test_replace();
-			//test_replace_if();
-			//test_replace_copy();
-			//test_replace_copy_if();
+			test_move();
+			test_move_backward();
+			test_fill();
+			test_fill_n();
+			test_transform();
+			test_generate();
+			test_generate_n();
+			test_remove();
+			test_remove_if();
+			test_remove_copy();
+			test_remove_copy_if();
+			test_replace();
+			test_replace_if();
+			test_replace_copy();
+			test_replace_copy_if();
+
 			//test_swap();
 			//test_swap_ranges();
 			//test_iter_swap();
@@ -137,13 +138,262 @@ namespace test {
 			string str1;
 			string str2("abcd");
 			string str3("aaaa");
-			auto iter1 = kkli::copy_backward(str1.end(), str1.begin(), str2.end());
-			cout << str2 << endl;
-			auto iter2 = kkli::copy_backward(str2.end(), str2.begin(), str3.end());
+			auto iter1 = kkli::copy_backward(str1.begin(),str1.end(), str2.end());
+			auto iter2 = kkli::copy_backward(str2.begin(), str2.end(), str3.end());
 			EXPECT_EQ_VAL(str2, "abcd");
 			EXPECT_EQ_VAL(str3, "abcd");
 			EXPECT_EQ_VAL(iter1, str2.end());
 			EXPECT_EQ_VAL(iter2, str3.begin());
+		}
+
+		//≤‚ ‘ move
+		void test_move() {
+			cout << "test: move()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str3("aaaa");
+			auto iter1 = kkli::move(str1.begin(), str1.end(), str2.begin());
+			auto iter2 = kkli::move(str2.begin(), str2.end(), str3.begin());
+			EXPECT_EQ_VAL(str2, "abcd");
+			EXPECT_EQ_VAL(str3, "abcd");
+			EXPECT_EQ_VAL(iter1, str2.begin());
+			EXPECT_EQ_VAL(iter2, str3.end());
+		}
+
+		//≤‚ ‘ move_backward
+		void test_move_backward() {
+			cout << "test: move_backward()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str3("aaaaaa");
+			auto iter1 = kkli::move_backward(str1.begin(), str1.end(), str2.end());
+			auto iter2 = kkli::move_backward(str2.begin(), str2.end(), str3.end());
+			EXPECT_EQ_VAL(str2, "abcd");
+			EXPECT_EQ_VAL(str3, "aaabcd");
+			EXPECT_EQ_VAL(iter1, str2.end());
+			EXPECT_EQ_VAL(iter2, str3.begin() + 2);
+		}
+
+		//≤‚ ‘ fill
+		void test_fill() {
+			cout << "test: fill()" << endl;
+
+			string str1;
+			string str2("abcd");
+			kkli::fill(str1.begin(), str1.end(), 'a');
+			kkli::fill(str2.begin(), str2.end(), 'b');
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "bbbb");
+		}
+
+		//≤‚ ‘ fill_n
+		void test_fill_n() {
+			cout << "test: fill_n()" << endl;
+
+			string str1("ab");
+			string str2("abcd");
+			string str3("abcd");
+			kkli::fill_n(str1.begin(), 0, 'a');
+			kkli::fill_n(str2.begin(), 2, 'c');
+			kkli::fill_n(str3.begin(), 4, 'z');
+			EXPECT_EQ_VAL(str1, "ab");
+			EXPECT_EQ_VAL(str2, "cccd");
+			EXPECT_EQ_VAL(str3, "zzzz");
+		}
+
+		//≤‚ ‘ transform
+		void test_transform() {
+			cout << "test: transform()" << endl;
+
+			string str1;
+			string str2("abcd");
+			auto lmd1 = [](char c)->char { return c + 2; };
+			auto iter1 = kkli::transform(str1.begin(), str1.end(), str1.begin(), lmd1);
+			auto iter2 = kkli::transform(str2.begin(), str2.end(), str2.begin(), lmd1);
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "cdef");
+			EXPECT_EQ_VAL(iter1, str1.begin());
+			EXPECT_EQ_VAL(iter2, str2.end());
+		}
+
+		//≤‚ ‘ generate
+		void test_generate() {
+			cout << "test: generate()" << endl;
+
+			auto lmd1 = []()->char {static char c = 'a'; return ++c; };
+			string str1;
+			string str2("abcd");
+			kkli::generate(str1.begin(), str1.end(), lmd1);
+			kkli::generate(str2.begin(), str2.end(), lmd1);
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "bcde");
+		}
+
+		//≤‚ ‘ generate_n
+		void test_generate_n() {
+			cout << "test: generate_n()" << endl;
+
+			auto lmd1 = []()->char {static char c = 'a'; return c++; };
+			string str1("aa");
+			string str2("aaaa");
+			string str3("aaaaaa");
+			auto iter1 = kkli::generate_n(str1.begin(), 0, lmd1);
+			auto iter2 = kkli::generate_n(str2.begin(), 2, lmd1);
+			auto iter3 = kkli::generate_n(str3.begin(), 6, lmd1);
+			EXPECT_EQ_VAL(str1, "aa");
+			EXPECT_EQ_VAL(str2, "abaa");
+			EXPECT_EQ_VAL(str3, "cdefgh");
+			EXPECT_EQ_VAL(iter1, str1.begin());
+			EXPECT_EQ_VAL(iter2, str2.begin() + 2);
+			EXPECT_EQ_VAL(iter3, str3.end());
+		}
+
+		//≤‚ ‘ remove
+		void test_remove() {
+			cout << "test: remove()" << endl;
+
+			string str1;
+			string str2("aabbccdd");
+			auto iter1 = kkli::remove(str1.begin(), str1.end(), 'a');
+			auto iter2 = kkli::remove(str2.begin(), str2.end(), 'b');
+			auto iter3 = kkli::remove(str2.begin(), str2.end(), 'z');
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "aaccdddd");
+			EXPECT_EQ_VAL(iter1, str1.end());
+			EXPECT_EQ_VAL(iter2, str2.end() - 2);
+			EXPECT_EQ_VAL(iter2, str2.end() - 2);
+		}
+
+		//≤‚ ‘ remove_if
+		void test_remove_if() {
+			cout << "test: remove_if()" << endl;
+
+			string str1;
+			string str2("abcdab");
+			string str3("abcdab");
+			auto lmd1 = [](char c)->bool {return c >= 'c'; };
+			auto lmd2 = [](char c)->bool {return c >= 'a'; };
+			auto iter1 = kkli::remove_if(str1.begin(), str1.end(), lmd1);
+			auto iter2 = kkli::remove_if(str2.begin(), str2.end(), lmd1);
+			auto iter3 = kkli::remove_if(str3.begin(), str3.end(), lmd2);
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "ababab");
+			EXPECT_EQ_VAL(str3, "abcdab");
+			EXPECT_EQ_VAL(iter1, str1.begin());
+			EXPECT_EQ_VAL(iter2, str2.end() - 2);
+			EXPECT_EQ_VAL(iter3, str3.begin());
+		}
+
+		//≤‚ ‘ remove_copy
+		void test_remove_copy() {
+			cout << "test: remove_copy()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str_dest1("aaaa");
+			string str_dest2("aaaa");
+			string str_dest3("aaaa");
+			auto iter1 = kkli::remove_copy(str1.begin(), str1.end(), 
+				str_dest1.begin(), 'a');
+			auto iter2 = kkli::remove_copy(str2.begin(), str2.end(), 
+				str_dest2.begin(), 'b');
+			auto iter3 = kkli::remove_copy(str2.begin(), str2.end(), 
+				str_dest3.begin(), 'z');
+			EXPECT_EQ_VAL(str_dest1, "aaaa");
+			EXPECT_EQ_VAL(str_dest2, "acda");
+			EXPECT_EQ_VAL(str_dest3, "abcd");
+			EXPECT_EQ_VAL(iter1, str_dest1.begin());
+			EXPECT_EQ_VAL(iter2, str_dest2.end() - 1);
+			EXPECT_EQ_VAL(iter3, str_dest3.end());
+		}
+
+		//≤‚ ‘ remove_copy_if
+		void test_remove_copy_if() {
+			cout << "test: remove_copy_if()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str_dest1("aaaa");
+			string str_dest2("aaaa");
+			string str_dest3("aaaa");
+			auto lmd1 = [](char c)->bool {return c >= 'c'; };
+			auto lmd2 = [](char c)->bool {return c >= 'z'; };
+			auto iter1 = kkli::remove_copy_if(str1.begin(), str1.end(),
+				str_dest1.begin(), lmd1);
+			auto iter2 = kkli::remove_copy_if(str2.begin(), str2.end(),
+				str_dest2.begin(), lmd1);
+			auto iter3 = kkli::remove_copy_if(str2.begin(), str2.end(),
+				str_dest3.begin(), lmd2);
+			EXPECT_EQ_VAL(str_dest1, "aaaa");
+			EXPECT_EQ_VAL(str_dest2, "abaa");
+			EXPECT_EQ_VAL(str_dest3, "abcd");
+			EXPECT_EQ_VAL(iter1, str_dest1.begin());
+			EXPECT_EQ_VAL(iter2, str_dest2.begin()+2);
+			EXPECT_EQ_VAL(iter3, str_dest3.end());
+		}
+
+		//≤‚ ‘ replace
+		void test_replace() {
+			cout << "test: replace()" << endl;
+
+			string str1;
+			string str2("abcd");
+			kkli::replace(str1.begin(), str1.end(), 'a', 'b');
+			kkli::replace(str2.begin(), str2.end(), 'b', 'c');
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "accd");
+		}
+
+		//≤‚ ‘ replace_if
+		void test_replace_if() {
+			cout << "test: replace_if()" << endl;
+
+			string str1;
+			string str2("abcd");
+			auto lmd1 = [](char c)->bool {return c >= 'c'; };
+			kkli::replace_if(str1.begin(), str1.end(), lmd1, 'z');
+			kkli::replace_if(str2.begin(), str2.end(), lmd1, 'z');
+			EXPECT_EQ_VAL(str1, "");
+			EXPECT_EQ_VAL(str2, "abzz");
+		}
+		
+		//≤‚ ‘ replace_copy
+		void test_replace_copy() {
+			cout << "test: replace_copy()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str_dest1("aaaa");
+			string str_dest2("aaaa");
+			auto iter1 = kkli::replace_copy(str1.begin(), str1.end(),
+				str_dest1.begin(), 'a', 'b');
+			auto iter2 = kkli::replace_copy(str2.begin(), str2.end(),
+				str_dest2.begin(), 'b', 'z');
+			EXPECT_EQ_VAL(str_dest1, "aaaa");
+			EXPECT_EQ_VAL(str_dest2, "azcd");
+			EXPECT_EQ_VAL(iter1, str_dest1.begin());
+			EXPECT_EQ_VAL(iter2, str_dest2.end());
+		}
+
+		//≤‚ ‘ replace_copy_if
+		void test_replace_copy_if() {
+			cout << "test: replace_copy_if()" << endl;
+
+			string str1;
+			string str2("abcd");
+			string str_dest1("aaaa");
+			string str_dest2("aaaa");
+			auto lmd1 = [](char c)->bool {return c >= 'c'; };
+			auto iter1 = kkli::replace_copy_if(str1.begin(), str1.end(),
+				str_dest1.begin(), lmd1, 'z');
+			auto iter2 = kkli::replace_copy_if(str2.begin(), str2.end(),
+				str_dest2.begin(), lmd1, 'z');
+			EXPECT_EQ_VAL(str_dest1, "aaaa");
+			EXPECT_EQ_VAL(str_dest2, "abzz");
+			EXPECT_EQ_VAL(iter1, str_dest1.begin());
+			EXPECT_EQ_VAL(iter2, str_dest2.end());
 		}
 	}
 }
