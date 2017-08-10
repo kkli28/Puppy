@@ -73,7 +73,7 @@ namespace test {
 			test_rotate();
 			test_rotate_copy();
 			test_unique();
-			//test_unique_copy();
+			test_unique_copy();
 		}
 
 		//≤‚ ‘ copy
@@ -505,6 +505,25 @@ namespace test {
 			EXPECT_EQ_VAL(str2, "abcdccdd");
 			EXPECT_EQ_VAL(iter1, str1.begin());
 			EXPECT_EQ_VAL(iter2, str2.begin() + 4);
+		}
+
+		//≤‚ ‘ unique_copy
+		void test_unique_copy() {
+			cout << "test: unique_copy()" << endl;
+
+			string str1;
+			string str2("aabbccdd");
+			string dest("aaaaaaaa");
+			auto lmd1 = [](char c1, char c2)->bool { return c1 >= 'c'; };
+			auto iter1 = kkli::unique_copy(str1.begin(), str1.end(), dest.begin());
+			EXPECT_EQ_VAL(dest, "aaaaaaaa");
+			EXPECT_EQ_VAL(iter1, dest.begin());
+			iter1 = kkli::unique_copy(str2.begin(), str2.end(), dest.begin());
+			EXPECT_EQ_VAL(dest, "abcdaaaa");
+			EXPECT_EQ_VAL(iter1, dest.begin() + 4);
+			iter1 = kkli::unique_copy(str2.begin(), str2.end(), dest.begin(), lmd1);
+			EXPECT_EQ_VAL(dest, "aabbaaaa");
+			EXPECT_EQ_VAL(iter1, dest.begin() + 4);
 		}
 	}
 }

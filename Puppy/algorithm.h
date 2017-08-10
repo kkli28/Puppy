@@ -559,25 +559,23 @@ namespace kkli {
 	OutputIt unique_copy(InputIt first, InputIt last, OutputIt dest) {
 		if (first == last) return dest;
 		*dest = *first;
-		while (++first != last) {
-			if (!(*dest == *first)) *dest = *first;
-			++dest;
-		}
-		return dest;
+		while (++first != last)
+			if (!(*first == *dest)) *(++dest) = *first;
+		return ++dest;
 	}
 
-	//======== [unique_copy], O(n) ========
 	template<typename InputIt,typename OutputIt, typename BinaryPredicate>
 	OutputIt unique_copy(InputIt first, InputIt last, OutputIt dest,
 		BinaryPredicate pred) {
 		if (first == last) return dest;
 		*dest = *first;
-		while (++first != last) {
-			if (!pred(*first,*dest)) *dest = *first;
-		}
-		return dest;
+		while (++first != last)
+			if (!pred(*first, *dest)) *(++dest) = *first;
+		return ++dest;
 	}
 }
+
+
 
 //注释格式需要更改
 //================================================================================
