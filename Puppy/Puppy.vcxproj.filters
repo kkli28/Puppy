@@ -78,9 +78,6 @@
     <ClInclude Include="iterator.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="iterator_traits.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="iterator_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>

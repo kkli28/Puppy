@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "memory.h"
 #include "char_traits.h"
+#include "iterator.h"
 
 //================================================================================
 // basic_string<T> Àà¶¨Òå
@@ -355,6 +356,11 @@ namespace kkli {
 			const_iterator		cend()const { return __end; }
 			pointer				data() { return __start; }
 			const_pointer		data()const { return __start; }
+
+			kkli::reverse_iterator<CharType>		rbegin() { return __end; }
+			const kkli::reverse_iterator<CharType>	crbegin()const { return __end; }
+			kkli::reverse_iterator<CharType>		rend() { return __start; }
+			const kkli::reverse_iterator<CharType>	crend()const { return __start; }
 
 			bool				empty()const { return __start == __end; }
 			size_type			size()const { return __end - __start; }

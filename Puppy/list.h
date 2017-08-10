@@ -50,6 +50,14 @@ namespace kkli {
 
 		//iterator: __iterator
 		class __iterator {
+		public:
+			//typedef
+			typedef T				value_type;
+			typedef T&				reference;
+			typedef T*				pointer;
+			typedef std::ptrdiff_t	difference_type;
+			typedef kkli::bidirectional_iterator_tag iterator_category;
+
 		private:
 			list_node<T>* iter;
 

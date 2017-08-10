@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "utility.h"
-#include "iterator_traits.h"
+#include "iterator.h"
 #include "functional.h"
 #include "pair.h"
 
@@ -575,7 +575,26 @@ namespace kkli {
 	}
 }
 
+//================================================================================
+//part3: partitioning operations
+//================================================================================
 
+namespace kkli {
+
+	//======== [is_partitioned], O(n) ========
+	template<typename InputIt, typename UnaryPredicate>
+	bool is_partitioned(InputIt first, InputIt last, UnaryPredicate pred) {
+		for (; first != last; ++first) if (!pred(*first)) break;
+		for (; first != last; ++first) if (pred(*first)) return false;
+		return true;
+	}
+
+	//======== [partition], O(n) ========
+	template<typename BidirectIt, typename UnaryPredicate>
+	BidirectIt partition(BidirectIt first, BidirectIt last, UnaryPredicate pred) {
+		//TODO: 
+	}
+}
 
 //注释格式需要更改
 //================================================================================

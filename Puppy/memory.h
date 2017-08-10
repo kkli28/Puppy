@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "iterator_traits.h"
+#include "iterator.h"
 #include "pair.h"
 
 //================================================================================

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include "iterator_traits.h"
 
 //================================================================================
 // iterator 类定义
@@ -23,6 +22,44 @@ namespace kkli {
 	class forward_iterator_tag :public input_iterator_tag, public output_iterator_tag {};
 	class bidirectional_iterator_tag :public forward_iterator_tag {};
 	class random_access_iterator_tag :public bidirectional_iterator_tag {};
+}
+
+//================================================================================
+// iterator_traits<T> 类定义
+//================================================================================
+
+namespace kkli {
+	template<typename Iterator>
+	class iterator_traits {
+	public:
+		typedef typename Iterator::value_type			value_type;
+		typedef typename Iterator::reference			reference;
+		typedef typename Iterator::pointer				pointer;
+		typedef typename Iterator::difference_type		difference_type;
+		typedef typename Iterator::iterator_category	iterator_category;
+	};
+
+	//iterator_traits<T*>
+	template<typename T>
+	class iterator_traits<T*> {
+	public:
+		typedef T				value_type;
+		typedef T&				reference;
+		typedef T*				pointer;
+		typedef std::ptrdiff_t	difference_type;
+		typedef typename kkli::random_access_iterator_tag	iterator_category;
+	};
+
+	//iterator_traits<const T*>
+	template<typename T>
+	class iterator_traits<const T*> {
+	public:
+		typedef T				value_type;
+		typedef const T&		reference;
+		typedef const T*		pointer;
+		typedef std::ptrdiff_t	difference_type;
+		typedef typename kkli::random_access_iterator_tag	iterator_category;
+	};
 }
 
 //================================================================================
@@ -194,6 +231,152 @@ namespace kkli {
 }
 
 //================================================================================
+// move_iterator<T> 类定义
+//================================================================================
+
+namespace kkli {
+
+	template<typename Iterator>
+	class move_iterator {
+	public:
+		//typedefs
+		typedef typename kkli::iterator_traits<Iterator>::value_type
+			value_type;
+		typedef typename kkli::iterator_traits<Iterator>::iterator_category
+			terator_category;
+		typedef typename kkli::iterator_traits<Iterator>::difference_type
+			difference_type;
+		typedef Iterator			iterator_type;
+		typedef Iterator			pointer;
+		typedef value_type&&		reference;
+
+	private:
+		Iterator current;
+
+	public:
+		//constructor
+		move_iterator() :current(Iterator()) {}
+		explicit move_iterator(Iterator x) :current(x) {}
+		
+		template<typename U>
+		move_iterator(const move_iterator<U>& rhs) 
+			: current(rhs.current) {}
+
+		//operator =
+		template<typename U>
+		move_iterator& operator=(const move_iterator<U>& rhs) {
+			current = rhs.current;
+			return *this;
+		}
+
+		//base
+		Iterator base()const { return current; }
+
+		//operator *
+		reference operator*() {
+			return std::move(*current);
+		}
+
+		//operator ->
+		pointer operator->() {
+			return current;
+		}
+
+		//operator []
+		value_type operator[](difference_type n)const {
+			return std::move(*(current + n));
+		}
+
+		//operator ++ / ++(int) / -- / --(int)
+		move_iterator& operator++() { ++current; return *this; }
+		move_iterator operator++(int) { 
+			auto iter = *this;
+			++current;
+			return iter;
+		}
+		move_iterator& operator--() { --current; return *this; }
+		move_iterator operator--(int) { 
+			auto iter = *this;
+			--current;
+			return iter; 
+		}
+
+		//operator + / += / - / -=
+		move_iterator operator+(difference_type n)const {
+			return move_iterator(base() + n);
+		}
+		move_iterator operator-(difference_type n)const {
+			return move_iterator(base() - n);
+		}
+		move_iterator& operator+=(difference_type n)const {
+			current += n;
+			return *this;
+		}
+		move_iterator& operator-=(difference_type n)const {
+			current -= n;
+			return *this;
+		}
+	};
+
+	//operator <
+	template<typename Iterator1,typename Iterator2>
+	bool operator==(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return lhs.base() == rhs.base();
+	}
+
+	//operator !=
+	template<typename Iterator1, typename Iterator2>
+	bool operator!=(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return !(lhs == rhs);
+	}
+
+	//operator <
+	template<typename Iterator1, typename Iterator2>
+	bool operator<(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return lhs.base() < rhs.base();
+	}
+
+	//operator >
+	template<typename Iterator1, typename Iterator2>
+	bool operator>(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return lhs.base() > rhs.base();
+	}
+
+	//operator <=
+	template<typename Iterator1, typename Iterator2>
+	bool operator<=(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return !(lhs > rhs);
+	}
+
+	//operator >=
+	template<typename Iterator1, typename Iterator2>
+	bool operator>=(const move_iterator<Iterator1>& lhs,
+		const move_iterator<Iterator2>& rhs) {
+		return !(lhs < rhs);
+	}
+
+	//operator +
+	template<typename Iterator>
+	move_iterator<Iterator> operator+(
+		typename move_iterator<Iterator>::difference_type n,
+		const move_iterator<Iterator>& iter) {
+		return iter + n;
+	}
+
+	//operator -
+	template<typename Iterator1,typename Iterator2>
+	auto operator-( const move_iterator<Iterator1>& lhs, 
+		const move_iterator<Iterator2>& iter) ->decltype(lhs.base() - rhs.base()) {
+		return lhs.base() - rhs.base();
+	}
+}
+
+//================================================================================
 // back_insert_iterator<T> 类定义
 //================================================================================
 
@@ -238,14 +421,7 @@ namespace kkli {
 		//operator ++(int)
 		back_insert_iterator& operator++(int) { return *this; }
 	};
-
-	//back_inserter
-	template<typename Container>
-	inline back_insert_iterator<Container> back_inserter(Container& cont) {
-		return back_insert_iterator<Container>(cont);
-	}
 }
-
 
 //================================================================================
 // front_insert_iterator<T> 类定义
@@ -293,12 +469,6 @@ namespace kkli {
 		//operator ++(int)
 		front_insert_iterator& operator++(int) { return *this; }
 	};
-
-	//front_inserter
-	template<typename Container>
-	inline front_insert_iterator<Container> front_inserter(Container& cont) {
-		return front_insert_iterator<Container>(cont);
-	}
 }
 
 //================================================================================
@@ -351,13 +521,6 @@ namespace kkli {
 		//operator ++(int)
 		insert_iterator<Container>& operator++(int) { return *this; }
 	};
-
-	//inserter
-	template<typename Container>
-	inline insert_iterator<Container> inserter(Container& cont,
-		typename Container::iterator it) {
-		return insert_iterator<Container>(cont, it);
-	}
 }
 
 //================================================================================
@@ -478,4 +641,178 @@ namespace kkli {
 		//operator ++(int)
 		ostream_iterator& operator++(int) { return *this; }
 	};
+}
+
+//================================================================================
+// 工具函数定义
+//================================================================================
+
+namespace kkli {
+
+	//make_reverse_iterator
+	template<typename Iterator>
+	inline kkli::reverse_iterator<Iterator> make_reverse_iterator(Iterator iter) {
+		return kkli::reverse_iterator<Iterator>(iter);
+	}
+
+	//make_move_iterator
+	template<typename Iterator>
+	inline kkli::move_iterator<Iterator> make_move_iterator(Iterator iter) {
+		return kkli::move_iterator<Iterator>(iter);
+	}
+
+	//front_inserter
+	template<typename Container>
+	inline kkli::front_insert_iterator<Container> front_inserter(Container& cont) {
+		return kkli::front_insert_iterator<Container>(cont);
+	}
+
+	//back_inserter
+	template<typename Container>
+	inline kkli::back_insert_iterator<Container> back_inserter(Container& cont) {
+		return kkli::back_insert_iterator<Container>(cont);
+	}
+
+	//inserter
+	template<typename Container>
+	inline kkli::insert_iterator<Container> inserter(Container& cont,
+		typename Container::iterator it) {
+		return kkli::insert_iterator<Container>(cont, it);
+	}
+
+	//advance
+	template<typename InputIt, typename Distance>
+	void __advance(InputIt& iter, Distance n, kkli::input_iterator_tag) {
+		for (; n > 0; --n, ++iter);
+	}
+	template<typename BidirectIt, typename Distance>
+	void __advance(BidirectIt& iter, Distance n, kkli::bidirectional_iterator_tag) {
+		if (n > 0) for (; n > 0; --n, ++iter);
+		else for (; n < 0; ++n, --iter);
+	}
+	template<typename RandomAccessIt, typename Distance>
+	void __advance(RandomAccessIt& iter, Distance n, kkli::random_access_iterator_tag) {
+		iter += n;
+	}
+	template<typename InputIt, typename Distance>
+	void advance(InputIt& iter, Distance n) {
+		__advance(iter, n, typename iterator_traits<InputIt>::iterator_category());
+	}
+
+	//distance
+	template<typename InputIt>
+	typename kkli::iterator_traits<InputIt>::difference_type
+		__distance(InputIt first, InputIt last, kkli::input_iterator_tag) {
+		typename kkli::iterator_traits<InputIt>::difference_type diff = 0;
+		for (; first != last; ++first, ++diff);
+		return diff;
+	}
+	template<typename RandomAccessIt>
+	typename kkli::iterator_traits<RandomAccessIt>::difference_type
+		__distance(RandomAccessIt first, RandomAccessIt last,
+			kkli::random_access_iterator_tag) {
+		return last - first;
+	}
+	template<typename InputIt>
+	typename kkli::iterator_traits<InputIt>::difference_type
+		distance(InputIt first, InputIt last) {
+		return __distance(first, last,
+			typename kkli::iterator_traits<InputIt>::iterator_category());
+	}
+
+	//next
+	template<typename InputIt>
+	InputIt next(InputIt iter,
+		typename kkli::iterator_traits<InputIt>::difference_type n = 1) {
+		advance(iter, n);
+		return iter;
+	}
+
+	//prev
+	template<typename BidirectIt>
+	BidirectIt prev(BidirectIt iter,
+		typename kkli::iterator_traits<BidirectIt>::difference_type n = 1) {
+		kkli::advance(iter, -n);
+		return iter;
+	}
+
+	//begin
+	template<typename C>
+	auto begin(C& c)->decltype(c.begin()) {
+		return c.begin();
+	}
+	template<typename T, std::size_t N>
+	T* begin(T(&a)[N]) {
+		return a;
+	}
+
+	//cbegin
+	template<typename C>
+	auto cbegin(const C& c)->decltype(c.cbegin()) {
+		return c.cbegin();
+	}
+	template<typename T,std::size_t N>
+	const T* cbegin(const T(&a)[N]) {
+		return a;
+	}
+
+	//end
+	template<typename C>
+	auto end(C& c)->decltype(c.end()) {
+		return c.end();
+	}
+	template<typename T, std::size_t N>
+	T* end(T(&a)[N]) {
+		return a + N;
+	}
+
+	//cend
+	template<typename C>
+	auto cend(const C& c)->decltype(c.cend()) {
+		return c.cend();
+	}
+	template<typename T, std::size_t N>
+	const T* cend(const T(&a)[N]) {
+		return a + N;
+	}
+
+	//rbegin
+	template<typename C>
+	auto rbegin(C& c)->decltype(c.rbegin()) {
+		return c.rbegin();
+	}
+	template<typename T, std::size_t N>
+	T* rbegin(T(&a)[N]) {
+		return a + N - 1;
+	}
+
+	//crbegin
+	template<typename C>
+	auto crbegin(const C& c)->decltype(c.crbegin()) {
+		return c.crbegin();
+	}
+	template<typename T, std::size_t N>
+	const T* crbegin(const T(&a)[N]) {
+		return a + N - 1;
+	}
+
+	//rend
+	template<typename C>
+	auto rend(C& c)->decltype(c.rend()) {
+		return c.rend();
+	}
+	template<typename T, std::size_t N>
+	T* rend(T(&a)[N]) {
+		return a - 1;
+	}
+
+	//crend
+	template<typename C>
+	auto crend(const C& c)->decltype(c.crend()) {
+		return c.crend();
+	}
+	template<typename T, std::size_t N>
+	const T* crend(const T(&a)[N]) {
+		return a - 1;
+	}
 }
