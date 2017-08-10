@@ -72,6 +72,7 @@ namespace kkli {
 		}
 		return kkli::make_pair<InputIt1, InputIt2>(std::move(first1), std::move(first2));
 	}
+	
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	kkli::pair<InputIt1, InputIt2> mismatch(
 		InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate pred) {
@@ -80,11 +81,13 @@ namespace kkli {
 		}
 		return kkli::make_pair<InputIt1, InputIt2>(std::move(first1), std::move(first2));
 	}
+	
 	template<typename InputIt1, typename InputIt2>
 	kkli::pair<InputIt1, InputIt2> mismatch(
 		InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
 		return mismatch(first1, last1, first2);
 	}
+	
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	kkli::pair<InputIt1, InputIt2> mismatch(
 		InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
@@ -99,16 +102,19 @@ namespace kkli {
 			if (!kkli::equal_to<typename iterator_traits<InputIt1>::value_type>()(*first1, *first2)) return false;
 		return true;
 	}
+	
 	template<typename InputIt1, typename InputIt2>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
 		return equal(first1, last1, first2);
 	}
+	
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate pred) {
 		for (; first1 != last1; ++first1, ++first2)
 			if (!pred(*first1, *first2)) return false;
 		return true;
 	}
+	
 	template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 	bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
 		BinaryPredicate pred) {
@@ -153,6 +159,7 @@ namespace kkli {
 		}
 		return result;
 	}
+	
 	template<typename ForwardIt1, typename ForwardIt2, typename BinaryPredicate>
 	ForwardIt1 find_end(ForwardIt1 first, ForwardIt1 last,
 		ForwardIt2 s_first, ForwardIt2 s_last, BinaryPredicate pred) {
@@ -187,6 +194,7 @@ namespace kkli {
 		}
 		return last;
 	}
+	
 	template<typename InputIt, typename ForwardIt,typename BinaryPredicate>
 	InputIt find_first_of(InputIt first, InputIt last,
 		ForwardIt s_first, ForwardIt s_last,BinaryPredicate pred) {
@@ -285,6 +293,7 @@ namespace kkli {
 		}
 		return old_last;
 	}
+	
 	template<typename ForwardIt, typename Size, typename T,typename BinaryPredicate>
 	ForwardIt search_n(ForwardIt first, ForwardIt last, Size count, const T& value,
 		BinaryPredicate pred) {
@@ -318,28 +327,30 @@ namespace kkli {
 	template<typename InputIt, typename OutputIt>
 	OutputIt copy(InputIt first, InputIt last, OutputIt dest) {
 		for (; first != last; ++first, ++dest) *dest = *first;
-		return first;
+		return dest;
 	}
 
 	//======== [copy_if], O(n) ========
 	template<typename InputIt, typename OutputIt, typename UnaryPredicate >
-	OuputIt copy_if(InputIt first, InputIt last, OuputIt dest, UnaryPredicate pred) {
+	OutputIt copy_if(InputIt first, InputIt last, OutputIt dest, UnaryPredicate pred) {
 		for (; first != last; ++first)
 			if (pred(*first)) {
 				*dest = *first;
 				++dest;
 			}
+		return dest;
 	}
 
 	//======== [copy_n], O(n) ========
 	template<typename InputIt,typename Size, typename OutputIt>
-	OutputIt copy_n(InputIt first, Size count, OuputIt dest) {
+	OutputIt copy_n(InputIt first, Size count, OutputIt dest) {
 		for (; count > 0; --count, ++first, ++dest) *dest = *first;
+		return dest;
 	}
 
 	//======== [copy_backward], O(n) ========
 	template<typename BidirectIt1,typename BidirectIt2>
-	BidirectIt2 copy_forward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
+	BidirectIt2 copy_backward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
 		while (first != last) *(--dest) = *(--last);
 		return dest;
 	}
@@ -372,17 +383,198 @@ namespace kkli {
 
 	//======== [transform], O(n) ========
 	template<typename InputIt, typename OutputIt, typename UnaryOperation>
-	OutputIt transform(InputIt first, InputIt last, OutputIt dest, UnaryOperator unary_op) {
+	OutputIt transform(InputIt first, InputIt last, OutputIt dest, UnaryOperation unary_op) {
 		for (; first != last; ++first, ++dest) *dest = unary_op(*first);
 	}
 
 	//======== [generate], O(n) ========
 	template<typename ForwardIt, typename Generate>
-	void generate(ForwardIt first, Forward last, Generate g) {
+	void generate(ForwardIt first, ForwardIt last, Generate g) {
 		for (; first != last; ++first) *first = g();
 	}
 
-	//
+	//======== [generate_n], O(n) ========
+	template<typename ForwardIt, typename Size, typename Generator>
+	ForwardIt generate_n(ForwardIt first, Size count, Generator g) {
+		for (; count > 0; --count, ++first) *first = g();
+		return first;
+	}
+
+	//======== [remove], O(n) ========
+	template<typename ForwardIt,typename T>
+	ForwardIt remove(ForwardIt first, ForwardIt last, const T& value) {
+		first = kkli::find(first, last, value);
+		if (first != last) {
+			for (auto iter = first; ++iter != last;)
+				if (!(*iter == value)) *(first++) = std::move(*iter);
+		}
+		return first;
+	}
+
+	//======== [remove_if], O(n) ========
+	template<typename ForwardIt, typename UnaryPredicate>
+	ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPredicate pred) {
+		first = kkli::find_if(first, last, pred);
+		if (first != last) {
+			for (auto iter = first; ++iter != last;)
+				if (!pred(*iter)) *(first++) = std::move(*iter);
+		}
+		return first;
+	}
+
+	//======== [remove_copy], O(n) ========
+	template<typename InputIt, typename OutputIt, typename T>
+	OutputIt remove_copy(InputIt first, InputIt last, OutputIt dest, const T& value) {
+		for (; first != last; ++first)
+			if (!(*first == value)) *(dest++) = *first;
+		return dest;
+	}
+
+	//======== [remove_copy_if], O(n) ========
+	template<typename InputIt,typename OutputIt,typename UnaryPredicate>
+	OutputIt remove_copy_if(InputIt first, InputIt last, OutputIt dest, UnaryPredicate pred) {
+		for (; first != last; ++first)
+			if (!pred(*first)) *(dest++) = *first;
+		return first;
+	}
+
+	//======== [replace], O(n) ========
+	template<typename ForwardIt, typename T>
+	void replace(ForwardIt first, ForwardIt last, const T& old_value, const T& new_value) {
+		for (; first != last; ++first)
+			if (*first == old_value) *first = new_value;
+	}
+
+	//======== [replace_if], O(n) ========
+	template<typename ForwardIt, typename UnaryPredicate, typename T>
+	void replace_if(ForwardIt first, ForwardIt last, UnaryPredicate pred, const T& new_value) {
+		for (; first != last; ++first)
+			if (pred(*first)) *first = new_value;
+	}
+
+	//======== [replace_copy], O(n) ========
+	template<typename InputIt, typename OutputIt, typename T>
+	OutputIt replace_copy(InputIt first, InputIt last, OutputIt dest,
+		const T& old_value, const T& new_value) {
+		for (; first != last; ++first)
+			*(dest++) = (*first == old_value) ? new_value : *first;
+		return dest;
+	}
+
+	//======== [replace_copy_if], O(n) ========
+	template<typename InputIt,typename OutputIt, typename UnaryPredicate, typename T>
+	OutputIt replace_copy_if(InputIt first, InputIt last, OutputIt dest,
+		UnaryPredicate pred, const T& new_value) {
+		for (; first != last; ++first)
+			*(dest++) = pred(*first) ? new_value : *first;
+		return dest;
+	}
+
+	//======== [swap], O(1) =======
+	template<typename T>
+	void swap(T& a, T& b) {
+		auto temp = std::move(a);
+		a = std::move(b);
+		b = std::move(temp);
+	}
+
+	//======== [swap(array)], O(n) ========
+	template<typename T,std::size_t N>
+	void swap(T(&a)[N], T(&b)[N]) {
+		for (std::size_t i = 0; i < N; ++i)
+			kkli::swap(a[i], b[i]);
+	}
+
+	//======== [swap_ranges], O(n) ========
+	template<typename ForwardIt1, typename ForwardIt2>
+	ForwardIt2 swap_ranges(ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2) {
+		for (; first1 != last1; ++first1, ++first2)
+			kkli::swap(*first1, *first2);
+		return first2;
+	}
+
+	//======== [iter_swap], O(n) ========
+	template<typename ForwardIt1, typename ForwardIt2>
+	void iter_swap(ForwardIt1 a, ForwardIt2 b) {
+		kkli::swap(*a, *b);
+	}
+
+	//======== [reverse], O(n) ========
+	template<typename BidirectIt>
+	void reverse(BidirectIt first, BidirectIt dest) {
+		while (first != last && first != (--last))
+			kkli::iter_swap(first++, last);
+	}
+
+	//======== [reverse_copy], O(n) ========
+	template<typename BidirectIt, typename OutputIt>
+	OutputIt reverse_copy(BidirectIt first, BidirectIt last, OutputIt dest) {
+		while (first != last) *(dest++) = *(--last);
+		return dest;
+	}
+
+	//======== [rotate], O(n) ========
+	template<typename ForwardIt>
+	ForwardIt rotate(ForwardIt first, ForwardIt n_first, ForwardIt last) {
+		if (first == n_first) return last;
+		if (n_first == last) return first;
+		ForwardIt next = n_first;
+		while(true) {
+			kkli::iter_swap(first++, next++);
+			if (first == n_first) n_first = next;
+			if (next == last) break;
+		}
+		ForwardIt ret = first;
+		next = n_first;
+		while (next != last) {
+			kkli::iter_swap(first++, next++);
+			if (first == n_first) n_first = next;
+			else if (next == last) next = n_first;
+		}
+		return ret;
+	}
+
+	//======== [rotate_copy], O(n) ========
+	template<typename ForwardIt, typename OutputIt>
+	OutputIt rotate_copy(ForwardIt first, ForwardIt n_first,
+		ForwardIt last, OutputIt dest) {
+		dest = kkli::copy(n_first, last, dest);
+		return copy(first, n_first, dest);
+	}
+
+	//======== [unique], O(n) ========
+	template<typename ForwardIt>
+	ForwardIt unique(ForwardIt first, ForwardIt last) {
+		if (first == last) return last;
+		ForwardIt result = first;
+		while (++first != last) {
+			if ((!(*result == *first)) && ++result != first) *result = std::move(*first);
+		}
+		return result;
+	}
+
+	//======== [unique_copy], O(n) ========
+	template<typename InputIt, typename OutputIt>
+	OutputIt unique_copy(InputIt first, InputIt last, OutputIt dest) {
+		if (first == last) return dest;
+		*dest = *first;
+		while (++first != last) {
+			if (!(*dest == *first)) *dest = *first;
+		}
+		return dest;
+	}
+
+	//======== [unique_copy], O(n) ========
+	template<typename InputIt,typename OutputIt, typename BinaryPredicate>
+	OutputIt unique_copy(InputIt first, InputIt last, OutputIt dest,
+		BinaryPredicate pred) {
+		if (first == last) return dest;
+		*dest = *first;
+		while (++first != last) {
+			if (!pred(*first,*dest)) *dest = *first;
+		}
+		return dest;
+	}
 }
 
 //注释格式需要更改
