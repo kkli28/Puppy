@@ -21,9 +21,9 @@ int main() {
 	//test::iterator_test::test();
 	//test::memory_test::test();
 	//test::pair_test::test();
-	test::functional_test::test();
-	//test::algorithm_test::test();
-
+	//test::functional_test::test();
+	test::algorithm_test::test();
+	
 	/*
 	test::forward_list_test::test();
 	test::avl_tree_test::test();

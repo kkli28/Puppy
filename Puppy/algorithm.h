@@ -669,16 +669,39 @@ namespace kkli {
 		return is_sorted_until(first, last) == last;
 	}
 
-	//======== [is_sorted], O(n) ========
 	template<typename ForwardIt, typename Compare>
 	bool is_sorted(ForwardIt first, ForwardIt last, Compare comp) {
 		return is_sorted_until(first, last, comp) == last;
 	}
 
+	//======== [insertion_sort], O(n^2) ========
+	template<typename BidirectIt,
+		typename Compare = kkli::less<typename kkli::iterator_traits<BidirectIt>::value_type>>
+		void insertion_sort(BidirectIt first, BidirectIt last,
+			Compare comp = Compare()) {
+		if (first == last) return;
+		auto index = first;
+		while (++index != last) {
+			auto iter = kkli::prev(index);
+			auto end_iter = kkli::prev(first);
+			auto value = *index;
+			while (iter != end_iter) {
+				if (!comp(*iter, value)) {
+					auto next_iter = kkli::next(iter);
+					*next_iter = *iter;
+					--iter;
+				}
+				else break;
+			}
+			*(++iter) = value;
+		}
+	}
+
 	//======== [sort], O(nlogn) ========
-	template<typename RandomAccessIt, typename Compare>
-	RandomAccessIt __aux_partition(RandomAccessIt first, RandomAccessIt last,
-		Compare comp = kkli::less<decltype(*first)>()) {
+	template<typename RandomAccessIt,
+		typename Compare = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>>
+		RandomAccessIt __aux_partition(RandomAccessIt first, RandomAccessIt last,
+			Compare comp = Compare()) {
 		//三数中值法
 		auto end = last - 1;
 		auto mid = first + (last - first) / 2;
@@ -688,38 +711,19 @@ namespace kkli {
 
 		//定位守卫
 		auto iter = first - 1;
-		auto prev_end = end - 1;
 		auto guard = *end;
-		for (auto i = first; i < prev_end; ++i)
+		for (auto i = first; i < end; ++i)
 			if (comp(*i, guard)) kkli::swap(*i, *(++iter));
 		*end = *(++iter);
 		*iter = guard;
 		return iter;
 	}
 
-	template<typename BidirectionalIterator, typename Compare>
-	void __aux_insertion_sort(BidirectionalIterator first, BidirectionalIterator last,
-		Compare comp = kkli::less<decltype(*first)>()) {
-		if (first == last) return;
-		auto index = first;
-		while (++index != last) {
-			auto iter = kkli::next(index);
-			auto end_iter = kkli::next(first);
-			while (iter != end_iter) {
-				if (!comp(*iter, *index)) {
-					auto next_iter = kkli::next(iter);
-					*next_iter = *(iter--);
-				}
-				else break;
-			}
-			*(++iter) = value;
-		}
-	}
-
-	template<typename RandomAccessIt, typename Compare>
-	void sort(RandomAccessIt first, RandomAccessIt last,
-		Compare comp = std::less<decltype(*first)>()) {
-		if (last - first < 32) __aux_insertion_sort(first, last, comp);
+	template<typename RandomAccessIt,
+		typename Compare = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>>
+		void sort(RandomAccessIt first, RandomAccessIt last,
+			Compare comp = Compare()) {
+		if (last - first < 32) insertion_sort(first, last, comp);
 		else if (first < last) {
 			auto iter = __aux_partition(first, last, comp);
 			kkli::sort(first, iter, comp);
@@ -728,29 +732,30 @@ namespace kkli {
 	}
 
 	//======== [partial_sort], O(nlogn) ======= 尚未实现
-	template<typename RandomIt,typename Compare>
-	void partial_sort(RandomIt first, RandomIt middle, RandomIt, Compare comp) {
+	template<typename RandomAccessIt, typename Compare>
+	void partial_sort(RandomAccessIt first, RandomAccessIt middle,
+		RandomAccessIt last, Compare comp) {
 		throw 1; //TODO:
 	}
 
 	//======== [partial_sort_copy], O(X) ======== 尚未实现
-	template<typename InputIt,typename RandomIt, typename Compare>
-	RandomIt partial_sort_copy(InputIt first, InputIt last, RandomIt dest,
+	template<typename InputIt, typename RandomAccessIt, typename Compare>
+	RandomAccessIt partial_sort_copy(InputIt first, InputIt last, RandomAccessIt dest,
 		Compare comp = kkli::less<typename kkli::iterator_traits<InputIt>::value_type>()) {
 		throw 1; //TODO:
 	}
 
 	//======== [stable_sort], O(X) ======== 尚未实现
-	template<typename RandomIt, typename Compare>
-	void stable_sort(RandomIt first, RandomIt last, 
-		Compare comp=kkli::less<typename kkli::iterator_traits<InputIt>::value_type>()) {
+	template<typename RandomAccessIt, typename Compare>
+	void stable_sort(RandomAccessIt first, RandomAccessIt last,
+		Compare comp = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>()) {
 		throw 1; //TODO:
 	}
 
-	//======== [nth_element], O(nlogn) ========
-	template<typename RandomIt>
-	void nth_element(RandomIt first, RandomIt nth, RandomIt last,
-		Compare comp= kkli::less<typename kkli::iterator_traits<InputIt>::value_type>()) {
+	//======== [nth_element], O(nlogn) ======== 尚未实现
+	template<typename RandomAccessIt, typename Compare>
+	void nth_element(RandomAccessIt first, RandomAccessIt nth, RandomAccessIt last,
+		Compare comp = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>()) {
 		throw 1; //TODO: 
 	}
 }

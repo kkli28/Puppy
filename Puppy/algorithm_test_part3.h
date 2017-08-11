@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "stdafx.h"
 #include "test.h"
 #include "algorithm.h"
@@ -22,7 +21,7 @@ namespace test {
 		void test_statle_partition();		//未实现
 		void test_partition_point();
 
-		//整体测试
+		//部分测试
 		void test_part3() {
 			test_is_partitioned();
 			test_partition();
