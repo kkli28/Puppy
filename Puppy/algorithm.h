@@ -590,9 +590,48 @@ namespace kkli {
 	}
 
 	//======== [partition], O(n) ========
+	template<typename ForwardIt, typename UnaryPredicate>
+	ForwardIt partition(ForwardIt first, ForwardIt last, UnaryPredicate pred) {
+		first = kkli::find_if_not(first, last, pred);
+		if (first == last) return first;
+		for (ForwardIt iter = kkli::next(first); iter != last; ++iter)
+			if (pred(*iter)) kkli::iter_swap(iter, first++);
+		return first;
+	}
+
+	//======== [partition_copy], O(n) ========
+	template<typename InputIt,typename OutputIt1,typename OutputIt2,
+		typename UnaryPredicate>
+		kkli::pair<OutputIt1, OutputIt2> partition_copy(InputIt first,
+			InputIt last, OutputIt1 dest_true, OutputIt2 dest_false,
+			UnaryPredicate pred) {
+		while (first != last) {
+			if (pred(*first)) {
+				*dest_true = *first;
+				++dest_true;
+			}
+			else {
+				*dest_false = *first;
+				++dest_false;
+			}
+			++first;
+		}
+		return kkli::pair<OutputIt1, OutputIt2>(dest_true, dest_false);
+	}
+
+	//======== [stable_partition], O(n) ========
 	template<typename BidirectIt, typename UnaryPredicate>
-	BidirectIt partition(BidirectIt first, BidirectIt last, UnaryPredicate pred) {
-		//TODO: 
+	BidirectIt stable_partition(BidirectIt first, BidirectIt last, UnaryPredicate pred) {
+		throw 1;
+		//TODO: 如何实现？
+	}
+
+	//======== [partition_point], O(n) ========
+	template<typename ForwardIt, typename UnaryPredicate>
+	ForwardIt partition_point(ForwardIt first, ForwardIt last,
+		UnaryPredicate pred) {
+		for (; first != last; ++first)
+			if (!pred(*first)) return first;
 	}
 }
 

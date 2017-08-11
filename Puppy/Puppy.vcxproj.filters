@@ -114,6 +114,9 @@
     <ClInclude Include="algorithm_test_part2.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="algorithm_test_part3.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
