@@ -4,8 +4,6 @@
 
 实现如下内容：
 
-iterator_traits.h
-
 iterator.h
 
 memory.h

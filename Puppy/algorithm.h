@@ -759,3 +759,117 @@ namespace kkli {
 		throw 1; //TODO: 
 	}
 }
+
+//================================================================================
+//part4: sorting operations
+//================================================================================
+
+namespace kkli {
+
+	//======== [lower_bound], O(logn) ========
+	template<typename ForwardIt, typename T>
+	ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value) {
+		typename kkli::iterator_traits<ForwardIt>::difference_type count, step;
+		count = kkli::distance(first, last);
+		ForwardIt iter;
+		while (count > 0) {
+			iter = first;
+			step = count / 2;
+			kkli::advance(iter, step);
+			if (*iter < value) {
+				first = ++iter;
+				count -= step + 1;
+			}
+			else count = step;
+		}
+		return first;
+	}
+
+	template<typename ForwardIt, typename T, typename Compare>
+	ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value,
+		Compare comp) {
+		typename kkli::iterator_traits<ForwardIt>::difference_type count, step;
+		count = kkli::distance(first, last);
+		ForwardIt iter;
+		while (count > 0) {
+			iter = first;
+			step = count / 2;
+			kkli::advance(iter, step);
+			if (comp(*iter,value)) {
+				first = ++iter;
+				count -= step + 1;
+			}
+			else count = step;
+		}
+		return first;
+	}
+
+	//======== [upper_bound], O(logn) ========
+	template<typename ForwardIt, typename T>
+	ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value) {
+		typename kkli::iterator_traits<ForwardIt>::difference_type count, step;
+		count = kkli::distance(first, last);
+		ForwardIt iter;
+		while (count > 0) {
+			iter = first;
+			step = count / 2;
+			kkli::advance(iter, step);
+			if (!(value < *iter)) {
+				first = ++iter;
+				count -= step + 1;
+			}
+			else count = step;
+		}
+		return first;
+	}
+
+	template<typename ForwardIt, typename T, typename Compare>
+	ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value,
+		Compare comp) {
+		typename kkli::iterator_traits<ForwardIt>::difference_type count, step;
+		count = kkli::distance(first, last);
+		ForwardIt iter;
+		while (count > 0) {
+			iter = first;
+			step = count / 2;
+			kkli::advance(iter, step);
+			if (!comp(value, *iter)) {
+				first = ++iter;
+				count -= step + 1;
+			}
+			else count = step;
+		}
+		return first;
+	}
+
+	//======== [binary_search], O(logn) ========
+	template<typename ForwardIt, typename T>
+	bool binary_search(ForwardIt first, ForwardIt last, const T& value) {
+		first = kkli::lower_bound(first, last, value);
+		return (!(first == last)) && (!(value < *first));
+	}
+
+	template<typename ForwardIt, typename T,typename Compare>
+	bool binary_search(ForwardIt first, ForwardIt last, const T& value,
+		Compare comp) {
+		first = kkli::lower_bound(first, last, value, comp);
+		return (!(first == last)) && (!comp(value, *first));
+	}
+
+	//======== [equal_range], O(logn) ========
+	template<typename ForwardIt, typename T>
+	kkli::pair<ForwardIt, ForwardIt> equal_range(ForwardIt first,
+		ForwardIt last, const T& value) {
+		return kkli::make_pair(
+			kkli::lower_bound(first, last, value),
+			kkli::upper_bound(first, last, value));
+	}
+
+	template<typename ForwardIt, typename T, typename Compare>
+	kkli::pair<ForwardIt, ForwardIt> equal_range(ForwardIt first,
+		ForwardIt last, const T& value, Compare comp) {
+		return kkli::make_pair(
+			kkli::lower_bound(first, last, value, comp),
+			kkli::upper_bound(first, last, value, comp));
+	}
+}
