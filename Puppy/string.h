@@ -357,10 +357,14 @@ namespace kkli {
 			pointer				data() { return __start; }
 			const_pointer		data()const { return __start; }
 
-			kkli::reverse_iterator<CharType>		rbegin() { return __end; }
-			const kkli::reverse_iterator<CharType>	crbegin()const { return __end; }
-			kkli::reverse_iterator<CharType>		rend() { return __start; }
-			const kkli::reverse_iterator<CharType>	crend()const { return __start; }
+			kkli::reverse_iterator<iterator> 
+				rbegin() { return kkli::reverse_iterator<iterator>(__end); }
+			const kkli::reverse_iterator<iterator>
+				crbegin()const { return kkli::reverse_iterator<iterator>(__end);}
+			kkli::reverse_iterator<iterator>
+				rend() { return kkli::reverse_iterator<iterator>(__start); }
+			const kkli::reverse_iterator<iterator>
+				crend()const { return kkli::reverse_iterator<iterator>(__start);}
 
 			bool				empty()const { return __start == __end; }
 			size_type			size()const { return __end - __start; }

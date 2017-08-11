@@ -61,7 +61,7 @@ namespace test {
 			test_next();
 			test_prev();
 			test_begin();
-			//test_end();
+			test_end();
 
 			//test_istream_iterator();	//buggy
 			//test_ostream_iterator();	//buggy
@@ -304,15 +304,51 @@ namespace test {
 			auto iter32 = kkli::rbegin(arr3);
 			EXPECT_EQ_VAL(*iter31, 'd');
 			EXPECT_EQ_VAL(*iter32, 4);
-			/*
-			//cbegin
+
+			//crbegin
 			const string str4("abcd");
 			const int arr4[4] = { 1,2,3,4 };
 			auto iter41 = kkli::crbegin(str4);
 			auto iter42 = kkli::crbegin(arr4);
 			EXPECT_EQ_VAL(*iter41, 'd');
 			EXPECT_EQ_VAL(*iter42, 4);
-			*/
+		}
+
+		//≤‚ ‘ end
+		void test_end() {
+			cout << "test: end()" << endl;
+
+			//end
+			string str1("abcd");
+			int arr1[4] = { 1,2,3,4 };
+			auto iter11 = kkli::end(str1);
+			auto iter12 = kkli::end(arr1);
+			EXPECT_EQ_VAL(*(--iter11), 'd');
+			EXPECT_EQ_VAL(*(--iter12), 4);
+
+			//cend
+			const string str2("abcd");
+			const int arr2[4] = { 1,2,3,4 };
+			auto iter21 = kkli::cend(str2);
+			auto iter22 = kkli::cend(arr2);
+			EXPECT_EQ_VAL(*(--iter21), 'd');
+			EXPECT_EQ_VAL(*(--iter22), 4);
+
+			//rend
+			string str3("abcd");
+			int arr3[4] = { 1,2,3,4 };
+			auto iter31 = kkli::rend(str3);
+			auto iter32 = kkli::rend(arr3);
+			EXPECT_EQ_VAL(*(--iter31), 'a');
+			EXPECT_EQ_VAL(*(--iter32), 1);
+
+			//crend
+			const string str4("abcd");
+			const int arr4[4] = { 1,2,3,4 };
+			auto iter41 = kkli::crend(str4);
+			auto iter42 = kkli::crend(arr4);
+			EXPECT_EQ_VAL(*(--iter41), 'a');
+			EXPECT_EQ_VAL(*(--iter42), 1);
 		}
 
 		/*

@@ -756,6 +756,26 @@ namespace kkli {
 		return a;
 	}
 
+	//rbegin
+	template<typename C>
+	auto rbegin(C& c)->decltype(c.rbegin()) {
+		return c.rbegin();
+	}
+	template<typename T, std::size_t N>
+	kkli::reverse_iterator<T*> rbegin(T(&a)[N]) {
+		return kkli::reverse_iterator<T*>(a + N);
+	}
+
+	//crbegin
+	template<typename C>
+	auto crbegin(const C& c)->decltype(c.crbegin()) {
+		return c.crbegin();
+	}
+	template<typename T, std::size_t N>
+	kkli::reverse_iterator<const T*> crbegin(const T(&a)[N]) {
+		return kkli::reverse_iterator<const T*>(a + N);
+	}
+
 	//end
 	template<typename C>
 	auto end(C& c)->decltype(c.end()) {
@@ -776,34 +796,14 @@ namespace kkli {
 		return a + N;
 	}
 
-	//rbegin
-	template<typename C>
-	auto rbegin(C& c)->decltype(c.rbegin()) {
-		return c.rbegin();
-	}
-	template<typename T, std::size_t N>
-	T* rbegin(T(&a)[N]) {
-		return a + N - 1;
-	}
-
-	//crbegin
-	template<typename C>
-	auto crbegin(const C& c)->decltype(c.crbegin()) {
-		return c.crbegin();
-	}
-	template<typename T, std::size_t N>
-	const T* crbegin(const T(&a)[N]) {
-		return a + N - 1;
-	}
-
 	//rend
 	template<typename C>
 	auto rend(C& c)->decltype(c.rend()) {
 		return c.rend();
 	}
 	template<typename T, std::size_t N>
-	T* rend(T(&a)[N]) {
-		return a - 1;
+	kkli::reverse_iterator<T*> rend(T(&a)[N]) {
+		return kkli::reverse_iterator<T*>(a);
 	}
 
 	//crend
@@ -812,7 +812,7 @@ namespace kkli {
 		return c.crend();
 	}
 	template<typename T, std::size_t N>
-	const T* crend(const T(&a)[N]) {
-		return a - 1;
+	kkli::reverse_iterator<const T*> crend(const T(&a)[N]) {
+		return kkli::reverse_iterator<const T*>(a);
 	}
 }
