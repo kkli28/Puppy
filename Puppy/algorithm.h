@@ -6,6 +6,13 @@
 #include "functional.h"
 #include "pair.h"
 
+//算法根据 cppreference 的Algorithms Library板块的分类实现
+
+//算法中有很多奇怪的代码，例如可以用operator==或者operator>直接解决，却
+//坚持用类似(!operator<)来说实现，是为了减少类型需要满足的条件，即类型只需要
+//定义了operator<就可以使用该算法。若使用operator==，而类型没有定义operator==，
+//则类型不能使用该算法
+
 //================================================================================
 //part1: non-modifying sequence operations
 //================================================================================
@@ -761,7 +768,7 @@ namespace kkli {
 }
 
 //================================================================================
-//part4: sorting operations
+//part5: binary search operations(on sorted ranges)
 //================================================================================
 
 namespace kkli {
@@ -871,5 +878,182 @@ namespace kkli {
 		return kkli::make_pair(
 			kkli::lower_bound(first, last, value, comp),
 			kkli::upper_bound(first, last, value, comp));
+	}
+}
+
+//================================================================================
+//part6: set operations(on sorted ranges)
+//================================================================================
+
+namespace kkli {
+
+	//======== [merge], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename OutputIt>
+	OutputIt merge(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+		InputIt2 last2, OutputIt dest) {
+		while ((first1 != last1) && (first2 != last2)) {
+			if (*first1 < *first2) *(dest++) = *(first1++);
+			else *(dest++) = *(first2++);
+		}
+		while (first1 != last1) return kkli::copy(first1, last1, dest);
+		while (first2 != last2) return kkli::copy(first2, last2, dest);
+	}
+
+	template<typename InputIt1, typename InputIt2, typename OutputIt,
+		typename Compare>
+		OutputIt merge(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+			InputIt2 last2, OutputIt dest, Compare comp) {
+		while ((first1 != last1) && (first2 != last2)) {
+			if (comp(*first1, *first2)) *(dest++) = *(first1++);
+			else *(dest++) = *(first2++);
+		}
+		while (first1 != last1) return kkli::copy(first1, last1, dest);
+		while (first2 != last2) return kkli::copy(first2, last2, dest);
+	}
+
+	//======== [inplace_merge], O(n) ======== 尚未实现
+
+	//======== [includes], O(n) ========
+	template<typename InputIt1, typename InputIt2>
+	bool include(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
+		while (first2 != last2) {
+			if (first1 == last1 || *first2 < *first1) return false;
+			if (!(*first1 < *first2)) ++first2; //means *first1==*first2
+			++first1;
+		}
+		return true;
+	}
+
+	template<typename InputIt1, typename InputIt2, typename Compare>
+	bool include(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+		InputIt2 last2, Compare comp) {
+		while (first2 != last2) {
+			if (first1 == last1 || comp(*first2, *first1)) return false;
+			if (!comp(*first1, *first2)) ++first2; //means *first1==*first2
+			++first1;
+		}
+		return true;
+	}
+
+	//======== [set_difference], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename OutputIt>
+	OutputIt set_difference(InputIt1 first1, InputIt1 last1,
+		InputIt2 first2, InputIt2 last2, OutputIt dest) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (*first1 < *first2) *(dest++) = *(first1++);
+			else {
+				if (!(*first2 < *first1)) ++first1; //means *first1 == *first2
+				++first2;
+			}
+		}
+		return dest;
+	}
+
+	template<typename InputIt1, typename InputIt2, typename OutputIt,
+		typename Compare>
+		OutputIt set_difference(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+			InputIt2 last2, OutputIt dest, Compare comp) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (comp(*first1, *first2)) *(dest++) = *(first1++);
+			else {
+				if (!comp(*first2, *first1)) ++first1; //means *first1 == *first2
+				++first2;
+			}
+		}
+		return dest;
+	}
+
+	//======== [set_intersection], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename OutputIt>
+	OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+		InputIt2 last2, OutputIt dest) {
+		while (first1 != last1 && first2 != last2) {
+			if (*first1 < *first2) ++first1;
+			else {
+				if (!(*first2 < *first1)) *(dest++) = *(first1++);
+				++first2;
+			}
+		}
+		return dest;
+	}
+
+	template<typename InputIt1, typename InputIt2, typename OutputIt,
+		typename Compare>
+		OutputIt set_intersection(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+			InputIt2 last2, OutputIt dest, Compare comp) {
+		while (first1 != last1 && first2 != last2) {
+			if (comp(*first1, *first2)) ++first1;
+			else {
+				if (!comp(*first2, *first1)) *(dest++) = *(first1++);
+				++first2;
+			}
+		}
+		return dest;
+	}
+
+	//======== [set_symmetric_difference], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename OutputIt>
+	OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1,
+		InputIt2 first2, InputIt2 last2, OutputIt dest) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (*first1 < *first2) *(dest++) = *(first1++);
+			else {
+				if (*first2 < *first1) *(dest++) = *first2;
+				else ++first1; //*first1==*first2
+				++first2;
+			}
+		}
+		return kkli::copy(first2, last2, dest);
+	}
+
+	template<typename InputIt1, typename InputIt2, typename OutputIt,
+		typename Compare>
+		OutputIt set_symmetric_difference(InputIt1 first1, InputIt1 last1,
+			InputIt2 first2, InputIt2 last2, OutputIt dest, Compare comp) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (comp(*first1, *first2)) *(dest++) = *(first1++);
+			else {
+				if (comp(*first2, *first1)) *(dest++) = *first2;
+				else ++first1; //*first1==*first2
+				++first2;
+			}
+		}
+		return kkli::copy(first2, last2, dest);
+	}
+
+	//======== [set_union], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename OutputIt>
+	OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+		InputIt2 last2, OutputIt dest) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (*first2 < *first1) *(dest++) = *(first2++);
+			else {
+				*(dest++) = *first1;
+				if (!(*first1 < *first2)) ++first2;
+				++first1;
+			}
+		}
+		return kkli::copy(first2, last2, dest);
+	}
+
+	template<typename InputIt1, typename InputIt2, typename OutputIt,
+		typename Compare>
+		OutputIt set_union(InputIt1 first1, InputIt1 last1, InputIt2 first2,
+			InputIt2 last2, OutputIt dest, Compare comp) {
+		while (first1 != last1) {
+			if (first2 == last2) return kkli::copy(first1, last1, dest);
+			if (comp(*first2, *first1)) *(dest++) = *(first2++);
+			else {
+				*(dest++) = *first1;
+				if (!comp(*first1, *first2)) ++first2;
+				++first1;
+			}
+		}
+		return kkli::copy(first2, last2, dest);
 	}
 }
