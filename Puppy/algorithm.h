@@ -1088,7 +1088,8 @@ namespace kkli {
 	//======== [is_heap_until], O(n) ========
 	template<typename RandomIt>
 	RandomIt is_heap_until(RandomIt first, RandomIt last) {
-		typedef typename kkli::iterator_traits<RandomIt>::difference_typ diff_type;
+		if (first == last) return last;
+		typedef typename kkli::iterator_traits<RandomIt>::difference_type diff_type;
 		diff_type index = 0;
 		diff_type end = last - first;
 		while (true) { //first --> last
@@ -1097,14 +1098,16 @@ namespace kkli {
 			auto parent_iter = first + index;
 			auto left_iter = first + left;
 			auto right_iter = first + right;
-			if ((!(left < end)) || (*parent_iter < *left_iter) return first + left;
-			if ((!(right < end)) || (*parent_iter < *right_iter) return first + right;
+			if ((!(left < end)) || (*parent_iter < *left_iter)) return first + left;
+			if ((!(right < end)) || (*parent_iter < *right_iter)) return first + right;
+			++index;
 		}
 	}
 
-	template<typename RandomIt>
-	RandomIt is_heap_until(RandomIt first, RandomIt last) {
-		typedef typename kkli::iterator_traits<RandomIt>::difference_typ diff_type;
+	template<typename RandomIt, typename Compare>
+	RandomIt is_heap_until(RandomIt first, RandomIt last, Compare comp) {
+		if (first == last) return last;
+		typedef typename kkli::iterator_traits<RandomIt>::difference_type diff_type;
 		diff_type index = 0;
 		diff_type end = last - first;
 		while (true) { //first --> last
@@ -1113,8 +1116,9 @@ namespace kkli {
 			auto parent_iter = first + index;
 			auto left_iter = first + left;
 			auto right_iter = first + right;
-			if ((!(left < end)) || (comp(*parent_iter, *left_iter)) return first + left;
-			if ((!(right < end)) || (comp(*parent_iter, *right_iter)) return first + right;
+			if ((!(left < end)) || (comp(*parent_iter, *left_iter))) return first + left;
+			if ((!(right < end)) || (comp(*parent_iter, *right_iter))) return first + right;
+			++index;
 		}
 	}
 
@@ -1128,19 +1132,19 @@ namespace kkli {
 		RandomIt left_child = first + left;
 		RandomIt right_child = first + right;
 		if (left < end && comp(*(first + max), *left_child)) max = left;
-		if (right < end && comp(*(first + max), *right_child))) max = right;
-			if (max != index) {
-				kkli::swap(*(first + index), *(first + max));
-				__aux_make_heap(first, last, max, comp);
-				return true; //changed
-			}
-			return false; //non-changed
+		if (right < end && comp(*(first + max), *right_child)) max = right;
+		if (max != index) {
+			kkli::swap(*(first + index), *(first + max));
+			__aux_make_heap(first, last, max, comp);
+			return true; //change
+		}
+		return false; //non-change
 	}
 
 	template<typename RandomIt>
 	void make_heap(RandomIt first, RandomIt last) {
 		if (first == last) return;
-		typename kkli::iterator_traits<RandomIt>::difference_typ
+		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
 		while (index >= 0) __aux_make_heap(first, last, index--,
 			kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>());
@@ -1149,7 +1153,7 @@ namespace kkli {
 	template<typename RandomIt, typename Compare>
 	void make_heap(RandomIt first, RandomIt last, Compare comp) {
 		if (first == last) return;
-		typename kkli::iterator_traits<RandomIt>::difference_typ
+		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
 		while (index >= 0) __aux_make_heap(first, last, index--, comp);
 	}
@@ -1157,7 +1161,7 @@ namespace kkli {
 	//======== [push_heap], O(logn) ========
 	template<typename RandomIt>
 	void push_heap(RandomIt first, RandomIt last) {
-		typename kkli::iterator_traits<RandomIt>::difference_typ
+		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
 		for (; index >= 0; index = (index - 1) / 2)
 			if (!__aux_make_heap(first, last, index,
@@ -1167,7 +1171,7 @@ namespace kkli {
 
 	template<typename RandomIt, typename Compare>
 	void push_heap(RandomIt first, RandomIt last, Compare comp) {
-		typename kkli::iterator_traits<RandomIt>::difference_typ
+		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
 		for (; index >= 0; index = (index - 1) / 2)
 			if (!__aux_make_heap(first, last, index, comp)) return;
@@ -1176,11 +1180,26 @@ namespace kkli {
 	//======== [pop_heap], O(logn) ========
 	template<typename RandomIt>
 	void pop_heap(RandomIt first, RandomIt last) {
-		//TODO: 
+		kkli::swap(*first, *(last - 1));
+		__aux_make_heap(first, last, 0,
+			kkli::less<typename kkli::iterator_traits<RandomIt>::value_type());
 	}
 
 	template<typename RandomIt, typename Compare>
 	void pop_heap(RandomIt first, RandomIt last, Compare comp) {
-		//TODO: 
+		kkli::swap(*first, *(last - 1));
+		__aux_make_heap(first, last, 0, comp);
+	}
+
+	//======== [sort_heap], O(nlogn) ========
+	template<typename RandomIt>
+	void sort_heap(RandomIt first, RandomIt last) {
+		while (first != last) kkli::pop_heap(first, last--);
+	}
+
+	template<typename RandomIt, typename Compare>
+	void sort_heap(RandomIt first, RandomIt last, Compare comp) {
+		while (first != last) kkli::pop_heap(first, last--, comp);
 	}
 }
+

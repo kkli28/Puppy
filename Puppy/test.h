@@ -40,4 +40,16 @@ namespace test {
 		for (auto iter=first; iter != last; ++iter)
 			if (*iter != val) throw std::runtime_error("EXPECT_EQ_ITER");
 	}
+
+	//PRINT_ARR: 输出数组元素
+	template<typename T, typename Size>
+	void PRINT_ARR(T* arr, Size N) {
+		for (int i = 0; i < N; ++i) cout << arr[i] << " "; cout << endl;
+	}
+
+	//PRINT_RANGE: 输出给定范围的值
+	template<typename InputIt>
+	void PRINT_RANGE(InputIt first, InputIt last) {
+		for (auto iter = first; iter != last; ++iter) cout << *iter << " "; cout << endl;
+	}
 }

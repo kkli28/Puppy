@@ -145,6 +145,7 @@
     <ClInclude Include="algorithm_test_part4.h" />
     <ClInclude Include="algorithm_test_part5.h" />
     <ClInclude Include="algorithm_test_part6.h" />
+    <ClInclude Include="algorithm_test_part7.h" />
     <ClInclude Include="array.h" />
     <ClInclude Include="array_test.h" />
     <ClInclude Include="avl_tree.h" />
