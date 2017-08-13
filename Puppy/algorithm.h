@@ -202,7 +202,7 @@ namespace kkli {
 		return last;
 	}
 	
-	template<typename InputIt, typename ForwardIt,typename BinaryPredicate>
+	template<typename InputIt, typename ForwardIt, typename BinaryPredicate>
 	InputIt find_first_of(InputIt first, InputIt last,
 		ForwardIt s_first, ForwardIt s_last,BinaryPredicate pred) {
 		for (; first != last; ++first) {
@@ -222,7 +222,7 @@ namespace kkli {
 			if (kkli::equal_to<typename iterator_traits<ForwardIt>::value_type>()(*first, *iter)) return first;
 		return last;
 	}
-	template<typename ForwardIt,typename BinaryPredicate>
+	template<typename ForwardIt, typename BinaryPredicate>
 	ForwardIt adjacent_find(ForwardIt first, ForwardIt last, BinaryPredicate pred) {
 		if (first == last)return first;
 		auto iter = first;
@@ -233,7 +233,7 @@ namespace kkli {
 	}
 
 	//======== [search], O(n*m) ========
-	template<typename ForwardIt1,typename ForwardIt2>
+	template<typename ForwardIt1, typename ForwardIt2>
 	ForwardIt1 search(ForwardIt1 first, ForwardIt2 last,
 		ForwardIt2 s_first, ForwardIt2 s_last) {
 		if (s_first == s_last) return first;
@@ -250,7 +250,7 @@ namespace kkli {
 		}
 		return result;
 	}
-	template<typename ForwardIt1, typename ForwardIt2,typename BinaryPredicate>
+	template<typename ForwardIt1, typename ForwardIt2, typename BinaryPredicate>
 	ForwardIt1 search(ForwardIt1 first, ForwardIt2 last,
 		ForwardIt2 s_first, ForwardIt2 s_last,BinaryPredicate pred) {
 		if (s_first == s_last) return first;
@@ -280,7 +280,7 @@ namespace kkli {
 	}
 
 	//======== [search_n], O(n*m) ========
-	template<typename ForwardIt,typename Size,typename T>
+	template<typename ForwardIt, typename Size, typename T>
 	ForwardIt search_n(ForwardIt first, ForwardIt last, Size count, const T& value) {
 		if (first == last) return last;
 		auto end = first;
@@ -301,7 +301,7 @@ namespace kkli {
 		return old_last;
 	}
 	
-	template<typename ForwardIt, typename Size, typename T,typename BinaryPredicate>
+	template<typename ForwardIt, typename Size, typename T, typename BinaryPredicate>
 	ForwardIt search_n(ForwardIt first, ForwardIt last, Size count, const T& value,
 		BinaryPredicate pred) {
 		if (first == last) return last;
@@ -349,14 +349,14 @@ namespace kkli {
 	}
 
 	//======== [copy_n], O(n) ========
-	template<typename InputIt,typename Size, typename OutputIt>
+	template<typename InputIt, typename Size, typename OutputIt>
 	OutputIt copy_n(InputIt first, Size count, OutputIt dest) {
 		for (; count > 0; --count, ++first, ++dest) *dest = *first;
 		return dest;
 	}
 
 	//======== [copy_backward], O(n) ========
-	template<typename BidirectIt1,typename BidirectIt2>
+	template<typename BidirectIt1, typename BidirectIt2>
 	BidirectIt2 copy_backward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
 		while (first != last) *(--dest) = *(--last);
 		return dest;
@@ -370,20 +370,20 @@ namespace kkli {
 	}
 
 	//======== [move_backward], O(n) ========
-	template<typename BidirectIt1,typename BidirectIt2>
+	template<typename BidirectIt1, typename BidirectIt2>
 	BidirectIt2 move_backward(BidirectIt1 first, BidirectIt1 last, BidirectIt2 dest) {
 		while (first != last) *(--dest) = std::move(*(--last));
 		return dest;
 	}
 
 	//======== [fill], O(n) ========
-	template<typename ForwardIt,typename T>
+	template<typename ForwardIt, typename T>
 	void fill(ForwardIt first, ForwardIt last, const T& value) {
 		for (; first != last; ++first) *first = value;
 	}
 
 	//======== [fill_n], O(n) ========
-	template<typename OutputIt,typename Size,typename T>
+	template<typename OutputIt, typename Size, typename T>
 	void fill_n(OutputIt first, Size count, const T& value) {
 		for (; count > 0; --count, ++first) *first = value;
 	}
@@ -409,7 +409,7 @@ namespace kkli {
 	}
 
 	//======== [remove], O(n) ========
-	template<typename ForwardIt,typename T>
+	template<typename ForwardIt, typename T>
 	ForwardIt remove(ForwardIt first, ForwardIt last, const T& value) {
 		first = kkli::find(first, last, value);
 		if (first != last) {
@@ -439,7 +439,7 @@ namespace kkli {
 	}
 
 	//======== [remove_copy_if], O(n) ========
-	template<typename InputIt,typename OutputIt,typename UnaryPredicate>
+	template<typename InputIt, typename OutputIt, typename UnaryPredicate>
 	OutputIt remove_copy_if(InputIt first, InputIt last, OutputIt dest, UnaryPredicate pred) {
 		for (; first != last; ++first)
 			if (!pred(*first)) *(dest++) = *first;
@@ -470,7 +470,7 @@ namespace kkli {
 	}
 
 	//======== [replace_copy_if], O(n) ========
-	template<typename InputIt,typename OutputIt, typename UnaryPredicate, typename T>
+	template<typename InputIt, typename OutputIt, typename UnaryPredicate, typename T>
 	OutputIt replace_copy_if(InputIt first, InputIt last, OutputIt dest,
 		UnaryPredicate pred, const T& new_value) {
 		for (; first != last; ++first)
@@ -571,7 +571,7 @@ namespace kkli {
 		return ++dest;
 	}
 
-	template<typename InputIt,typename OutputIt, typename BinaryPredicate>
+	template<typename InputIt, typename OutputIt, typename BinaryPredicate>
 	OutputIt unique_copy(InputIt first, InputIt last, OutputIt dest,
 		BinaryPredicate pred) {
 		if (first == last) return dest;
@@ -607,7 +607,7 @@ namespace kkli {
 	}
 
 	//======== [partition_copy], O(n) ========
-	template<typename InputIt,typename OutputIt1,typename OutputIt2,
+	template<typename InputIt, typename OutputIt1, typename OutputIt2,
 		typename UnaryPredicate>
 		kkli::pair<OutputIt1, OutputIt2> partition_copy(InputIt first,
 			InputIt last, OutputIt1 dest_true, OutputIt2 dest_false,
@@ -705,9 +705,9 @@ namespace kkli {
 	}
 
 	//======== [sort], O(nlogn) ========
-	template<typename RandomAccessIt,
-		typename Compare = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>>
-		RandomAccessIt __aux_partition(RandomAccessIt first, RandomAccessIt last,
+	template<typename RandomIt,
+		typename Compare = kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>>
+		RandomIt __aux_partition(RandomIt first, RandomIt last,
 			Compare comp = Compare()) {
 		//三数中值法
 		auto end = last - 1;
@@ -726,9 +726,9 @@ namespace kkli {
 		return iter;
 	}
 
-	template<typename RandomAccessIt,
-		typename Compare = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>>
-		void sort(RandomAccessIt first, RandomAccessIt last,
+	template<typename RandomIt,
+		typename Compare = kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>>
+		void sort(RandomIt first, RandomIt last,
 			Compare comp = Compare()) {
 		if (last - first < 32) insertion_sort(first, last, comp);
 		else if (first < last) {
@@ -739,30 +739,30 @@ namespace kkli {
 	}
 
 	//======== [partial_sort], O(nlogn) ======= 尚未实现
-	template<typename RandomAccessIt, typename Compare>
-	void partial_sort(RandomAccessIt first, RandomAccessIt middle,
-		RandomAccessIt last, Compare comp) {
+	template<typename RandomIt, typename Compare>
+	void partial_sort(RandomIt first, RandomIt middle,
+		RandomIt last, Compare comp) {
 		throw 1; //TODO:
 	}
 
 	//======== [partial_sort_copy], O(X) ======== 尚未实现
-	template<typename InputIt, typename RandomAccessIt, typename Compare>
-	RandomAccessIt partial_sort_copy(InputIt first, InputIt last, RandomAccessIt dest,
+	template<typename InputIt, typename RandomIt, typename Compare>
+	RandomIt partial_sort_copy(InputIt first, InputIt last, RandomIt dest,
 		Compare comp = kkli::less<typename kkli::iterator_traits<InputIt>::value_type>()) {
 		throw 1; //TODO:
 	}
 
 	//======== [stable_sort], O(X) ======== 尚未实现
-	template<typename RandomAccessIt, typename Compare>
-	void stable_sort(RandomAccessIt first, RandomAccessIt last,
-		Compare comp = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>()) {
+	template<typename RandomIt, typename Compare>
+	void stable_sort(RandomIt first, RandomIt last,
+		Compare comp = kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>()) {
 		throw 1; //TODO:
 	}
 
 	//======== [nth_element], O(nlogn) ======== 尚未实现
-	template<typename RandomAccessIt, typename Compare>
-	void nth_element(RandomAccessIt first, RandomAccessIt nth, RandomAccessIt last,
-		Compare comp = kkli::less<typename kkli::iterator_traits<RandomAccessIt>::value_type>()) {
+	template<typename RandomIt, typename Compare>
+	void nth_element(RandomIt first, RandomIt nth, RandomIt last,
+		Compare comp = kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>()) {
 		throw 1; //TODO: 
 	}
 }
@@ -856,7 +856,7 @@ namespace kkli {
 		return (!(first == last)) && (!(value < *first));
 	}
 
-	template<typename ForwardIt, typename T,typename Compare>
+	template<typename ForwardIt, typename T, typename Compare>
 	bool binary_search(ForwardIt first, ForwardIt last, const T& value,
 		Compare comp) {
 		first = kkli::lower_bound(first, last, value, comp);
@@ -1055,5 +1055,132 @@ namespace kkli {
 			}
 		}
 		return kkli::copy(first2, last2, dest);
+	}
+}
+
+//================================================================================
+//part7: heap operations
+//================================================================================
+
+namespace kkli {
+
+	//========== [is_heap], O(n) ========
+	template<typename RandomIt>
+	bool is_heap(RandomIt first, RandomIt last) {
+		if (first == last) return true;
+		typename kkli::iterator_traits<RandomIt>::difference_type
+			index = last - first - 1;
+		for (; index > 0; --index)
+			if (*(first + index) > *(first + (index - 1) / 2)) return false;
+		return true;
+	}
+
+	template<typename RandomIt, typename Compare>
+	bool is_heap(RandomIt first, RandomIt last, Compare comp) {
+		if (first == last) return true;
+		typename kkli::iterator_traits<RandomIt>::difference_type
+			index = last - first - 1;
+		for (; index > 0; --index) //last --> first
+			if (comp(*(first + (index - 1) / 2), *(first + index))) return false;
+		return true;
+	}
+
+	//======== [is_heap_until], O(n) ========
+	template<typename RandomIt>
+	RandomIt is_heap_until(RandomIt first, RandomIt last) {
+		typedef typename kkli::iterator_traits<RandomIt>::difference_typ diff_type;
+		diff_type index = 0;
+		diff_type end = last - first;
+		while (true) { //first --> last
+			auto left = index * 2 + 1;
+			auto right = left + 1;
+			auto parent_iter = first + index;
+			auto left_iter = first + left;
+			auto right_iter = first + right;
+			if ((!(left < end)) || (*parent_iter < *left_iter) return first + left;
+			if ((!(right < end)) || (*parent_iter < *right_iter) return first + right;
+		}
+	}
+
+	template<typename RandomIt>
+	RandomIt is_heap_until(RandomIt first, RandomIt last) {
+		typedef typename kkli::iterator_traits<RandomIt>::difference_typ diff_type;
+		diff_type index = 0;
+		diff_type end = last - first;
+		while (true) { //first --> last
+			auto left = index * 2 + 1;
+			auto right = left + 1;
+			auto parent_iter = first + index;
+			auto left_iter = first + left;
+			auto right_iter = first + right;
+			if ((!(left < end)) || (comp(*parent_iter, *left_iter)) return first + left;
+			if ((!(right < end)) || (comp(*parent_iter, *right_iter)) return first + right;
+		}
+	}
+
+	//======== [make_heap], O(n) ========
+	template<typename RandomIt, typename Index, typename Compare>
+	bool __aux_make_heap(RandomIt first, RandomIt last, Index index, Compare comp) {
+		Index end = last - first;
+		Index left = index * 2 + 1;
+		Index right = left + 1;
+		Index max = index;
+		RandomIt left_child = first + left;
+		RandomIt right_child = first + right;
+		if (left < end && comp(*(first + max), *left_child)) max = left;
+		if (right < end && comp(*(first + max), *right_child))) max = right;
+			if (max != index) {
+				kkli::swap(*(first + index), *(first + max));
+				__aux_make_heap(first, last, max, comp);
+				return true; //changed
+			}
+			return false; //non-changed
+	}
+
+	template<typename RandomIt>
+	void make_heap(RandomIt first, RandomIt last) {
+		if (first == last) return;
+		typename kkli::iterator_traits<RandomIt>::difference_typ
+			index = (last - first - 1) / 2;
+		while (index >= 0) __aux_make_heap(first, last, index--,
+			kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>());
+	}
+
+	template<typename RandomIt, typename Compare>
+	void make_heap(RandomIt first, RandomIt last, Compare comp) {
+		if (first == last) return;
+		typename kkli::iterator_traits<RandomIt>::difference_typ
+			index = (last - first - 1) / 2;
+		while (index >= 0) __aux_make_heap(first, last, index--, comp);
+	}
+
+	//======== [push_heap], O(logn) ========
+	template<typename RandomIt>
+	void push_heap(RandomIt first, RandomIt last) {
+		typename kkli::iterator_traits<RandomIt>::difference_typ
+			index = (last - first - 1) / 2;
+		for (; index >= 0; index = (index - 1) / 2)
+			if (!__aux_make_heap(first, last, index,
+				kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>()))
+				return;
+	}
+
+	template<typename RandomIt, typename Compare>
+	void push_heap(RandomIt first, RandomIt last, Compare comp) {
+		typename kkli::iterator_traits<RandomIt>::difference_typ
+			index = (last - first - 1) / 2;
+		for (; index >= 0; index = (index - 1) / 2)
+			if (!__aux_make_heap(first, last, index, comp)) return;
+	}
+
+	//======== [pop_heap], O(logn) ========
+	template<typename RandomIt>
+	void pop_heap(RandomIt first, RandomIt last) {
+		//TODO: 
+	}
+
+	template<typename RandomIt, typename Compare>
+	void pop_heap(RandomIt first, RandomIt last, Compare comp) {
+		//TODO: 
 	}
 }
