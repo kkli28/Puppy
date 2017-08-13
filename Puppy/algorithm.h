@@ -638,6 +638,7 @@ namespace kkli {
 		UnaryPredicate pred) {
 		for (; first != last; ++first)
 			if (!pred(*first)) return first;
+		return first;
 	}
 }
 
@@ -1163,32 +1164,37 @@ namespace kkli {
 	void push_heap(RandomIt first, RandomIt last) {
 		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
-		for (; index >= 0; index = (index - 1) / 2)
-			if (!__aux_make_heap(first, last, index,
-				kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>()))
-				return;
+		for (; index >= 0; --index) {
+			__aux_make_heap(first, last, index,
+				kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>());
+			if (index == 0) return;
+		}
 	}
 
 	template<typename RandomIt, typename Compare>
 	void push_heap(RandomIt first, RandomIt last, Compare comp) {
 		typename kkli::iterator_traits<RandomIt>::difference_type
 			index = (last - first - 1) / 2;
-		for (; index >= 0; index = (index - 1) / 2)
-			if (!__aux_make_heap(first, last, index, comp)) return;
+		for (; index >= 0; --index) {
+			__aux_make_heap(first, last, index, comp);
+			if (index == 0) return;
+		}
 	}
 
 	//======== [pop_heap], O(logn) ========
 	template<typename RandomIt>
 	void pop_heap(RandomIt first, RandomIt last) {
+		if (first == last) return;
 		kkli::swap(*first, *(last - 1));
-		__aux_make_heap(first, last, 0,
-			kkli::less<typename kkli::iterator_traits<RandomIt>::value_type());
+		__aux_make_heap(first, last-1, 0,
+			kkli::less<typename kkli::iterator_traits<RandomIt>::value_type>());
 	}
 
 	template<typename RandomIt, typename Compare>
 	void pop_heap(RandomIt first, RandomIt last, Compare comp) {
+		if (first == last) return;
 		kkli::swap(*first, *(last - 1));
-		__aux_make_heap(first, last, 0, comp);
+		__aux_make_heap(first, last-1, 0, comp);
 	}
 
 	//======== [sort_heap], O(nlogn) ========

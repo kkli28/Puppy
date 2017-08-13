@@ -18,7 +18,6 @@ namespace test {
 		void test_push_heap();
 		void test_pop_heap();
 		void test_sort_heap();
-
 		void test_make_heap_normal();
 		void test_make_heap_pred();
 		void test_make_heap() {
@@ -29,12 +28,12 @@ namespace test {
 
 		//²¿·Ö²âÊÔ part7
 		void test_part7() {
-			//test_is_heap();
-			//test_is_heap_until();
-			//test_make_heap();
+			test_is_heap();
+			test_is_heap_until();
+			test_make_heap();
 			test_push_heap();
-			//test_pop_heap();
-			//test_sort_heap();
+			test_pop_heap();
+			test_sort_heap();
 		}
 
 		//²âÊÔ is_heap
@@ -143,8 +142,6 @@ namespace test {
 
 			kkli::make_heap(arr6, arr6 + 8);
 			EXPECT_EQ_ARR(arr6, comp6, 8);
-
-			//make_heap(first, last, comp);
 		}
 
 		//²âÊÔ make_heap_pred
@@ -185,23 +182,106 @@ namespace test {
 		void test_push_heap() {
 			cout << "test: push_heap()" << endl;
 
-			int arr1[4] = { 1,2,3,4 };
-			int arr2[4] = { 1,3,2,4 };
-			int arr3[4] = { 4,3,2,1 };
-			int arr4[8] = { 1,2,3,4,5,6,7,8 };
-			int arr5[8] = { 1,3,5,7,2,6,4,8 };
-			int comp1[4] = { 1,2,3,4 };
-			int comp2[4] = { 2,1,3,4 };
-			int comp3[4] = { 3,1,2,4 };
+			int arr1[4] = { 3,2,1,4 };
+			int arr2[4] = { 4,3,2,1 };
+			int arr3[8] = { 1,2,3,4,5,6,7,8 };
+			int comp1[4] = { 4,3,1,2 };
+			int comp2[4] = { 4,3,2,1 };
+			int comp3[4] = { 2,4,3,1 };
 
-			kkli::push_heap(arr1, arr1 + 1);
+			int comp4[8] = { 2,1,3,4,5,6,7,8 };
+			int comp5[8] = { 3,1,2,4,5,6,7,8 };
+			int comp6[8] = { 4,3,2,1,5,6,7,8 };
+			int comp7[8] = { 5,4,2,1,3,6,7,8 };
+			int comp8[8] = { 6,4,5,1,3,2,7,8 };
+			int comp9[8] = { 7,4,6,1,3,2,5,8 };
+			int comp10[8] = { 8,7,6,4,3,2,5,1 };
+
+			kkli::push_heap(arr1, arr1 + 4); //1 2 3 4
 			EXPECT_EQ_ARR(arr1, comp1, 4);
+			
+			kkli::push_heap(arr2, arr2 + 4);
+			EXPECT_EQ_ARR(arr2, comp2, 4);
 
-			kkli::push_heap(arr1, arr1 + 2);
-			EXPECT_EQ_ARR(arr1, comp2, 4);
+			//arr3
+			kkli::push_heap(arr3, arr3 + 2); //+2
+			EXPECT_EQ_ARR(arr3, comp4, 8);
+			kkli::push_heap(arr3, arr3 + 3); //+3
+			EXPECT_EQ_ARR(arr3, comp5, 8);
+			kkli::push_heap(arr3, arr3 + 4); //+4
+			EXPECT_EQ_ARR(arr3, comp6, 8);
+			kkli::push_heap(arr3, arr3 + 5); //+5
+			EXPECT_EQ_ARR(arr3, comp7, 8);
+			kkli::push_heap(arr3, arr3 + 6); //+6
+			EXPECT_EQ_ARR(arr3, comp8, 8);
+			kkli::push_heap(arr3, arr3 + 7); //+7
+			EXPECT_EQ_ARR(arr3, comp9, 8);
+			kkli::push_heap(arr3, arr3 + 8); //+8
+			EXPECT_EQ_ARR(arr3, comp10, 8);
 
-			kkli::push_heap(arr1, arr1 + 3);
-			EXPECT_EQ_ARR(arr1, comp3, 4);
+			//push_heap(first, last, comp)
+		}
+
+		//²âÊÔ pop_heap
+		void test_pop_heap() {
+			cout << "test: pop_heap()" << endl;
+
+			int arr1[8] = { 1,2,3,4,5,6,7,8 };
+			int comp1[8] = { 8,5,7,4,1,6,3,2 };
+			int comp2[8] = { 7,5,6,4,1,2,3,8 };
+			int comp3[8] = { 6,5,3,4,1,2,7,8 };
+			int comp4[8] = { 5,4,3,2,1,6,7,8 };
+			int comp5[8] = { 4,2,3,1,5,6,7,8 };
+			int comp6[8] = { 3,2,1,4,5,6,7,8 };
+			int comp7[8] = { 2,1,3,4,5,6,7,8 };
+			int comp8[8] = { 1,2,3,4,5,6,7,8 };
+
+			kkli::make_heap(arr1, arr1 + 8);
+			EXPECT_EQ_ARR(arr1, comp1, 8);
+
+			kkli::pop_heap(arr1, arr1 + 8);
+			EXPECT_EQ_ARR(arr1, comp2, 8);
+
+			kkli::pop_heap(arr1, arr1 + 7);
+			EXPECT_EQ_ARR(arr1, comp3, 8);
+
+			kkli::pop_heap(arr1, arr1 + 6);
+			EXPECT_EQ_ARR(arr1, comp4, 8);
+
+			kkli::pop_heap(arr1, arr1 + 5);
+			EXPECT_EQ_ARR(arr1, comp5, 8);
+
+			kkli::pop_heap(arr1, arr1 + 4);
+			EXPECT_EQ_ARR(arr1, comp6, 8);
+
+			kkli::pop_heap(arr1, arr1 + 3);
+			EXPECT_EQ_ARR(arr1, comp7, 8);
+
+			kkli::pop_heap(arr1, arr1 + 2);
+			EXPECT_EQ_ARR(arr1, comp8, 8);
+
+			kkli::pop_heap(arr1, arr1 + 1);
+			EXPECT_EQ_ARR(arr1, comp8, 8);
+
+			kkli::pop_heap(arr1, arr1);
+			EXPECT_EQ_ARR(arr1, comp8, 8);
+
+			//pop_heap(first, last, comp)
+		}
+
+		//²âÊÔ sort_heap
+		void test_sort_heap() {
+			cout << "test: sort_heap()" << endl;
+
+			int arr1[8] = { 8,5,7,4,1,6,3,2 };
+			int arr2[8] = { 8,6,7,4,3,5,1,2 };
+			int comp1[8] = { 1,2,3,4,5,6,7,8 };
+
+			kkli::sort_heap(arr1, arr1 + 8);
+			EXPECT_EQ_ARR(arr1, comp1, 8);
+
+			kkli::sort_heap(arr2, arr2 + 8);
+			EXPECT_EQ_ARR(arr2, comp1, 8);
 		}
 	}
 }
