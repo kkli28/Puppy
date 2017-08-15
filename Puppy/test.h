@@ -18,6 +18,14 @@ namespace test {
 			if (arr1[i] != arr2[i]) throw std::runtime_error("EXPECT_EQ_ARR");
 	}
 
+	//EXPECT_EQ_ARRLIST: 确保数组和列表内的所有元素相等
+	template<typename T, typename Size>
+	void EXPECT_EQ_ARRLIST(T* arr, Size count, std::initializer_list<T> il) {
+		auto iter = il.begin();
+		for (std::size_t i = 0; i < count; ++i, ++iter)
+			if (arr[i] != *iter) throw std::runtime_error("EXPECT_EQ_ARRLIST");
+	}
+
 	//EXPECT_EQ_NVALS: 确保数组中所有元素等于val
 	template<typename T,typename U>
 	void EXPECT_EQ_NVALS(const T& arr, std::size_t count, const U& val) {

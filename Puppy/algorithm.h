@@ -1209,3 +1209,277 @@ namespace kkli {
 	}
 }
 
+//================================================================================
+//part8: minimum/maximum operations
+//================================================================================
+
+namespace kkli {
+
+	//======== [max_element], O(n) ========
+	template<typename ForwardIt>
+	ForwardIt max_element(ForwardIt first, ForwardIt last) {
+		if (first == last) return last;
+		ForwardIt max_iter = first++;
+		for (; first != last; ++first)
+			if (*max_iter < *first) max_iter = first;
+		return max_iter;
+	}
+
+	template<typename ForwardIt, typename Compare>
+	ForwardIt max_element(ForwardIt first, ForwardIt last, Compare comp) {
+		if (first == last) return last;
+		ForwardIt max_iter = first++;
+		for (; first != last; ++first)
+			if (comp(*max_iter, *first)) max_iter = first;
+		return max_iter;
+	}
+
+	//======== [max], O(1) ========
+	template<typename T>
+	const T& max(const T& a, const T& b) {
+		return a < b ? b : a;
+	}
+
+	template<typename T, typename Compare>
+	const T& max(const T& a, const T& b, Compare comp) {
+		return comp(a, b) ? b : a;
+	}
+
+	//======== [max], O(n) ========
+	template<typename T>
+	T max(std::initializer_list<T> il) {
+		return *kkli::max_element(il.begin(), il.end());
+	}
+
+	template<typename T, typename Compare>
+	T max(std::initializer_list<T> il, Compare comp) {
+		return *kkli::max_element(il.begin(), il.end(), comp);
+	}
+
+	//======== [min_element], O(n) ========
+	template<typename ForwardIt>
+	ForwardIt min_element(ForwardIt first, ForwardIt last) {
+		if (first == last) return last;
+		ForwardIt min_iter = first++;
+		for (; first != last; ++first)
+			if (*first < *min_iter) min_iter = first;
+		return min_iter;
+	}
+
+	template<typename ForwardIt, typename Compare>
+	ForwardIt min_element(ForwardIt first, ForwardIt last, Compare comp) {
+		if (first == last) return last;
+		ForwardIt min_iter = first++;
+		for (; first != last; ++first)
+			if (comp(*first, *min_iter)) min_iter = first;
+		return min_iter;
+	}
+
+	//======== [min], O(1) ========
+	template<typename T>
+	const T& min(const T& a, const T& b) {
+		return a < b ? a : b;
+	}
+
+	template<typename T,typename Compare>
+	const T& min(const T& a, const T& b, Compare comp) {
+		return comp(a, b) ? a : b;
+	}
+
+	//======== [min], O(n) ========
+	template<typename T>
+	T min(std::initializer_list<T> il) {
+		return *kkli::min_element(il.begin(), il.end());
+	}
+
+	template<typename T, typename Compare>
+	T min(std::initializer_list<T> il, Compare comp) {
+		return *kkli::min_element(il.begin(), il.end(), comp);
+	}
+
+	//======== [minmax_element], O(n) ========
+	template<typename ForwardIt>
+	kkli::pair<ForwardIt, ForwardIt> minmax_element(ForwardIt first, ForwardIt last) {
+		if (first == last) return kkli::make_pair<ForwardIt, ForwardIt>(std::move(last), std::move(last));
+		ForwardIt min_iter = first;
+		ForwardIt max_iter = first++;
+		for (; first != last; ++first) {
+			if (*first < *min_iter) min_iter = first;
+			if (*max_iter < *first) max_iter = first;
+		}
+		return kkli::make_pair<ForwardIt, ForwardIt>(std::move(min_iter), std::move(max_iter));
+	}
+
+	template<typename ForwardIt, typename Compare>
+	kkli::pair<ForwardIt, ForwardIt> minmax_element(
+		ForwardIt first, ForwardIt last, Compare comp) {
+		if (first == last) return kkli::make_pair<ForwardIt, ForwardIt>(std::move(last), std::move(last));
+		ForwardIt min_iter = first;
+		ForwardIt max_iter = first++;
+		for (; first != last; ++first) {
+			if (comp(*first, *min_iter)) min_iter = first;
+			if (comp(*max_iter, *first)) max_iter = first;
+		}
+		return kkli::make_pair<ForwardIt, ForwardIt>(std::move(min_iter), std::move(max_iter));
+	}
+
+	//======== [minmax], O(1) =======
+	template<typename T>
+	kkli::pair<const T&, const T&> minmax(const T& a, const T& b) {
+		if (a < b) return kkli::make_pair<const T&, const T&>(cref(a), cref(b));
+		else return kkli::make_pair<const T&, const T&>(cref(b), cref(a));
+	}
+
+	template<typename T, typename Compare>
+	kkli::pair<const T&, const T&> minmax(const T& a, const T& b, Compare comp) {
+		if (comp(a, b)) return kkli::make_pair<const T&, const T&>(a, b);
+		else return kkli::make_pair<const T&, const T&>(b, a);
+	}
+
+	//======== [minmax], O(n) ========
+	template<typename T>
+	kkli::pair<T, T> minmax(std::initializer_list<T> il) {
+		auto p = kkli::minmax_element(il.begin(), il.end());
+		T min = *(p.first);
+		T max = *(p.second);
+		return kkli::make_pair<T, T>(std::move(min), std::move(max));
+	}
+
+	template<typename T, typename Compare>
+	kkli::pair<T, T> minmax(std::initializer_list<T> il, Compare comp) {
+		auto p = kkli::minmax_element(il.begin(), il.end(), comp);
+		T min = *(p.first);
+		T max = *(p.second);
+		return kkli::make_pair<T, T>(std::move(min), std::move(max));
+	}
+
+	//======== [lexicographical_compare], O(n) ========
+	template<typename InputIt1, typename InputIt2>
+	bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
+		InputIt1 first2, InputIt2 last2) {
+		for (; (first1 != last1) && (first2 != last2); ++first1, ++first2) {
+			if (*first1 < *first2) return true;
+			if (*first2 < *first1) return false;
+		}
+		return (first1 == last1) && (first2 != last2);
+	}
+
+	template<typename InputIt1, typename InputIt2, typename Compare>
+	bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
+		InputIt1 first2, InputIt2 last2, Compare comp) {
+		for (; (first1 != last1) && (first2 != last2); ++first1, ++first2) {
+			if (comp(*first1, *first2)) return true;
+			if (comp(*first2, *first1)) return false;
+		}
+		return (first1 == last1) && (first2 != last2);
+	}
+
+	//======== [is_permutation], O(n^2) ======== 尚未实现
+	//======== [next_permutation], O(N) ======== 尚未实现
+	//======== [prev_permutation], O(n) ======== 尚未实现
+}
+
+//================================================================================
+//part9: numeric operations
+//================================================================================
+
+namespace kkli {
+	
+	//======== [iota], O(n) ========
+	template<typename ForwardIt, typename T>
+	void iota(ForwardIt first, ForwardIt last, T value) {
+		for (; first != last; ++first, ++value) *first = value;
+	}
+
+	//======== [accumulate], O(n) ========
+	template<typename InputIt, typename T>
+	T accumulate(InputIt first, InputIt last, T init) {
+		for (; first != last; ++first) init = init + *first;
+		return init;
+	}
+
+	template<typename InputIt, typename T, typename BinaryOp>
+	T accumulate(InputIt first, InputIt last, T init, BinaryOp op) {
+		for (; first != last; ++first) init = op(init, *first);
+		return init;
+	}
+
+	//======== [inner_product], O(n) ========
+	template<typename InputIt1, typename InputIt2, typename T>
+	T inner_product(InputIt1 first1, InputIt1 last1,
+		InputIt2 first2, InputIt2 last2, T value) {
+		for (; first1 != last1; ++first1, ++first2) value = value + (*first1)*(*first2);
+		return value;
+	}
+
+	template<typename InputIt1, typename InputIt2, typename T,
+		typename BinaryOp1, typename BinaryOp2>
+		T inner_product(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2,
+			T value, BinaryOp1 op1, BinaryOp2 op2) {
+		for (; first1 != last1; ++first1, ++first2)
+			value = op1(value, op2((*first1), (*first2)));
+		return value;
+	}
+
+	//======== [adjacent_difference], O(n) ========
+	template<typename InputIt, typename OutputIt>
+	OutputIt adjacent_difference(InputIt first, InputIt last, OutputIt dest) {
+		if (first == last) return dest;
+		typedef typename kkli::iterator_traits<InputIt>::value_type value_type;
+		value_type acc = *first;
+		*dest = acc;
+		while (++first != last) {
+			value_type value = *first;
+			*++dest = value - acc;
+			acc = std::move(value);
+		}
+		return ++dest;
+	}
+
+	template<typename InputIt, typename OutputIt, typename BinaryOp>
+	OutputIt adjacent_difference(InputIt first, InputIt last,
+		OutputIt dest, BinaryOp op) {
+		if (first == last) return dest;
+		typedef typename kkli::iterator_traits<InputIt>::value_type value_type;
+		value_type acc = *first;
+		*dest = acc;
+		while (++first != last) {
+			value_type value = *first;
+			*++dest = op(value, acc);
+			acc = std::move(value);
+		}
+		return ++dest;
+	}
+
+	//======== [partial_sum], O(n) ========
+	template<typename InputIt, typename OutputIt>
+	OutputIt partial_sum(InputIt first, InputIt last, OutputIt dest) {
+		if (first == last) return dest;
+		typename kkli::iterator_traits<InputIt>::value_type sum = *first;
+		*dest = sum;
+		while (++first != last) {
+			sum = sum + *first;
+			*++dest = sum;
+		}
+		return ++dest;
+	}
+
+	template<typename InputIt, typename OutputIt, typename BinaryOp>
+	OutputIt partial_sum(InputIt first, InputIt last, OutputIt dest, BinaryOp op) {
+		if (first == last) return dest;
+		typename kkli::iterator_traits<InputIt>::value_type sum = *first;
+		*dest = sum;
+		while (++first != last) {
+			sum = op(sum, *first);
+			*++dest = sum;
+		}
+		return ++dest;
+	}
+
+	//======== [reduce], O(n) ======== 尚未实现
+	//======== [exclusive_scan], O(n) ========尚未实现
+	//======== [inclusive_scan], O(n) ========尚未实现
+	//======== [transform_reduce], O(n) ========尚未实现
+	//======== [transform_exclusive_scan], O(n) ========尚未实现
+	//======== [transform_inclusive_scan], O(n) ========尚未实现
+}

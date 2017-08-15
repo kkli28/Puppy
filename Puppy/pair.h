@@ -19,7 +19,7 @@ namespace kkli {
 		// pair
 		pair() :first(first_type()), second(second_type()) {}
 		pair(const T1& f, const T2& s) : first(f), second(s) {}
-		pair(T1&& f, T2&& s) :first(std::move(f)), second(std::move(s)) {}
+		//pair(T1&& f, T2&& s) :first(std::move(f)), second(std::move(s)) {}
 		pair(const pair& rhs) :first(rhs.first), second(rhs.second) {}
 		pair(pair&& rhs) :first(std::move(rhs.first)), second(std::move(rhs.second)) {}
 
