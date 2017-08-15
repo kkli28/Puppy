@@ -19,11 +19,11 @@ namespace test {
 
 		//≤ø∑÷≤‚ ‘ part9
 		void test_part9() {
-			//test_iota();
-			//test_accumulate();
-			//test_inner_product();
+			test_iota();
+			test_accumulate();
+			test_inner_product();
 			test_adjacent_difference();
-			//test_partial_sum();
+			test_partial_sum();
 		}
 
 		//≤‚ ‘ iota
@@ -92,6 +92,23 @@ namespace test {
 			EXPECT_EQ_ARRLIST(dest1, 4, { 1,4,8,12 });
 		}
 
-		//
+		//≤‚ ‘ partial_sum
+		void test_partial_sum() {
+			cout << "test: partial_sum()" << endl;
+
+			int arr1[4] = { 1,2,3,4 };
+			int dest1[4] = { 0,0,0,0 };
+
+			auto iter1 = kkli::partial_sum(arr1, arr1, dest1);
+			EXPECT_EQ_ARRLIST(dest1, 4, { 0,0,0,0 });
+			EXPECT_EQ_VAL(iter1, dest1);
+
+			iter1 = kkli::partial_sum(arr1, arr1 + 4, dest1);
+			EXPECT_EQ_ARRLIST(dest1, 4, { 1, 3, 6, 10 });
+
+			auto lmd1 = [](int i, int j)->int {return i*j; };
+			iter1 = kkli::partial_sum(arr1, arr1 + 4, dest1, lmd1);
+			EXPECT_EQ_ARRLIST(dest1, 4, { 1,2,6,24 });
+		}
 	}
 }

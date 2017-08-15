@@ -18,8 +18,8 @@ namespace test {
 		void test_is_partitioned();
 		void test_partition();
 		void test_partition_copy();
-		void test_statle_partition();		//未实现
 		void test_partition_point();
+		void test_statle_partition();		//未实现
 
 		//部分测试
 		void test_part3() {
