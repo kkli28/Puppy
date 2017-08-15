@@ -16,13 +16,12 @@ namespace test {
 		void test_front_and_back();
 		void test_data();
 		void test_begin_and_end();
+		void test_rbegin_and_rend();
 		void test_fill();
 		void test_swap();
 		void test_assign();					//operator =
 		void test_op_square_bracket();		//operator []
-		void test_op_equal();				//operator == / !=
-		void test_op_less();				//operator <  / >=
-		void test_op_greater();				//operator >  / <=
+		void test_operators();				//operator == != < <= > >=
 		void test_get();					//get
 		void test_tuple_size();				//tuple_size
 		void test_tuple_element();			//tuple_element
@@ -38,237 +37,239 @@ namespace test {
 			test_front_and_back();
 			test_data();
 			test_begin_and_end();
+			test_rbegin_and_rend();
 			test_fill();
 			test_swap();
 			test_assign();
 			test_op_square_bracket();
-			test_op_equal();
-			test_op_less();
-			test_op_greater();
+			test_operators();
 			test_get();
 			test_tuple_size();
 			test_tuple_element();
 		}
 
-		//≤‚ ‘ ππ‘Ï∫Ø ˝
+		//≤‚ ‘ constructor
 		void test_constructor() {
-			cout << "\ntest_constructor()" << endl;
+			cout << "test: constructor()" << endl;
 
 			array<int, 4> arr1;
 			array<int, 4> arr2{ 1,2,3,4 };
 			array<int, 0> arr3;
-			array<int, 4> arr4{ 1,2 };
-			arr1.print();
-			arr2.print();
-			arr3.print();
-			arr4.print();
+
+			EXPECT_EQ_VAL(arr1, array<int, 4>{ 0, 0, 0, 0 });
+			EXPECT_EQ_VAL(arr2, array<int, 4>{1, 2, 3, 4});
+			EXPECT_EQ_VAL(arr2[1], 2);
+			EXPECT_EQ_VAL(arr3, array<int, 0>());
 		}
 
-		//≤‚ ‘ at()∫Ø ˝
+		//≤‚ ‘ at
 		void test_at() {
-			cout << "\ntest_at()" << endl;
+			cout << "test: at()" << endl;
 
 			array<int, 4> arr1{ 1,2,3,4 };
-			cout << arr1.at(0) << endl;
-			cout << arr1.at(1) << endl;
-			cout << arr1.at(2) << endl;
-			cout << arr1.at(3) << endl;
-			try {
-				cout << arr1.at(4) << endl;
-			}
-			catch (const std::runtime_error& e) {
-				e.what();
-			}
+			EXPECT_EQ_VAL(arr1.at(0), 1);
+			EXPECT_EQ_VAL(arr1.at(1), 2);
+			EXPECT_EQ_VAL(arr1.at(2), 3);
+			EXPECT_EQ_VAL(arr1.at(3), 4);
 		}
 
-		//≤‚ ‘ front∫Õback
+		//≤‚ ‘ front
 		void test_front_and_back() {
-			cout << "\ntest_front_and_back()" << endl;
+			cout << "test: front()" << endl;
+			cout << "test: back()" << endl;
 
 			array<int, 4> arr1{ 1,2,3,4 };
-			cout << "front: " << arr1.front() << endl;
-			cout << "back: " << arr1.back() << endl;
-
-			array<int, 0> arr2;
-			try {
-				cout << "front: " << arr2.front() << endl;
-				cout << "back: " << arr2.back() << endl;
-			}
-			catch (const std::runtime_error& e) {
-				cout << e.what() << endl;
-			}
+			EXPECT_EQ_VAL(arr1.front(), 1);
+			EXPECT_EQ_VAL(arr1.back(), 4);
 		}
 
 		//≤‚ ‘ data
 		void test_data() {
-			cout << "\ntest_data()" << endl;
+			cout << "test: data()" << endl;
 
-			array<int, 4> arr{ 1,2,3,4 };
-			auto data = arr.data();
-			for (int i = 0; i < 4; ++i)
-				cout << data[i] << " ";
-			cout << endl;
+			array<int, 4> arr1{ 1,2,3,4 };
+			int* data1 = arr1.data();
+			EXPECT_EQ_VAL(data1[0], 1);
+			EXPECT_EQ_VAL(data1[2], 3);
 		}
 
 		//≤‚ ‘ begin∫Õend
 		void test_begin_and_end() {
-			cout << "\ntest_begin_and_end()" << endl;
+			cout << "test: begin()" << endl;
+			cout << "test: end()" << endl;
+			cout << "test: cbegin()" << endl;
+			cout << "test: cend()" << endl;
 
 			array<int, 4> arr1{ 1,2,3,4 };
-			cout << "begin: " << *(arr1.begin()) << endl;
+			EXPECT_EQ_VAL(arr1.begin(), arr1.data());
+			EXPECT_EQ_VAL(*(arr1.begin()), 1);
+			EXPECT_EQ_VAL(*(arr1.end()-1), 4);
 
-			cout << "arr1 [foreach]: ";
-			for (auto a : arr1) cout << a << " ";
-			cout << endl;
+			const array<int, 4> arr2{ 1,2,3,4 };
+			EXPECT_EQ_VAL(arr2.cbegin(), arr2.data());
+			EXPECT_EQ_VAL(*(arr1.cbegin()), 1);
+			EXPECT_EQ_VAL(*(arr1.cend() - 1), 4);
+		}
 
-			cout << "arr1: ";
-			arr1.print();
+		//≤‚ ‘ rbegin∫Õrend
+		void test_rbegin_and_rend() {
+			cout << "test: rbegin()" << endl;
+			cout << "test: rend()" << endl;
+			cout << "test: crbegin()" << endl;
+			cout << "test: crend()" << endl;
 
-			cout << "arr2: ";
-			array<int, 0> arr2;
-			arr2.print();
+			array<int, 4> arr1{ 1,2,3,4 };
+			EXPECT_EQ_VAL(*(arr1.rbegin()), 4);
+			EXPECT_EQ_VAL(*(arr1.rend() - 1), 1);
+			
+			const array<int, 4> arr2{ 1,2,3,4 };
+			EXPECT_EQ_VAL(*(arr1.crbegin()), 4);
+			EXPECT_EQ_VAL(*(arr1.crend() - 1), 1);
 		}
 
 		//≤‚ ‘ fill
 		void test_fill() {
-			cout << "\ntest_fill()" << endl;
+			cout << "test: fill()" << endl;
 
-			array<int, 4> arr;
-			arr.fill(1);
-			arr.print();
+			array<int, 4> arr1;
+			EXPECT_EQ_VAL(arr1, array<int, 4>{0, 0, 0, 0});
+			arr1.fill(1);
+			EXPECT_EQ_VAL(arr1, array<int, 4>{1, 1, 1, 1});
 		}
 
 		//≤‚ ‘ swap
 		void test_swap() {
-			cout << "\ntest_swap()" << endl;
+			cout << "test: swap()" << endl;
 
 			array<int, 4> arr1{ 1,2,3,4 };
 			array<int, 4> arr2{ 5,6,7,8 };
 			arr1.swap(arr2);
-			arr1.print();
-			arr2.print();
-
-			kkli::swap(arr1, arr2);
-			arr1.print();
-			arr2.print();
+			EXPECT_EQ_VAL(arr1, array<int, 4>{5, 6, 7, 8});
+			EXPECT_EQ_VAL(arr2, array<int, 4>{1, 2, 3, 4});
 		}
 
 		//≤‚ ‘ operator =
 		void test_assign() {
-			cout << "\ntest_assign()" << endl;
+			cout << "test: operator=" << endl;
 
 			array<int, 4> arr1{ 1,2,3,4 };
 			arr1 = array<int, 4>{5, 6, 7, 8};
-			arr1.print();
+			EXPECT_EQ_VAL(arr1, array<int, 4>{5, 6, 7, 8});
 		}
 
 		//≤‚ ‘ operator []
 		void test_op_square_bracket() {
-			cout << "\ntest_op_square_bracket()" << endl;
+			cout << "test: operator[]" << endl;
 
-			array<int, 4> arr{ 1,2,3,4 };
-			for (int i = 0; i < 4; ++i)
-				cout << arr[i] << " ";
-			cout << endl;
+			array<int, 4> arr1{ 1,2,3,4 };
+			EXPECT_EQ_VAL(arr1[0], 1);
+			EXPECT_EQ_VAL(arr1[1], 2);
+			EXPECT_EQ_VAL(arr1[2], 3);
+			EXPECT_EQ_VAL(arr1[3], 4);
 		}
 
-		//≤‚ ‘ operator == / !=
-		void test_op_equal() {
-			cout << "\ntest_op_equal()" << endl;
+		//≤‚ ‘ operator == < >
+		void test_operators() {
+			cout << "test: operator==" << endl;
+			cout << "test: operator!=" << endl;
+			cout << "test: operator<" << endl;
+			cout << "test: operator>" << endl;
+			cout << "test: operator<=" << endl;
+			cout << "test: operator>=" << endl;
 
 			array<int, 4> arr1;
-			array<int, 4> arr2{};
+			array<int, 4> arr2{ 0,0,0,0 };
 			array<int, 4> arr3{ 1,2,3,4 };
-			array<int, 4> arr4{ 1,2,3,4 };
-			array<int, 5> arr5;
+			array<int, 4> arr4{ 1,2,3,5 };
 
-			if (arr1 == arr2)
-				cout << "arr1 == arr2" << endl;
-			else cout << "arr1 != arr2" << endl;
+			//==
+			EXPECT_EQ_VAL(arr1 == arr1, true);
+			EXPECT_EQ_VAL(arr1 == arr2, true);
+			EXPECT_EQ_VAL(arr1 == arr3, false);
+			EXPECT_EQ_VAL(arr1 == arr4, false);
 
-			if (arr3 == arr4)
-				cout << "arr3 == arr4" << endl;
-			else cout << "arr3 != arr4" << endl;
+			EXPECT_EQ_VAL(arr2 == arr1, true);
+			EXPECT_EQ_VAL(arr2 == arr2, true);
+			EXPECT_EQ_VAL(arr2 == arr3, false);
+			EXPECT_EQ_VAL(arr2 == arr4, false);
 
-			if (arr1 == arr3)
-				cout << "arr1 == arr3" << endl;
-			else cout << "arr1 != arr3" << endl;
-		}
+			EXPECT_EQ_VAL(arr3 == arr1, false);
+			EXPECT_EQ_VAL(arr3 == arr2, false);
+			EXPECT_EQ_VAL(arr3 == arr3, true);
+			EXPECT_EQ_VAL(arr3 == arr4, false);
 
-		//≤‚ ‘ operator < / >=
-		void test_op_less() {
-			cout << "\ntest_op_less()" << endl;
+			EXPECT_EQ_VAL(arr4 == arr1, false);
+			EXPECT_EQ_VAL(arr4 == arr2, false);
+			EXPECT_EQ_VAL(arr4 == arr3, false);
+			EXPECT_EQ_VAL(arr4 == arr4, true);
 
-			array<int, 4> arr1;
-			array<int, 4> arr2{};
-			array<int, 4> arr3{ 1,2,3,4 };
-			array<int, 4> arr4{ 1,3,4,5 };
-			if (arr1 < arr2)
-				cout << "arr1 <  arr2" << endl;
-			else cout << "arr1 >= arr2" << endl;
+			//<
+			EXPECT_EQ_VAL(arr1 < arr1, false);
+			EXPECT_EQ_VAL(arr1 < arr2, false);
+			EXPECT_EQ_VAL(arr1 < arr3, true);
+			EXPECT_EQ_VAL(arr1 < arr4, true);
 
-			if (arr3 < arr4)
-				cout << "arr3 <  arr4" << endl;
-			else cout << "arr3 >= arr4" << endl;
+			EXPECT_EQ_VAL(arr2 < arr1, false);
+			EXPECT_EQ_VAL(arr2 < arr2, false);
+			EXPECT_EQ_VAL(arr2 < arr3, true);
+			EXPECT_EQ_VAL(arr2 < arr4, true);
 
-			if (arr1 < arr3)
-				cout << "arr1 <  arr3" << endl;
-			else cout << "arr1 >= arr3" << endl;
-		}
+			EXPECT_EQ_VAL(arr3 < arr1, false);
+			EXPECT_EQ_VAL(arr3 < arr2, false);
+			EXPECT_EQ_VAL(arr3 < arr3, false);
+			EXPECT_EQ_VAL(arr3 < arr4, true);
 
-		//≤‚ ‘ operator > / <=
-		void test_op_greater() {
-			cout << "\ntest_op_greater()" << endl;
+			EXPECT_EQ_VAL(arr4 < arr1, false);
+			EXPECT_EQ_VAL(arr4 < arr2, false);
+			EXPECT_EQ_VAL(arr4 < arr3, false);
+			EXPECT_EQ_VAL(arr4 < arr4, false);
 
-			array<int, 4> arr1;
-			array<int, 4> arr2{};
-			array<int, 4> arr3{ 1,2,3,4 };
-			array<int, 4> arr4{ 1,3,4,5 };
-			if (arr1 > arr2)
-				cout << "arr1 >  arr2" << endl;
-			else cout << "arr1 <= arr2" << endl;
+			//>
+			EXPECT_EQ_VAL(arr1 > arr1, false);
+			EXPECT_EQ_VAL(arr1 > arr2, false);
+			EXPECT_EQ_VAL(arr1 > arr3, false);
+			EXPECT_EQ_VAL(arr1 > arr4, false);
 
-			if (arr4 > arr3)
-				cout << "arr4 >  arr3" << endl;
-			else cout << "arr4 <= arr3" << endl;
+			EXPECT_EQ_VAL(arr2 > arr1, false);
+			EXPECT_EQ_VAL(arr2 > arr2, false);
+			EXPECT_EQ_VAL(arr2 > arr3, false);
+			EXPECT_EQ_VAL(arr2 > arr4, false);
 
-			if (arr3 > arr1)
-				cout << "arr3 >  arr1" << endl;
-			else cout << "arr3 <= arr1" << endl;
+			EXPECT_EQ_VAL(arr3 > arr1, true);
+			EXPECT_EQ_VAL(arr3 > arr2, true);
+			EXPECT_EQ_VAL(arr3 > arr3, false);
+			EXPECT_EQ_VAL(arr3 > arr4, false);
+
+			EXPECT_EQ_VAL(arr4 > arr1, true);
+			EXPECT_EQ_VAL(arr4 > arr2, true);
+			EXPECT_EQ_VAL(arr4 > arr3, true);
+			EXPECT_EQ_VAL(arr4 > arr4, false);
 		}
 
 		//≤‚ ‘ get
 		void test_get() {
-			cout << "\ntest_get()" << endl;
+			cout << "test: get()" << endl;
 
-			using kkli::get;
-			array<int, 4> arr{ 1,2,3,4 };
-
-			cout << get<0>(arr) << endl;
-			cout << get<1>(arr) << endl;
-			cout << get<2>(arr) << endl;
-			cout << get<3>(arr) << endl;
-			try {
-				cout << get<4>(arr) << endl;
-			}
-			catch (const std::runtime_error& e) {
-				cout << e.what() << endl;
-			}
+			array<int, 4> arr1{ 1,2,3,4 };
+			EXPECT_EQ_VAL(kkli::get<0>(arr1), 1);
+			EXPECT_EQ_VAL(kkli::get<1>(arr1), 2);
+			EXPECT_EQ_VAL(kkli::get<2>(arr1), 3);
+			EXPECT_EQ_VAL(kkli::get<3>(arr1), 4);
 		}
 
 		//≤‚ ‘ tuple_size
 		void test_tuple_size() {
-			cout << "\ntest_tuple_size()" << endl;
+			cout << "test: tuple_size()" << endl;
 
-			cout << kkli::tuple_size<array<int, 4>>::value << endl;
+			EXPECT_EQ_VAL(kkli::tuple_size<array<int, 4>>::value, 4);
 		}
 
 		//≤‚ ‘ tuple_element
 		void test_tuple_element() {
-			cout << "\ntest_tuple_element()" << endl;
+			cout << "test: tuple_element()" << endl;
 
-			kkli::tuple_element<0, array<int, 4>>::type t1 = 1;
-			cout << t1 << endl;
+			kkli::tuple_element<1, array<int, 4>>::type i = 1;
+			EXPECT_EQ_VAL(i, 1);
 		}
 	}
 }
