@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "test.h"
 #include "string.h"
 
 namespace test {
@@ -28,6 +29,7 @@ namespace test {
 		void test_at();
 		void test_front_and_back();
 		void test_begin_and_end();
+		void test_rbegin_and_rend();
 		void test_data();
 		void test_empty();
 		void test_size();
@@ -44,10 +46,10 @@ namespace test {
 		//前置声明：非成员函数
 		void test_op_add();						//operator +
 		void test_op_compare();					//operator == != < <= > >=
-		void test_op_stream();					//operator << >>
 		void test_getline();
-		//void test_stox();						//函数暂未实现
+		void test_op_stream();					//operator << >>
 		void test_to_string();					//to_string(x)
+		//void test_stox();						//函数暂未实现
 
 		//整体测试
 		void test() {
@@ -55,91 +57,84 @@ namespace test {
 			cout << "          test: string " << endl;
 			cout << "========================================" << endl;
 
-			//测试：成员函数
+			//测试成员函数
 			test_constructor();
-			test_op_assign();			//operator =
-			test_op_square_bracket();	//operator []
-			test_op_add_equal();		//operator +=
-			test_assign();
-			test_insert();
-			test_erase();
-			test_append();
-			test_compare();
-			test_replace();
-			//test_find();				//该函数暂未实现
-			test_c_str();
-			test_at();
-			test_front_and_back();
-			test_begin_and_end();
-			test_data();
-			test_empty();
-			test_size();
-			test_reserve();
-			test_clear();
-			test_push_back();
-			test_pop_back();
-			test_resize();
-			test_substr();
-			test_copy();
-			test_swap();
-			test_reverse();
-			
-			//测试：非成员函数
-			test_op_add();				//operator +
-			test_op_compare();			//operator == != < <= > >=
+			//test_op_assign();
+			//test_op_square_bracket();
+			//test_op_add_equal();
+			//test_assign();
+			//test_insert();
+			//test_erase();
+			//test_append();
+			//test_compare();
+			//test_replace();
+			////test_find();	//尚未实现
+			//test_c_str();
+			//test_at();
+			//test_front_and_back();
+			//test_begin_and_end();
+			//test_rbegin_and_rend();
+			//test_data();
+			//test_empty();
+			//test_size();
+			//test_reserve();
+			//test_clear();
+			//test_push_back();
+			//test_pop_back();
+			//test_resize();
+			//test_substr();
+			//test_copy();
+			//test_swap();
+			//test_reverse();
+			//
+			////测试非成员函数
+			//test_op_add();
+			//test_op_compare();
 			//test_getline();
-			//test_op_stream();			//operator << >>
-			//test_stox();				//函数暂未实现
-			test_to_string();
+			//test_op_stream();
+			//test_to_string();
+			////void test_stox();	//尚未实现
 		}
 
 		//测试 constructor
 		void test_constructor() {
-			cout << "\ntest_constructor()" << endl;
+			cout << "test: constructor()" << endl;
 
-			//string()
-			string str1;
-			str1.print("str1");				//(空)
+			string str1; //string()
+			EXPECT_EQ_VAL(str1, string());
 
-			//string(count, value)
-			string str2(4, 'a');
-			str2.print("str2");				//aaaa
+			string str2(4, 'a'); //string(count, value)
+			EXPECT_EQ_VAL(str2, "aaaa");
 
-			//string(rhs, pos, count)
-			string str3(str2, 1, 2);
+			string str3(str2, 1, 2); //string(rhs, pos, count)
 			string str4(str2, 0, npos);
-			str3.print("str3");				//aa
-			str4.print("str4");				//aaaa
+			EXPECT_EQ_VAL(str3, "aa");
+			EXPECT_EQ_VAL(str4, "aaaa");
 
-			//string(data, count)
-			string str5("abcd", 3);
+			string str5("abcd", 3); //string(data, count)
 			string str6("abcd", 2);
 			string str7("abcd");
-			str5.print("str5");				//abc
-			str6.print("str6");				//ab
-			str7.print("str7");				//abcd
+			EXPECT_EQ_VAL(str5, "abc");
+			EXPECT_EQ_VAL(str6, "ab");
+			EXPECT_EQ_VAL(str7, "abcd");
+			
+			string str8(4); //string(count)
+			EXPECT_EQ_VAL(str8, "");
 
-			//string(count)
-			string str8(4);					//(空)
-			str8.print("str8");
+			string str9(str7.cbegin(), str7.cend()); //string(first, last)
+			EXPECT_EQ_VAL(str9, "abcd");
+			
+			string str10(str9); //string(rhs)
+			EXPECT_EQ_VAL(str10, "abcd");
 
-			//string(first, last)
-			string str9(str7.cbegin(), str7.cend());
-			str9.print("str9");				//abcd
+			string str11(std::move(str10)); //string(&&rhs)
+			EXPECT_EQ_VAL(str11, "abcd");
 
-			//string(rhs)
-			string str10(str9);
-			str10.print("str10");			//abcd
-
-			//string(&&rhs)
-			string str11(std::move(str10));
-			str11.print("str11");			//(空)
-
-			//string(init)
-			string str12({ 'a','b','c','d' });
-			str12.print("str12");			//abcd
+			string str12({ 'a','b','c','d' }); //string(init)
+			EXPECT_EQ_VAL(str12, "abcd");
 		}
 
+		/*
 		//测试 operator =
 		void test_op_assign() {
 			cout << "\ntest_op_assign()" << endl;
@@ -610,7 +605,7 @@ namespace test {
 
 			str1.resize(8, 'a');
 			str1.print("str1");				//aaaaaaaa
-			
+
 			str1.resize(4);
 			str1.print("str1");				//aaaaaaaa
 		}
@@ -709,7 +704,7 @@ namespace test {
 			cout << (str1 == str3 ? "true" : "false") << endl;				//false
 			cout << (str1 == str4 ? "true" : "false") << endl;				//false
 			cout << (str1 == str5 ? "true" : "false") << endl << endl;		//false
-			
+
 			cout << (str2 == str1 ? "true" : "false") << endl;				//false
 			cout << (str2 == str2 ? "true" : "false") << endl;				//true
 			cout << (str2 == str3 ? "true" : "false") << endl;				//false
@@ -850,7 +845,7 @@ namespace test {
 
 			str1 = kkli::to_string(std::numeric_limits<long long>::min());
 			str1.print("str1");					//-9223372036854775808
-			
+
 			//to_string(unsigned long long)
 			cout << "to_string(unsigned long long)" << endl;
 
@@ -1016,5 +1011,6 @@ namespace test {
 			str1 = kkli::to_string(std::numeric_limits<long>::min()+(double)(0.123));
 			str1.print("str1");					//
 		}
+		*/
 	}
 }
