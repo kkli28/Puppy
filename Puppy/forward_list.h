@@ -134,7 +134,7 @@ namespace kkli {
 			__construct(rhs.cbegin(), rhs.cend());
 		}
 		forward_list(forward_list&& rhs);
-		forward_list(std::initializer_list<T> init) :__head(new node_type()) {
+		forward_list(std::initializer_list<value_type> init) :__head(new node_type()) {
 			__construct(init.begin(), init.end());
 		}
 
@@ -149,7 +149,23 @@ namespace kkli {
 		//operator =
 		forward_list& operator=(const forward_list& rhs);
 		forward_list& operator=(forward_list&& rhs);
-		forward_list& operator=(std::initializer_list<T> init);
+		forward_list& operator=(std::initializer_list<value_type> init);
+
+		//assign
+		void assign(size_type count, const value_type& value);
+		template<typename InputIt>
+		void assign(InputIt first, InputIt last);
+		void assign(std::initializer_list<value_type> init) {
+			return assign(init.begin(), init.end());
+		}
+
+		//front
+		reference front() { return __head->next->value; }
+		const_reference front()const { return __head->next->value; }
+
+		//before_begin
+		iterator before_begin() { return __head; }
+		const_iterator before_begin()const { return __head; }
 
 		//begin / cbegin
 		iterator begin()const { return iterator(__head->next); }
@@ -159,48 +175,98 @@ namespace kkli {
 		iterator end() const { return iterator(); }
 		const_iterator cend()const { return const_iterator(); }
 
-		//push_front / pop_front
-		void push_front(const value_type& elem);
-		void pop_front();
+		//empty
+		bool empty()const { return __head->next == nullptr; }
 
-		//insert_after
-		iterator insert_after(int pos, int n, const T& elem);
-		iterator insert_after(int pos, const T& elem) { return insert_after(pos, 1, T()); }
-		iterator insert_after(int pos, const_iterator& beg, const_iterator& end);
-		iterator insert_after(int pos, std::initializer_list<T> elems);
+		//max_size
+		constexpr size_type max_size()const { return std::numeric_limits<size_type>::max(); }
 
 		//clear
 		void clear();
-		/*
+
+		//insert_after
+		iterator insert_after(const_iterator pos, size_type count, const value_type& value);
+		iterator insert_after(const_iterator pos, const value_type& value) {
+			return insert_after(pos, 1, value);
+		}
+		iterator insert_after(const_iterator pos, value_type&& value);
+		template<typename InputIt>
+		iterator insert_after(const_iterator pos, InputIt first, InputIt last);
+		iterator insert_after(const_iterator pos, std::initializer_list<value_type> init) {
+			return insert_after(pos, init.begin(), init.end());
+		}
+
 		//erase_after
-		void erase_after(int pos);
-		void erase_after(const_iterator& beg, const_iterator& end);
+		iterator erase_after(const_iterator first, const_iterator last);
+		iterator erase_after(const_iterator pos) {
+			return erase_after(pos, kkli::next(pos));
+		}
 
-		//remove
-		void remove(const T& elem);
-
-		//remove_if
-		template<typename E = kkli::equal_to<T>>
-		void remove_if(const E& e);
+		//push_front / pop_front
+		void push_front(const value_type& value);
+		void push_front(value_type&& value);
+		void pop_front();
 
 		//resize
-		void resize(int n);
-		void resize(int n, const T& elem);
-
-
-		//empty
-		bool empty()const { return __head.get() == nullptr; }
-
-		//assign
-		void assign(int n, const T& elem);
-		void assign(const_iterator& beg, const_iterator& end);
+		void resize(size_type count, const value_type& value);
+		void resize(size_type count) {
+			return resize(count, value_type());
+		}
 
 		//swap
-		void swap(forward_list& fl);
+		void swap(forward_list& rhs) { kkli::swap(__head, rhs.__head); }
 
-		*/
+		//merge
+		void merge(forward_list& rhs);
+		void merge(forward_list&& rhs);
+		template<typename Compare>
+		void merge(forward_list& rhs, Compare comp);
+		template<typename Compare>
+		void merge(forward_list&& rhs, Compare comp);
+
+		//splice_after
+		void splice_after(const_iterator pos, forward_list& rhs,
+			const_iterator first, const_iterator last);
+		void splice_after(const_iterator pos, forward_list&& rhs,
+			const_iterator first, const_iterator last);
+		void splice_after(const_iterator pos, forward_list& rhs) {
+			return splice_after(pos, rhs, rhs.begin(), rhs.end());
+		}
+		void splice_after(const_iterator pos, forward_list&& rhs) {
+			return splice_after(pos, std::move(rhs), rhs.begin(), rhs.end());
+		}
+		void splice_after(const_iterator pos, forward_list& rhs, const_iterator it) {
+			return splice_after(pos, rhs, it, rhs.end());
+		}
+
+		//remove
+		template<typename UnaryPredicate>
+		void remove_if(UnaryPredicate pred);
+		void remove(const value_type& value) {
+			remove_if([=](const value_type& val)->bool {return val == value; });
+		}
+
+		//reverse
+		void reverse();
+
+		//unique
+		template<typename BinaryPredicate>
+		void unique(BinaryPredicate pred);
+		void unique() {
+			unique(kkli::equal_to<value_type>());
+		}
+
+		//sort
+		template<typename Compare>
+		void sort(Compare comp); //先将iterator放入vector，然后排序，最后再重新设置next即可
+		void sort() {
+			sort(kkli::less<value_type>());
+		}
+		
 		void print(const kkli::string& prefix)const;
 	};
+
+	//non-member functions
 }
 
 //================================================================================
@@ -235,7 +301,7 @@ namespace kkli {
 	template<typename T>
 	void forward_list<T>::__destroy() {
 		auto iter = __head;
-		while (__head != iterator()) {
+		while (__head != this->end()) {
 			iter = __head;
 			++__head;
 			delete iter.get();
@@ -283,7 +349,7 @@ namespace kkli {
 
 	//operator =(init)
 	template<typename T>
-	forward_list<T>& forward_list<T>::operator=(std::initializer_list<T> init) {
+	forward_list<T>& forward_list<T>::operator=(std::initializer_list<value_type> init) {
 		__destroy();
 		auto end = init.end();
 		auto iter = __head;
@@ -291,10 +357,119 @@ namespace kkli {
 			iter->next = new node_type(*i);
 	}
 
-	//push_front
+	//assign(count, value)
+	template<typename T>
+	void forward_list<T>::assign(size_type count, const value_type& value) {
+		this->clear();
+		auto iter = __head;
+		for (; count > 0; --count, ++iter)
+			iter->next = new node_type(value);
+	}
+
+	//assign(first, last)
+	template<typename T>
+	template<typename InputIt>
+	void forward_list<T>::assign(InputIt first, InputIt last) {
+		this->clear();
+		auto iter = __head;
+		for (auto i = first; i != last; ++i, ++iter) 
+			iter->next = new node_type(*i);
+	}
+
+	//clear
+	template<typename T>
+	void forward_list<T>::clear() {
+		auto iter = kkli::next(__head);
+		auto end = this->end();
+		while (iter != end) {
+			auto del_iter = iter;
+			++iter;
+			delete del_iter.get();
+		}
+	}
+
+	//insert_after
+	template<typename T>
+	typename forward_list<T>::iterator forward_list<T>::insert_after(
+		const_iterator pos,	size_type count, const value_type& value) {
+		//构建由count个value组合成的链
+		auto first = new node_type(value);
+		auto iter = first;
+		while (--count > 0) {
+			iter->next = new node_type(value);
+			++iter;
+		}
+
+		//拼接
+		iter->next = pos->next;
+		pos->next = first.get();
+	}
+
+	//inser_after
+	template<typename T>
+	typename forward_list<T>::iterator forward_list<T>::insert_after(
+		const_iterator pos, value_type&& value) {
+		auto iter = new node_type(std::move(value));
+		iter->next = pos->next;
+		pos->next = iter.get();
+	}
+
+	//insert_after
+	template<typename T>
+	template<typename InputIt>
+	typename forward_list<T>::iterator forward_list<T>::insert_after(
+		const_iterator pos, InputIt first, InputIt last) {
+		if (first == last) return iterator(pos);
+		
+		//构建由[first, last)元素组成的链
+		auto beg = new node_type(*first);
+		auto end = beg;
+		++first;
+		while (first != last) {
+			end->next = new node_type(*first);
+			++first;
+			++end;
+		}
+		end->next = pos->next; //拼接
+		pos->next = beg.get();
+	}
+
+	//erase_after
+	template<typename T>
+	typename forward_list<T>::iterator forward_list<T>::erase_after(
+		const_iterator first, const_iterator last) {
+		if (first == last) return last;
+
+		//找到first前一个元素，将其next域指向last所指
+		auto beg = first;
+		auto end = last;
+		auto before_first = __head;
+		auto iter = __head;
+		while (++iter != first) ++before_first;
+		before_first->next = last.get();
+
+		//删除[first, last)
+		iter = beg;
+		while (beg != end) {
+			iter = beg;
+			++beg;
+			delete iter.get();
+		}
+		return last;
+	}
+
+	//push_front(rhs)
 	template<typename T>
 	void forward_list<T>::push_front(const value_type& value) {
 		auto iter = new node_type(value);
+		iter->next = __head->next;
+		__head->next = iter.get();
+	}
+
+	//push_front(&&rhs)
+	template<typename T>
+	void forward_list<T>::push_front(value_type&& value) {
+		auto iter = new node_type(std::move(value));
 		iter->next = __head->next;
 		__head->next = iter.get();
 	}
@@ -305,6 +480,21 @@ namespace kkli {
 		auto iter = __head->next;
 		__head->next = iter->next;
 		delete iter.get();
+	}
+
+	//resize
+	template<typename T>
+	void forward_list<T>::resize(size_type count, const value_type& value){
+		size_type size = this->size();
+		if (!(size < count)) return;
+		count = count - size;
+		auto end = __head;
+		while (end->next != nullptr) ++end;
+		while (count > 0) {
+			end->next = new node_type(value);
+			++end;
+			--count;
+		}
 	}
 
 	//print
