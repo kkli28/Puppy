@@ -1,11 +1,15 @@
 #pragma once
 
 #include "stdafx.h"
-
+#include "memory.h"
+#include "functional.h"
+#include "iterator.h"
+#include "string.h"
 
 //================================================================================
 // forward_list_node<T> 类定义
 //================================================================================
+
 namespace kkli {
 
 	template<typename T>
@@ -16,8 +20,8 @@ namespace kkli {
 
 		//constructor
 		forward_list_node() = default;
-		forward_list_node(const T& val) : value(val), next(nullptr) {}
-		forward_list_node(T&& val) :value(val), next(nullptr) {}
+		forward_list_node(const T& val) :value(val), next(nullptr) {}
+		forward_list_node(T&& val) :value(std::move(val)), next(nullptr) {}
 		forward_list_node(const forward_list_node& rhs) = default;
 		forward_list_node(forward_list_node&& rhs) : value(std::move(rhs.value)), next(rhs.next) {}
 
@@ -29,137 +33,134 @@ namespace kkli {
 			return *this;
 		}
 
-		//operator==
-		bool operator==(const forward_list_node& rhs) {
-			return (value == rhs.value && next == rhs.next);
-		}
+		//operator < / ==
+		bool operator<(const forward_list_node<T>& rhs) { return value < rhs.value; }
+		bool operator==(const forward_list_node& rhs) { return (value == rhs.value && next == rhs.next); }
 	};
+
+	//operator <
+	template<typename T>
+	bool operator<(const forward_list_node<T>& lhs, const forward_list_node<T>& rhs) {
+		return value < rhs.value;
+	}
+
+	//operator ==
+	template<typename T>
+	bool operator==(const forward_list_node<T>& lhs, const forward_list_node<T>& rhs) { return (value == rhs.value && next == rhs.next); }
 }
 
 //================================================================================
 // forward_list<T> 类定义
 //================================================================================
+
 namespace kkli {
 
-	//forward_list<T>
 	template<typename T>
 	class forward_list {
-	private:
-
-		//iterator: __iterator
+	public:
 		class __iterator {
 		public:
 			//typedef
 			typedef T				value_type;
 			typedef T&				reference;
+			typedef const T&		const_reference;
 			typedef T*				pointer;
+			typedef const T*		const_pointer;
 			typedef std::ptrdiff_t	difference_type;
+			typedef std::size_t		size_type;
 			typedef kkli::forward_iterator_tag iterator_category;
 
 		private:
 			forward_list_node<T>* iter;
 
-			//不允许外部使用
-			__iterator(forward_list_node<T>* ptr) : iter(ptr) {}
-
 		public:
-
-			//constructor
 			__iterator() : iter(nullptr) {}
-			__iterator(const T& t) : iter(new forward_list_node<T>(t)) {}
+			__iterator(forward_list_node<T>* ptr) : iter(ptr) {}
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
-			//operator=
-			__iterator& operator=(const __iterator& it) {
-				iter = it.iter;
-				return *this;
-			}
-
-			//get
+			__iterator& operator=(const __iterator& it) { iter = it.iter; return *this; }
 			forward_list_node<T>* get()const { return iter; }
 
-			//operator++
-			__iterator& operator++() {
-				iter = iter->next;
-				return *this;
-			}
-
-			//operator++(int)
+			__iterator& operator++() { iter = iter->next; return *this; }
 			__iterator operator++(int) {
 				__iterator it = iter;
 				iter = iter->next;
 				return it;
 			}
 
-			//operator==
-			bool operator==(const __iterator& it)const {
-				return iter == it.iter;
-			}
+			bool operator==(const __iterator& it)const { return iter == it.iter; }
+			bool operator!=(const __iterator& it)const { return !(*this == it); }
 
-			//operator!=
-			bool operator!=(const __iterator& it)const {
-				return !(*this == it);
-			}
-
-			//operator*
-			T& operator*() { return iter->value; }
-			T operator*()const { return iter->value; }
-
-			//operator->
+			reference operator*() { return iter->value; }
+			const_reference operator*()const { return iter->value; }
 			forward_list_node<T>* operator->() { return iter; }
 			const forward_list_node<T>* operator->()const { return iter; }
 		};
 
 	public:
-
 		//typedefs
+		typedef forward_list_node<T>			node_type;
 		typedef T								value_type;
+		typedef kkli::allocator<T>				allocator_type;
 		typedef value_type&						reference;
 		typedef const value_type&				const_reference;
-		typedef forward_list_node<T>*			pointer;
-		typedef const forward_list_node<T>*		const_pointer;
+		typedef node_type*						pointer;
+		typedef const node_type*				const_pointer;
 		typedef __iterator						iterator;
+		typedef iterator						const_iterator; //即iterator
 		typedef std::size_t						size_type;
 		typedef std::ptrdiff_t					difference_type;
-		typedef std::forward_iterator_tag		iterator_category;
-
-		//************************************************************
-		// WRONG! const_iterator应该实现为指向常量的指针，而不是常量指针
-		//************************************************************
-		//typedef const iterator				const_iterator;
-		typedef __iterator						const_iterator;
+		typedef kkli::forward_iterator_tag		iterator_category;
 
 	private:
-		//forward_list's __head
 		iterator __head;
 
-		//将beg为首节点，end为尾节点的链表插入到pos后
-		void __insert(int pos, const_iterator& beg, const_iterator& end);
+		//将[beg, end)范围的节点插入到pos后
+		void __insert(size_type pos, const_iterator first, const_iterator last);
+		
+		//用[first, last)建立forward_list
+		template<typename InputIt>
+		void __construct(InputIt first, InputIt last);
+
+		//销毁链表
+		void __destroy();
 
 	public:
-
 		//constructors
-		forward_list() :__head() {}									//空
-		forward_list(const forward_list& fl);						//复制构造
-		forward_list(forward_list&& fl);							//移动构造
-		forward_list(int n, const T& elem);							//n个用t初始化的元素
-		forward_list(int n) :forward_list(n, T()) {}				//n个默认初始化的元素
-		forward_list(const_iterator& beg, const_iterator& end);		//通过迭代器范围构造
-		forward_list(std::initializer_list<T> il);  				//初始列构造
+		forward_list() : __head(new node_type()) {}
+		forward_list(size_type count, const value_type& value = value_type());
+
+		forward_list(const forward_list& rhs) :__head(new node_type()) {
+			__construct(rhs.cbegin(), rhs.cend());
+		}
+		forward_list(forward_list&& rhs);
+		forward_list(std::initializer_list<T> init) :__head(new node_type()) {
+			__construct(init.begin(), init.end());
+		}
+
+		/* 需要SFINAE
+		template<typename InputIt>
+		forward_list(InputIt first, InputIt last);
+		*/
 
 		//destructor
 		~forward_list();
 
+		//operator =
+		forward_list& operator=(const forward_list& rhs);
+		forward_list& operator=(forward_list&& rhs);
+		forward_list& operator=(std::initializer_list<T> init);
+
 		//begin / cbegin
-		iterator begin()const { return __head; }
-		const_iterator cbegin()const { return __head; }
+		iterator begin()const { return iterator(__head->next); }
+		const_iterator cbegin()const { return const_iterator(__head->next); }
 
 		//end / cend
 		iterator end() const { return iterator(); }
-		const_iterator cend()const { return iterator(); }
+		const_iterator cend()const { return const_iterator(); }
 
 		//push_front / pop_front
-		void push_front(const T& elem);
+		void push_front(const value_type& elem);
 		void pop_front();
 
 		//insert_after
@@ -168,6 +169,9 @@ namespace kkli {
 		iterator insert_after(int pos, const_iterator& beg, const_iterator& end);
 		iterator insert_after(int pos, std::initializer_list<T> elems);
 
+		//clear
+		void clear();
+		/*
 		//erase_after
 		void erase_after(int pos);
 		void erase_after(const_iterator& beg, const_iterator& end);
@@ -176,65 +180,144 @@ namespace kkli {
 		void remove(const T& elem);
 
 		//remove_if
-		template<typename E=std::equal<T>>
+		template<typename E = kkli::equal_to<T>>
 		void remove_if(const E& e);
 
 		//resize
 		void resize(int n);
 		void resize(int n, const T& elem);
 
-		//clear
-		void clear();
 
 		//empty
 		bool empty()const { return __head.get() == nullptr; }
-
-		//operators
-		bool operator==	(const forward_list<T>& fl)const;
-		bool operator!=	(const forward_list<T>& fl)const;
-		bool operator<	(const forward_list<T>& fl)const;
-		bool operator>	(const forward_list<T>& fl)const;
-		bool operator<=	(const forward_list<T>& fl)const;
-		bool operator>=	(const forward_list<T>& fl)const;
 
 		//assign
 		void assign(int n, const T& elem);
 		void assign(const_iterator& beg, const_iterator& end);
 
 		//swap
-		void swap(forward_list<T>& fl);
+		void swap(forward_list& fl);
 
-		//TEST: print all elements
-		void print()const;
+		*/
+		void print(const kkli::string& prefix)const;
 	};
-
-	//swap，非成员函数
-	template<typename T>
-	void swap(forward_list<T>& lhs, forward_list<T>& rhs) {
-		lhs.swap(rhs);
-	}
 }
 
 //================================================================================
 // forward_list<T> 成员函数定义
 //================================================================================
-namespace kkli{
 
-	//复制构造函数
+namespace kkli {
+
+	//__insert
 	template<typename T>
-	forward_list<T>::forward_list(const forward_list& fl) {
-		if (fl.begin() == fl.end()) return;
+	void forward_list<T>::__insert(size_type pos, const_iterator first, const_iterator last) {
+		//找到插入点
+		auto iter = __head;
+		size_type count = 0;
+		for (; count != pos; ++count, ++iter);
 
-		//设置__head，因为不带头节点
-		__iterator it = *(fl.begin());
-		__head = it;
+		//将临时链表插入pos位置
+		last->next = iter->next;
+		iter->next = first.get();
+	}
 
-		//添加后续元素
-		for (auto iter = ++fl.begin(); iter != fl.end(); ++iter) {
-			it->next = new forward_list_node<T>(*iter);
-			++it;
+	//__construct
+	template<typename T>
+	template<typename InputIt>
+	void forward_list<T>::__construct(InputIt first, InputIt last) {
+		auto iter = __head;
+		for (auto i = first; i != last; ++i, ++iter)
+			iter->next = new node_type(*i);
+	}
+
+	//__destroy
+	template<typename T>
+	void forward_list<T>::__destroy() {
+		auto iter = __head;
+		while (__head != iterator()) {
+			iter = __head;
+			++__head;
+			delete iter.get();
 		}
 	}
+
+	//forward_list(count, value)
+	template<typename T>
+	forward_list<T>::forward_list(size_type count, const value_type& value) :__head(new node_type()) {
+		auto iter = __head;
+		for (size_type i = 0; i < count; ++i, ++iter)
+			iter->next = new node_type(value);
+	}
+
+	//forward_list(&&rhs)
+	template<typename T>
+	forward_list<T>::forward_list(forward_list&& rhs) {
+		__head = rhs.__head;
+		rhs.__head = iterator();
+	}
+
+	//destructor
+	template<typename T>
+	forward_list<T>::~forward_list() {
+		__destroy();
+	}
+
+	//operator =(rhs)
+	template<typename T>
+	forward_list<T>& forward_list<T>::operator=(const forward_list& rhs) {
+		this->clear();
+		auto end = rhs.cend();
+		auto iter = __head;
+		for (auto i = rhs.cbegin(); i != end; ++i,++iter)
+			iter->next = new node_type(*i);
+	}
+
+	//operator =(&&rhs)
+	template<typename T>
+	forward_list<T>& forward_list<T>::operator=(forward_list&& rhs) {
+		__destroy();
+		__head = rhs.__head;
+		(rhs.__head).get() = nullptr;
+	}
+
+	//operator =(init)
+	template<typename T>
+	forward_list<T>& forward_list<T>::operator=(std::initializer_list<T> init) {
+		__destroy();
+		auto end = init.end();
+		auto iter = __head;
+		for (auto i = init.begin(); i != end; ++i, ++iter)
+			iter->next = new node_type(*i);
+	}
+
+	//push_front
+	template<typename T>
+	void forward_list<T>::push_front(const value_type& value) {
+		auto iter = new node_type(value);
+		iter->next = __head->next;
+		__head->next = iter.get();
+	}
+
+	//pop_front
+	template<typename T>
+	void forward_list<T>::pop_front() {
+		auto iter = __head->next;
+		__head->next = iter->next;
+		delete iter.get();
+	}
+
+	//print
+	template<typename T>
+	void forward_list<T>::print(const kkli::string& prefix)const {
+		std::cout << prefix << ": ";
+		auto end = iterator();
+		for (auto iter = __head; ++iter != end;) std::cout << iter->value << " ";
+		std::cout << std::endl;
+	}
+}
+/*
+namespace kkli{
 
 	//移动构造函数
 	template<typename T>
@@ -247,16 +330,10 @@ namespace kkli{
 	template<typename T>
 	forward_list<T>::forward_list(int n, const T& elem) {
 		if (n <= 0) return;
-
-		//构造__head
-		iterator it = elem;
-		__head = it;
-
-		//构造后续节点
-		for (int i = 1; i < n; ++i) {
-			it->next = new forward_list_node<T>(elem);
-			++it;
-		}
+		__head = new node_type();
+		auto iter = __head;
+		for (int i = 1; i < n; ++i, ++iter)
+			iter->next = new node_type(elem);
 	}
 
 	//通过迭代器范围构造
@@ -318,22 +395,7 @@ namespace kkli{
 		delete iter.get();
 	}
 
-	//将beg为首节点，end为尾节点的链表插入到pos后
-	template<typename T>
-	void forward_list<T>::__insert(
-		int pos, const_iterator& beg, const_iterator& end) {
-		//找到插入点
-		int count = 0;
-		auto iter = __head;
-		while (count != pos) {
-			++iter;
-			++count;
-		}
-
-		//将临时链表插入pos位置
-		end->next = iter->next;
-		iter->next = beg.get();
-	}
+	
 
 	//插入n个elem到第pos位置后
 	template<typename T>
@@ -714,3 +776,16 @@ namespace kkli{
 		cout << endl;
 	}
 }
+
+//================================================================================
+// forward_list<T> 非成员函数定义
+//================================================================================
+
+namespace kkli {
+	//swap，非成员函数
+	template<typename T, typename Allocator>
+	void swap(forward_list<T, Allocator>& lhs, forward_list<T, Allocator>& rhs) {
+		lhs.swap(rhs);
+	}
+}
+*/

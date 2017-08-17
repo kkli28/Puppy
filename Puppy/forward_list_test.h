@@ -1,30 +1,42 @@
 #pragma once
 
 #include "stdafx.h"
+#include "test.h"
 #include "forward_list.h"
 
 namespace test {
 	namespace forward_list_test {
+
 		using std::cout;
 		using std::endl;
 		using std::string;
-
 		using kkli::forward_list;
 
-		//前置声明
+		//前置声明: 成员函数
 		void test_iterator();
 		void test_constructor();
-		void test_destructor();
-		void test_begin_end();
-		void test_push_front();
-		void test_pop_front();
+		void test_op_assign();			//operator=
+		void test_assign();
+		void test_front();
+		void test_before_begin();
+		void test_begin();
+		void test_end();
+		void test_empty();
+		void test_clear();
 		void test_insert_after();
 		void test_erase_after();
-		void test_remove();
+		void test_push_front();
+		void test_pop_front();
 		void test_resize();
-		void test_operator();
-		void test_assign();
 		void test_swap();
+		void test_merge();
+		void test_splice_after();
+		void test_remove();
+		void test_remove_if();
+		void test_reverse();
+		void test_unique();
+		void tset_sort();
+		void test_operators(); //非成员函数：operator == / != / < ...
 
 		//整体测试
 		void test() {
@@ -34,80 +46,82 @@ namespace test {
 
 			test_iterator();
 			test_constructor();
-			test_destructor();
-			test_begin_end();
-			test_push_front();
-			test_pop_front();
-			test_insert_after();
-			test_erase_after();
-			test_remove();
-			test_resize();
-			test_operator();
-			test_assign();
-			test_swap();
+			//test_op_assign();
+			//test_assign();
+			//test_front();
+			//test_before_begin();
+			//test_begin();
+			//test_end();
+			//test_empty();
+			//test_clear();
+			//test_insert_after();
+			//test_erase_after();
+			//test_push_front();
+			//test_pop_front();
+			//test_resize();
+			//test_swap();
+			//test_merge();
+			//test_splice_after();
+			//test_remove();
+			//test_remove_if();
+			//test_reverse();
+			//test_unique();
+			//tset_sort();
+			//test_operators();
 		}
 
 		//测试 iterator
 		void test_iterator() {
-			cout << "\ntest_iterator()" << endl;
+			cout << "test: iterator()" << endl;
 
 			//constructors
-			forward_list<int>::iterator it1 = 1;
-			cout << *it1 << endl;			//operator*
-			forward_list<int>::iterator it2 = it1;
-			cout << *it2 << endl;
+			forward_list<int>::iterator iter1; //iterator()
+			EXPECT_EQ_VAL(iter1.get(), nullptr);
 
-			//operators
-			it2 = it1;			//operator=
-			cout << *it1 << "  " << *it2 << endl;
-			cout << *(it1++) << endl;		//operator++(int)
-			//cout << *(++it2) << endl;		//operator++
-			it1 = forward_list<int>::iterator(1);
-			it2 = it1;
-			if (it1 == it2) cout << "it1==it2" << endl;
-			else if(it1!=it2) cout << "it1!=it2" << endl;
-			else cout << "WRONG!" << endl;
+			forward_list<int>::iterator iter2 = new kkli::forward_list_node<int>(1); //iterator(ptr)
+			EXPECT_EQ_VAL(*iter2, 1);
 
-			cout << it1->value << endl;		//operator->
-			it1->value = 2;
-			cout << it1->value << endl;
+			forward_list<int>::iterator iter3 = iter2; //iterator(rhs)
+			EXPECT_EQ_VAL(*iter3, 1);
 
-			const forward_list<int>::iterator cit = 1;	//operator->
-			cout << cit->value << endl;
+			iter1 = iter3; //operator=
+			EXPECT_EQ_VAL(*iter1, 1);
+
+			EXPECT_EQ_VAL(iter1.get()->value, 1);
+			
+			iter1->next = new kkli::forward_list_node<int>(2);
+			iter2 = iter1;
+			++iter1;
+			EXPECT_EQ_VAL(*iter1, 2);	//operator++
+			EXPECT_EQ_VAL(*(iter2++), 1); //operator++(int)
+
+			EXPECT_EQ_VAL(iter1->value, 2); //operator->
+			
+			EXPECT_EQ_VAL(iter1 == iter2, true); //operator==
+			EXPECT_EQ_VAL(iter1 != iter3, true); //operator!=
 		}
 
 		//测试 constructor
 		void test_constructor(){
-			cout << "\ntest_constructor()" << endl;
+			cout << "test: constructor()" << endl;
 
-			forward_list<int> fl1;
-			cout << (fl1.empty() ? "empty" : "not-empty") << endl;
-			forward_list<int> fl2{ 1,2,3,4 };
-			forward_list<int> fl3(fl2);
-			cout << "fl2: ";
-			fl2.print();
-			cout << "fl3: ";
-			fl3.print();
+			forward_list<int> fl1; //forward_list()
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), {1}); //fl1为空，不会与1判断
 
-			forward_list<int> fl4(std::move(fl2));
-			cout << "fl2: ";
-			fl2.print();
-			cout << "fl4: ";
-			fl4.print();
-			
-			forward_list<int> fl5(4);
-			cout << "fl5: ";
-			fl5.print();
+			forward_list<int> fl2(4, 1); //forward_list(count, value)
+			EXPECT_EQ_ITERVAL(fl2.begin(), fl2.end(), 1);
 
-			forward_list<int> fl6(4, 1);
-			cout << "fl6: ";
-			fl6.print();
+			forward_list<int> fl3(fl2); //forward_list(rhs)
+			EXPECT_EQ_ITERVAL(fl3.begin(), fl3.end(), 1);
 
-			forward_list<int> fl7(fl6.begin(), fl6.end());
-			cout << "fl7: ";
-			fl7.print();
+			forward_list<int> fl4(std::move(fl3)); //forward_list(&&rhs)
+			EXPECT_EQ_ITERVAL(fl4.begin(), fl4.end(), 1);
+
+			forward_list<int> fl5{ 1,2,3,4 }; //forward_list(init)
+			EXPECT_EQ_ITERLIST(fl5.begin(), fl5.end(), { 1,2,3,4 });
 		}
 
+		/*
 		//测试 destructor
 		void test_destructor() {
 			cout << "\ntest_destructor()" << endl;
@@ -183,7 +197,7 @@ namespace test {
 			fl.erase_after(0);
 			fl.erase_after(1);
 			fl.print();
-			
+
 			fl.erase_after(0);
 			fl.print();
 		}
@@ -230,7 +244,7 @@ namespace test {
 		//测试 operators
 		void test_operator() {
 			cout << "\ntest_operator()" << endl;
-			
+
 			forward_list<int> fl1;
 			forward_list<int> fl2;
 			forward_list<int> fl3{ 1,2,3,4 };
@@ -303,5 +317,6 @@ namespace test {
 			fl2.print();
 			fl3.print();
 		}
+		*/
 	}
 }

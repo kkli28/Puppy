@@ -49,6 +49,15 @@ namespace test {
 			if (!(*iter == val)) throw std::runtime_error("EXPECT_EQ_ITER");
 	}
 
+	//EXPECT_EQ_ITERLIST: 确保迭代器范围内的元素与列表元素相等
+	template<typename InputIt, typename T>
+	void EXPECT_EQ_ITERLIST(InputIt first, InputIt last, std::initializer_list<T> init) {
+		auto iter1 = first;
+		auto iter2 = init.begin();
+		for (; iter1 != last; ++iter1, ++iter2)
+			if (!(*iter1 == *iter2)) throw std::runtime_error("EXPECT_EQ_ITERLIST");
+	}
+
 	//PRINT_ARR: 输出数组元素
 	template<typename T, typename Size>
 	void PRINT_ARR(T* arr, Size N) {

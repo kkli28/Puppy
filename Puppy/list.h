@@ -402,7 +402,7 @@ namespace kkli {
 	//insert(pos, &&value)
 	template<typename T>
 	typename list<T>::iterator list<T>::insert(iterator pos, value_type&& value) {
-		list_node<T>* node=new list_node<T>(std::move(value));			//º”std::move() «∑Ò∂‡”‡£ø
+		list_node<T>* node=new list_node<T>(std::move(value));
 		node->next = pos->next;
 		node->prev = pos.get();
 		pos->next = node;

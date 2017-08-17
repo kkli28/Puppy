@@ -249,27 +249,22 @@ namespace kkli {
 				replace(__start + pos1, __start + pos1 + count1, count2, value);
 			}
 
-			//find -- 尚未实现
+			//find -- 我是谁？我在哪儿？
 			size_type find(const basic_string& rhs, size_type pos = 0)const;
 			size_type find(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find(value_type value, size_type pos = 0)const;
-
 			size_type rfind(const basic_string& rhs, size_type pos = npos, size_type count = npos)const;
 			size_type rfind(const_pointer data, size_type pos = npos)const;
 			size_type rfind(value_type value, size_type pos = npos)const;
-
 			size_type find_first_of(const basic_string& rhs, size_type pos = 0)const;
 			size_type find_first_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_first_of(value_type value, size_type pos = 0)const;
-
 			size_type find_first_not_of(const basic_string& rhs, size_type pos = 0)const;
 			size_type find_first_not_of(const_pointer data, size_type pos, size_type count)const;
 			size_type find_first_not_of(value_type value, size_type pos = 0)const;
-
 			size_type find_last_of(const basic_string& rhs, size_type pos = npos)const;
 			size_type find_last_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_of(value_type value, size_type pos = npos)const;
-
 			size_type find_last_not_of(const basic_string& rhs, size_type pos = npos)const;
 			size_type find_last_not_of(const_pointer data, size_type pos = 0, size_type count = npos)const;
 			size_type find_last_not_of(value_type value, size_type pos = npos)const;
