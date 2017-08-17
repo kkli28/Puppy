@@ -283,6 +283,16 @@ namespace kkli {
 				*__end = kkli::char_traits<char>::eof();
 				return __start;
 			}
+			
+			//data
+			pointer data() {
+				*__end = kkli::char_traits<char>::eof();
+				return __start;
+			}
+			const_pointer data()const {
+				*__end = kkli::char_traits<char>::eof();
+				return __start;
+			}
 
 			//at
 			reference at(size_type pos) {
@@ -307,8 +317,7 @@ namespace kkli {
 			reverse_iterator	rend() { return reverse_iterator(__start); }
 			const_reverse_iterator crbegin()const { return const_reverse_iterator(__end); }
 			const_reverse_iterator crend()const { return const_reverse_iterator(__start); }
-			pointer				data() { return __start; }
-			const_pointer		data()const { return __start; }
+			
 
 			//others
 			bool				empty()const { return __start == __end; }
@@ -322,7 +331,7 @@ namespace kkli {
 			void				push_back(value_type value) { insert(__end, 1, value); }
 			void				pop_back() { --__end; }
 
-			void				resize(size_type count, value_type value = value_type());
+			void				resize(size_type count, value_type value = ' ');
 			basic_string		substr(size_type pos = 0, size_type count = npos)const;
 			size_type			copy(const_pointer data, size_type pos = 0, size_type count = npos);
 			void				swap(basic_string& rhs);
@@ -330,6 +339,16 @@ namespace kkli {
 
 			//print
 			void print(const basic_string& prefix = "") const {
+				this->c_str();
+				std::cout << prefix << ": ";
+				size_type size = this->size();
+				for (size_type i = 0; i < size; ++i)
+					std::cout << __start[i];
+				std::cout << std::endl;
+			}
+
+			//print_detail
+			void print_detail(const basic_string& prefix = "") const {
 				this->c_str();
 				std::cout << prefix << ": ";
 				size_type size = this->size();
@@ -782,7 +801,7 @@ namespace kkli {
 
 	//resize(count, value)
 	template<typename CharType, typename Traits, typename Allocator>
-	void basic_string<CharType, Traits, Allocator>::resize(size_type count, value_type value = value_type()) {
+	void basic_string<CharType, Traits, Allocator>::resize(size_type count, value_type value = ' ') {
 		size_type size = this->size();
 		if (count < size) return;
 		reserve(count);
@@ -846,7 +865,7 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	basic_string<CharType, Traits, Allocator> operator+(const basic_string<CharType, Traits, Allocator>& lhs,
 		const CharType* data) {
-		auto data_size = basic_string<CharType, Traits, Allocator>::__get_size(data);
+		auto data_size = basic_string<CharType, Traits, Allocator>::get_size(data);
 		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size() + data_size);
 		str += lhs;
 		str += data;
@@ -857,10 +876,10 @@ namespace kkli {
 	template<typename CharType, typename Traits, typename Allocator>
 	basic_string<CharType, Traits, Allocator> operator+(const CharType* data,
 		const basic_string<CharType, Traits, Allocator>& rhs) {
-		auto data_size = basic_string<CharType, Traits, Allocator>::__get_size(data);
-		kkli::basic_string<CharType, Traits, Allocator> str(lhs.size() + data_size);
+		auto data_size = basic_string<CharType, Traits, Allocator>::get_size(data);
+		kkli::basic_string<CharType, Traits, Allocator> str(rhs.size() + data_size);
 		str += data;
-		str += lhs;
+		str += rhs;
 		return str;
 	}
 
@@ -876,7 +895,7 @@ namespace kkli {
 
 	//operator +(value, rhs)
 	template<typename CharType, typename Traits, typename Allocator>
-	basic_string<CharType, Allocator> operator+(CharType value,
+	basic_string<CharType, Traits, Allocator> operator+(CharType value,
 		const basic_string<CharType, Traits, Allocator>& rhs) {
 		kkli::basic_string<CharType, Traits, Allocator> str(rhs.size() + 1);
 		str.push_back(value);
