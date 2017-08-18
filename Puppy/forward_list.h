@@ -83,7 +83,8 @@ namespace kkli {
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
 			__iterator& operator=(const __iterator& it) { iter = it.iter; return *this; }
-			forward_list_node<T>* get()const { return iter; }
+			forward_list_node<T>*& get() { return iter; }
+			forward_list_node<T>* get() const { return iter; }
 
 			__iterator& operator++() { iter = iter->next; return *this; }
 			__iterator operator++(int) {
@@ -158,9 +159,9 @@ namespace kkli {
 		//assign
 		void assign(size_type count, const value_type& value);
 		template<typename InputIt>
-		void assign(InputIt first, InputIt last);
+		void assign_range(InputIt first, InputIt last); //需要SFINAE，然而我不会，故改成assign_range
 		void assign(std::initializer_list<value_type> init) {
-			return assign(init.begin(), init.end());
+			return assign_range(init.begin(), init.end());
 		}
 
 		//front
@@ -195,9 +196,9 @@ namespace kkli {
 		}
 		iterator insert_after(const_iterator pos, value_type&& value);
 		template<typename InputIt>
-		iterator insert_after(const_iterator pos, InputIt first, InputIt last);
+		iterator insert_after_range(const_iterator pos, InputIt first, InputIt last); //需要SFINAE，我能怎么办？
 		iterator insert_after(const_iterator pos, std::initializer_list<value_type> init) {
-			return insert_after(pos, init.begin(), init.end());
+			return insert_after_range(pos, init.begin(), init.end());
 		}
 
 		//erase_after
@@ -329,32 +330,34 @@ namespace kkli {
 	//operator =(rhs)
 	template<typename T>
 	forward_list<T>& forward_list<T>::operator=(const forward_list& rhs) {
-		if (__head == rhs.__head) return;
+		if (__head == rhs.__head) return *this;
 		this->clear();
 		auto end = rhs.cend();
 		auto iter = __head;
 		for (auto i = rhs.cbegin(); i != end; ++i,++iter)
 			iter->next = new node_type(*i);
+		return *this;
 	}
 
 	//operator =(&&rhs)
 	template<typename T>
 	forward_list<T>& forward_list<T>::operator=(forward_list&& rhs) {
-		if (__head == rhs.__head) return;
+		if (__head == rhs.__head) return *this;
 		__destroy();
 		__head = rhs.__head;
 		(rhs.__head).get() = nullptr;
+		return *this;
 	}
 
 	//operator =(init)
 	template<typename T>
 	forward_list<T>& forward_list<T>::operator=(std::initializer_list<value_type> init) {
-		if (__head == rhs.__head) return;
-		__destroy();
+		clear();
 		auto end = init.end();
 		auto iter = __head;
 		for (auto i = init.begin(); i != end; ++i, ++iter)
 			iter->next = new node_type(*i);
+		return *this;
 	}
 
 	//assign(count, value)
@@ -369,7 +372,7 @@ namespace kkli {
 	//assign(first, last)
 	template<typename T>
 	template<typename InputIt>
-	void forward_list<T>::assign(InputIt first, InputIt last) {
+	void forward_list<T>::assign_range(InputIt first, InputIt last) {
 		this->clear();
 		auto iter = __head;
 		for (auto i = first; i != last; ++i, ++iter) 
@@ -386,6 +389,7 @@ namespace kkli {
 			++iter;
 			delete del_iter.get();
 		}
+		__head->next = nullptr;
 	}
 
 	//insert_after
@@ -393,7 +397,7 @@ namespace kkli {
 	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		const_iterator pos,	size_type count, const value_type& value) {
 		//构建由count个value组合成的链
-		auto first = new node_type(value);
+		iterator first = new node_type(value);
 		auto iter = first;
 		while (--count > 0) {
 			iter->next = new node_type(value);
@@ -403,27 +407,30 @@ namespace kkli {
 		//拼接
 		iter->next = pos->next;
 		pos->next = first.get();
+		return iter;
 	}
 
 	//inser_after
 	template<typename T>
 	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		const_iterator pos, value_type&& value) {
-		auto iter = new node_type(std::move(value));
+		iterator iter = new node_type(std::move(value));
 		iter->next = pos->next;
 		pos->next = iter.get();
+		return iter;
 	}
 
 	//insert_after
 	template<typename T>
 	template<typename InputIt>
-	typename forward_list<T>::iterator forward_list<T>::insert_after(
+	typename forward_list<T>::iterator forward_list<T>::insert_after_range(
 		const_iterator pos, InputIt first, InputIt last) {
 		if (first == last) return iterator(pos);
 		
 		//构建由[first, last)元素组成的链
-		auto beg = new node_type(*first);
+		iterator beg = new node_type(*first);
 		auto end = beg;
+		size_type count = 0;
 		++first;
 		while (first != last) {
 			end->next = new node_type(*first);
@@ -432,6 +439,7 @@ namespace kkli {
 		}
 		end->next = pos->next; //拼接
 		pos->next = beg.get();
+		return end;
 	}
 
 	//erase_after
@@ -575,7 +583,7 @@ namespace kkli {
 	template<typename T>
 	template<typename BinaryPredicate>
 	void forward_list<T>::unique(BinaryPredicate pred) {
-		if (this->empty())) return;
+		if (this->empty()) return;
 		forward_list<T> fl; //用于暂存多余的重复元素
 		auto fl_iter = fl.__head;
 
@@ -632,7 +640,7 @@ namespace kkli {
 
 	//operator ==
 	template<typename T>
-	bool operator==(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator==(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		auto iter1 = lhs.begin();
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
@@ -646,7 +654,7 @@ namespace kkli {
 
 	//operator <
 	template<typename T>
-	bool operator<(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator<(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		auto iter1 = lhs.begin();
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
@@ -658,7 +666,7 @@ namespace kkli {
 
 	//operator >
 	template<typename T>
-	bool operator>(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator>(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		auto iter1 = lhs.begin();
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
@@ -670,19 +678,19 @@ namespace kkli {
 
 	//operator !=
 	template<typename T>
-	bool operator!=(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator!=(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	//operator <=
 	template<typename T>
-	bool operator<=(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator<=(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	//operator >=
 	template<typename T>
-	bool operator>=(const forward_list<T>& lhs, const foward_list<T>& rhs) {
+	bool operator>=(const forward_list<T>& lhs, const forward_list<T>& rhs) {
 		return !(lhs < rhs);
 	}
 }

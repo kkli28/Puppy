@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "test.h"
 #include "forward_list.h"
+#include "iterator.h"
 
 namespace test {
 	namespace forward_list_test {
@@ -44,8 +45,8 @@ namespace test {
 			cout << "          test: forward_list " << endl;
 			cout << "========================================" << endl;
 
-			test_iterator();
-			test_constructor();
+			//test_iterator();
+			//test_constructor();
 			//test_op_assign();
 			//test_assign();
 			//test_front();
@@ -54,7 +55,7 @@ namespace test {
 			//test_end();
 			//test_empty();
 			//test_clear();
-			//test_insert_after();
+			test_insert_after();
 			//test_erase_after();
 			//test_push_front();
 			//test_pop_front();
@@ -106,7 +107,7 @@ namespace test {
 			cout << "test: constructor()" << endl;
 
 			forward_list<int> fl1; //forward_list()
-			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), {1}); //fl1Œ™ø’£¨≤ªª·”Î1≈–∂œ
+			EXPECT_EQ_VAL(fl1.empty(), true);
 
 			forward_list<int> fl2(4, 1); //forward_list(count, value)
 			EXPECT_EQ_ITERVAL(fl2.begin(), fl2.end(), 1);
@@ -121,202 +122,144 @@ namespace test {
 			EXPECT_EQ_ITERLIST(fl5.begin(), fl5.end(), { 1,2,3,4 });
 		}
 
-		/*
-		//≤‚ ‘ destructor
-		void test_destructor() {
-			cout << "\ntest_destructor()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4 };
-			fl.~forward_list();
-			fl.print();
-		}
-
-		//≤‚ ‘ begin / end
-		void test_begin_end() {
-			cout << "\ntest_begin_end()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4 };
-			cout << *(fl.begin()) << endl;
-			cout << *(fl.cbegin()) << endl;
-		}
-
-		//≤‚ ‘ push_front
-		void test_push_front() {
-			cout << "\ntest_push_front()" << endl;
-
-			forward_list<int> fl;
-			for (int i = 0; i < 4; ++i)
-				fl.push_front(i);
-			fl.print();
-		}
-
-		//≤‚ ‘ pop_front
-		void test_pop_front() {
-			cout << "\ntest_pop_front()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4 };
-			for (int i = 0; i < 4; ++i) {
-				cout << *(fl.begin()) << endl;
-				fl.pop_front();
-			}
-
-			//runtime_error
-			//fl.pop_front();
-		}
-
-		//≤‚ ‘ insert_after
-		void test_insert_after() {
-			cout << "\ntest_insert_after()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4 };
-
-			//insert_after(pos, n)
-			fl.insert_after(0, 1);
-			fl.insert_after(4, 4);
-			fl.print();
-
-			//insert_after(pos, n, elem)
-			fl.insert_after(0, 2, 1);
-			fl.insert_after(4, 2, 4);
-			fl.print();
-
-			//insert_after(pos, beg, end)
-			fl.insert_after(0, fl.begin(), fl.end());
-			fl.print();
-
-			//insert_after(pos, initializer_list)
-			fl.insert_after(0, { 11,12,13,14 });
-			fl.print();
-		}
-
-		//≤‚ ‘ erase_after
-		void test_erase_after() {
-			cout << "\ntest_erase_after()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4 };
-			fl.erase_after(0);
-			fl.erase_after(1);
-			fl.print();
-
-			fl.erase_after(0);
-			fl.print();
-		}
-
-		//≤‚ ‘ remove
-		void test_remove() {
-			cout << "\ntest_remove()" << endl;
-
-			forward_list<int> fl{ 1,2,3,4,1,2,3,4 };
-			fl.remove(1);
-			fl.print();
-			fl.remove(4);
-			fl.print();
-
-			forward_list<int> fl1{ 1,2,3,4,5,6 };
-			//»•µÙ∆Ê ˝
-			fl1.remove_if([](const int& elem) -> bool { return elem % 2; });
-			fl1.print();
-		}
-
-		//≤‚ ‘ resize
-		void test_resize() {
-			cout << "\ntest_resize()" << endl;
+		//≤‚ ‘ operator=
+		void test_op_assign() {
+			cout << "test: operator=" << endl;
 
 			forward_list<int> fl1;
-			fl1.resize(4);
-			fl1.print();
+			forward_list<int> fl2(4, 1);
+			forward_list<int> fl3({ 1,2,3,4 });
+			forward_list<int> fl4;
+			
+			//operator =(rhs)
+			fl4 = fl1;
+			EXPECT_EQ_VAL(fl4.empty(), true);
+			fl4 = fl2;
+			EXPECT_EQ_ITERLIST(fl4.begin(), fl4.end(), { 1,1,1,1 });
 
-			forward_list<int> fl2{ 1,2,3,4 };
-			fl2.resize(8);
-			fl2.print();
-			fl2.resize(2);
-			fl2.print();
-			fl2.resize(0);
-			fl2.print();
+			//operator =(&&rhs)
+			fl4 = std::move(fl3);
+			EXPECT_EQ_ITERLIST(fl4.begin(), fl4.end(), { 1,2,3,4 });
 
-			forward_list<int> fl3{ 1,2,3,4 };
-			fl3.resize(8, 4);
-			fl3.print();
-			fl3.resize(2);
-			fl3.print();
-		}
-
-		//≤‚ ‘ operators
-		void test_operator() {
-			cout << "\ntest_operator()" << endl;
-
-			forward_list<int> fl1;
-			forward_list<int> fl2;
-			forward_list<int> fl3{ 1,2,3,4 };
-			forward_list<int> fl4{ 1,2,3,4 };
-			forward_list<int> fl5{ 1,1 };
-			forward_list<int> fl6{ 1,1,1,1 };
-			forward_list<int> fl7{ 2,3,4,5 };
-			forward_list<int> fl8{ 1,2,3,4,5,6,7,8 };
-
-			//operator== / !=
-			cout << "operator == / !=" << endl;
-			cout << (fl1 == fl2 ? "==" : "!=") << endl;
-			cout << (fl1 == fl3 ? "==" : "!=") << endl;
-			cout << (fl3 == fl4 ? "==" : "!=") << endl;
-			cout << (fl3 == fl5 ? "==" : "!=") << endl;
-
-			//operator < >=
-			cout << "operator < / >=" << endl;
-			cout << (fl1 < fl2 ? "<" : ">=") << endl;
-			cout << (fl1 < fl3 ? "<" : ">=") << endl;
-			cout << (fl3 < fl4 ? "<" : ">=") << endl;
-			cout << (fl4 < fl5 ? "<" : ">=") << endl;
-			cout << (fl5 < fl6 ? "<" : ">=") << endl;
-			cout << (fl3 < fl7 ? "<" : ">=") << endl;
-			cout << (fl3 < fl8 ? "<" : ">=") << endl;
-
-			//operator > <=
-			cout << "operator > / <=" << endl;
-			cout << (fl1 > fl2 ? ">" : "<=") << endl;
-			cout << (fl1 > fl3 ? ">" : "<=") << endl;
-			cout << (fl3 > fl4 ? ">" : "<=") << endl;
-			cout << (fl4 > fl5 ? ">" : "<=") << endl;
-			cout << (fl5 > fl6 ? ">" : "<=") << endl;
-			cout << (fl3 > fl7 ? ">" : "<=") << endl;
-			cout << (fl3 > fl8 ? ">" : "<=") << endl;
+			//operator =(init)
+			fl4 = { 1,1,2,2 };
+			EXPECT_EQ_ITERLIST(fl4.begin(), fl4.end(), { 1,1,2,2 });
 		}
 
 		//≤‚ ‘ assign
 		void test_assign() {
-			cout << "\ntest_assign()" << endl;
+			cout << "test: assign()" << endl;
 
-			forward_list<int> fl{ 1,2,3,4 };
-			fl.assign(4, 1);
-			fl.print();
-			fl.assign(0, 10);
-			fl.print();
-			forward_list<int> fl1{ 1,2,3,4 };
-			fl.assign(fl1.begin(), fl1.end());
-			fl.print();
+			forward_list<int> fl1;
+			forward_list<int> fl2 = { 1,2,3,4 };
+
+			fl1.assign(4, 1); //assign(count, value)
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,1,1,1 });
+
+			fl1.assign_range(fl2.begin(), fl2.end()); //assign_range(first, last)
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,2,3,4 });
+
+			fl1.assign({ 1,1,2,2 });
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,1,2,2 });
 		}
 
-		//≤‚ ‘ swap
-		void test_swap() {
-			cout << "\ntest_swap()" << endl;
+		//≤‚ ‘ front
+		void test_front() {
+			cout << "test: front()" << endl;
 
 			forward_list<int> fl1{ 1,2,3,4 };
-			forward_list<int> fl2(fl1);
-			forward_list<int> fl3{ 5,6,7,8 };
-			fl1.print();
-			fl2.print();
+			const forward_list<int> fl2{ 2,2,2,2 };
 
-			cout << "fl1.swap(fl2)" << endl;
-			fl1.swap(fl2);
-			fl1.print();
-			fl2.print();
-
-			cout << "swap(fl1,fl3)" << endl;
-			kkli::swap(fl1, fl3);
-			fl1.print();
-			fl2.print();
-			fl3.print();
+			EXPECT_EQ_VAL(fl1.front(), 1);
+			EXPECT_EQ_VAL(fl2.front(), 2);
 		}
-		*/
+
+		//≤‚ ‘ before_begin
+		void test_before_begin() {
+			cout << "test: before_begin()" << endl;
+
+			forward_list<int> fl1{ 1,2,3,4 };
+			const forward_list<int> fl2 = fl1;
+			EXPECT_EQ_VAL(*(fl1.before_begin()), 0);
+			EXPECT_EQ_VAL(*(++fl1.before_begin()), 1);
+			EXPECT_EQ_VAL(*(fl2.before_begin()), 0);
+			EXPECT_EQ_VAL(*(++fl2.before_begin()), 1);
+		}
+
+		//≤‚ ‘ begin
+		void test_begin() {
+			cout << "test: begin()" << endl;
+
+			forward_list<int> fl1{ 1,2,3,4 };
+			const forward_list<int> fl2 = fl1;
+
+			EXPECT_EQ_VAL(*(fl1.begin()), 1);
+			EXPECT_EQ_VAL(*(fl2.begin()), 1);
+		}
+
+		//≤‚ ‘ end
+		void test_end() {
+			cout << "test: end()" << endl;
+			
+			forward_list<int> fl1{ 1,1,1,1 };
+			auto end = fl1.end();
+			for (auto beg = fl1.begin(); beg != end; ++beg)
+				EXPECT_EQ_VAL(*beg, 1);
+		}
+
+		//≤‚ ‘ empty
+		void test_empty() {
+			cout << "test: empty()" << endl;
+
+			forward_list<int> fl1;
+			forward_list<int> fl2{ 1,2,3,4 };
+
+			EXPECT_EQ_VAL(fl1.empty(), true);
+			EXPECT_EQ_VAL(fl2.empty(), false);
+		}
+
+		//≤‚ ‘ clear
+		void test_clear() {
+			cout << "test: clear()" << endl;
+
+			forward_list<int> fl1;
+			forward_list<int> fl2{ 1,2,3,4 };
+
+			fl1.clear();
+			EXPECT_EQ_VAL(fl1.empty(), true);
+			fl2.clear();
+			EXPECT_EQ_VAL(fl2.empty(), true);
+			fl2 = { 1,2,3,4 };
+			EXPECT_EQ_VAL(fl2.empty(), false);
+		}
+
+		//≤‚ ‘ insert_after
+		void test_insert_after() {
+			cout << "test: insert_after()" << endl;
+
+			forward_list<int> fl1{ 1,2,3,4 };
+
+			auto iter1 = fl1.insert_after(fl1.begin(), 2, 1); //insert_after(pos, count, value)
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,1,1,2,3,4 });
+			EXPECT_EQ_VAL(*iter1, 1);
+			EXPECT_EQ_VAL(*(kkli::next(iter1)), 2);
+
+			auto iter2 = fl1.insert_after(kkli::next(fl1.begin(), 5), 9); //insert_after(pos, value)
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,1,1,2,3,4,9 });
+			EXPECT_EQ_VAL(*iter2, 9);
+
+			auto iter3 = fl1.insert_after(fl1.begin(), std::move(1)); //insert_after(pos, &&value)
+			EXPECT_EQ_ITERLIST(fl1.begin(), fl1.end(), { 1,1,1,1,2,3,4,9 });
+			EXPECT_EQ_VAL(iter3, kkli::next(fl1.begin()));
+
+			forward_list<int> fl2{ 1 }; //insert_after(pos, first, last)
+			auto iter4 = fl2.insert_after_range(fl2.begin(), fl1.begin(), kkli::next(fl1.begin(), 4));
+			EXPECT_EQ_ITERLIST(fl2.begin(), fl2.end(), { 1,1,1,1,1 });
+			EXPECT_EQ_VAL(iter4, kkli::next(fl2.begin(), 4));
+			
+			auto iter5 = fl2.insert_after(kkli::next(fl2.begin()), { 1,2,3,4 });
+			EXPECT_EQ_ITERLIST(fl2.begin(), fl2.end(), { 1,1,1,2,3,4,1,1,1 });
+			EXPECT_EQ_VAL(*iter5, 4);
+		}
 	}
 }
