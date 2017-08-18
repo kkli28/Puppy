@@ -76,7 +76,7 @@ namespace test {
 
 		//≤‚ ‘ multiplies
 		void test_multiplies() {
-			cout << "test: multiplies()" << endl;
+			cout << "test: multiplies" << endl;
 
 			kkli::multiplies<int> mp1;
 			EXPECT_EQ_VAL(mp1(1, 2), 2);
@@ -85,7 +85,7 @@ namespace test {
 
 		//≤‚ ‘ divides
 		void test_divides() {
-			cout << "test: divides()" << endl;
+			cout << "test: divides" << endl;
 
 			kkli::divides<int> dvd1;
 			EXPECT_EQ_VAL(dvd1(2, 1), 2);

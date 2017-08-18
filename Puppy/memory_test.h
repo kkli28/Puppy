@@ -42,33 +42,35 @@ namespace test {
 		void test() {
 			cout << "\n========== test: memory.h ==========" << endl;
 
-			test_uninitialized_x();
 			test_shared_ptr();
 			test_weak_ptr();
 			test_unique_ptr();
+			test_uninitialized_x();
 		}
 
 		//测试 uninitialized_x
 		void test_uninitialized_x() {
-			cout << "test: uninitalized_x()" << endl;
-
 			int arr[8] = { 1,2,3,4,5,6,7,8 };
 
 			//uninitialized_copy(first, last, dest)
+			cout << "test: uninitialized_copy()" << endl;
 			kkli::allocator<int> alloc1;
 			auto ptr1 = alloc1.allocate(8);
 			kkli::uninitialized_copy(arr, arr + 8, ptr1);
 			EXPECT_EQ_ARR(arr, ptr1, 8);
 
 			//uninitialized_copy_n(first, count, dest)
+			cout << "test: uninitialized_copy_n()" << endl;
 			kkli::uninitialized_copy_n(arr, 8, ptr1);
 			EXPECT_EQ_ARR(arr, ptr1, 8);
 
 			//uninitialized_fill
+			cout << "test: uninitialized_fill()" << endl;
 			kkli::uninitialized_fill(ptr1, ptr1 + 8, 1);
 			EXPECT_EQ_NVALS(ptr1, 8, 1);
 
 			//uninitialized_fill_n
+			cout << "test: uninitialized_fill_n()" << endl;
 			kkli::uninitialized_fill_n(ptr1, 8, 2);
 			EXPECT_EQ_NVALS(ptr1, 8, 2);
 
@@ -84,28 +86,35 @@ namespace test {
 			auto ptr5 = alloc2.allocate(4);
 
 			//uninitialized_move
+			cout << "test: uninitialized_move()" << endl;
 			kkli::uninitialized_move(str1, str1 + 4, ptr2);
 			EXPECT_EQ_ARR(ptr2, comp, 4);
 
 			//uninitialized_move_n
+			cout << "test: uninitialized_move_n()" << endl;
 			kkli::uninitialized_move_n(str2, 4, ptr3);
 			EXPECT_EQ_ARR(ptr3, comp, 4);
 
 			//uninitialized_default_construct
+			cout << "test: uninitialized_default_construct()" << endl;
 			kkli::uninitialized_default_construct(ptr4, ptr4 + 4);
 			EXPECT_EQ_NVALS(ptr4, 4, "");
 
 			//uninitialized_default_construct
+			cout << "test: uninitialized_default_construct()" << endl;
 			kkli::uninitialized_default_construct_n(ptr5, 4);
 			EXPECT_EQ_NVALS(ptr5, 4, "");
 
 			//destroy_at
+			cout << "test: destroy_at()" << endl;
 			kkli::destroy_at(ptr2);			//析构ptr2的第一个元素
 
 			//destroy
+			cout << "test: destroy()" << endl;
 			kkli::destroy(ptr2+1 , ptr2 + 4);	//析构ptr2的后三个元素
 
 			//destroy_n
+			cout << "test: destroy_n()" << endl;
 			kkli::destroy_n(ptr3, 4);		//析构ptr3中4个元素
 		}
 

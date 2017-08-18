@@ -79,7 +79,7 @@ namespace kkli {
 
 		public:
 			__iterator() : iter(nullptr) {}
-			__iterator(forward_list_node<T>* ptr) : iter(ptr) {}
+			explicit __iterator(forward_list_node<T>* ptr) : iter(ptr) {}
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
 			__iterator& operator=(const __iterator& it) { iter = it.iter; return *this; }
@@ -88,7 +88,7 @@ namespace kkli {
 
 			__iterator& operator++() { iter = iter->next; return *this; }
 			__iterator operator++(int) {
-				__iterator it = iter;
+				__iterator it(iter);
 				iter = iter->next;
 				return it;
 			}
@@ -204,7 +204,7 @@ namespace kkli {
 		//erase_after
 		iterator erase_after(const_iterator first, const_iterator last);
 		iterator erase_after(const_iterator pos) {
-			return erase_after(pos, kkli::next(pos));
+			return erase_after(pos, kkli::next(pos, 2));
 		}
 
 		//push_front / pop_front
@@ -397,7 +397,7 @@ namespace kkli {
 	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		const_iterator pos,	size_type count, const value_type& value) {
 		//构建由count个value组合成的链
-		iterator first = new node_type(value);
+		iterator first(new node_type(value));
 		auto iter = first;
 		while (--count > 0) {
 			iter->next = new node_type(value);
@@ -414,7 +414,7 @@ namespace kkli {
 	template<typename T>
 	typename forward_list<T>::iterator forward_list<T>::insert_after(
 		const_iterator pos, value_type&& value) {
-		iterator iter = new node_type(std::move(value));
+		iterator iter(new node_type(std::move(value)));
 		iter->next = pos->next;
 		pos->next = iter.get();
 		return iter;
@@ -428,7 +428,7 @@ namespace kkli {
 		if (first == last) return iterator(pos);
 		
 		//构建由[first, last)元素组成的链
-		iterator beg = new node_type(*first);
+		iterator beg(new node_type(*first));
 		auto end = beg;
 		size_type count = 0;
 		++first;
@@ -461,7 +461,7 @@ namespace kkli {
 	//push_front(rhs)
 	template<typename T>
 	void forward_list<T>::push_front(const value_type& value) {
-		auto iter = new node_type(value);
+		iterator iter(new node_type(value));
 		iter->next = __head->next;
 		__head->next = iter.get();
 	}
@@ -469,7 +469,7 @@ namespace kkli {
 	//push_front(&&rhs)
 	template<typename T>
 	void forward_list<T>::push_front(value_type&& value) {
-		auto iter = new node_type(std::move(value));
+		iterator iter(new node_type(std::move(value)));
 		iter->next = __head->next;
 		__head->next = iter.get();
 	}
@@ -477,7 +477,7 @@ namespace kkli {
 	//pop_front
 	template<typename T>
 	void forward_list<T>::pop_front() {
-		auto iter = __head->next;
+		iterator iter = kkli::next(__head);
 		__head->next = iter->next;
 		delete iter.get();
 	}
@@ -566,6 +566,7 @@ namespace kkli {
 	//reverse
 	template<typename T>
 	void forward_list<T>::reverse() {
+		if (this->empty()) return;
 		kkli::vector<iterator> vec; //存放指向每一个元素的迭代器
 		auto iter = __head;
 		auto end = this->end();
@@ -576,7 +577,7 @@ namespace kkli {
 		for (auto i = size - 1; i > 0; --i)
 			vec[i]->next = vec[i - 1].get();
 		vec[0]->next = nullptr;
-		__head = vec[size - 1].get();
+		__head->next = vec[size - 1].get();
 	}
 	
 	//unique
@@ -589,16 +590,20 @@ namespace kkli {
 
 		//将多余的重复元素移到fl中
 		auto before_iter = kkli::next(__head);
-		auto iter = before_iter;
+		auto iter = kkli::next(before_iter);
 		auto end = this->end();
-		while (++iter != end) {
-			if (!pred(*before_iter, *iter)) {
+		while (iter != end) {
+			if (pred(*before_iter, *iter)) {
 				before_iter->next = iter->next;
 				fl_iter->next = iter.get();
+				++iter;
 				++fl_iter;
 				fl_iter->next = nullptr;
 			}
-			else before_iter = iter;
+			else {
+				before_iter = iter;
+				++iter;
+			}
 		}
 
 		//fl析构时自动删除多余元素
@@ -608,12 +613,20 @@ namespace kkli {
 	template<typename T>
 	template<typename Compare>
 	void forward_list<T>::sort(Compare comp) {
+		if (this->empty()) return;
 		kkli::vector<iterator> vec;
 		auto iter = __head;
 		auto end = this->end();
 		while (++iter != end) vec.push_back(iter);
-		kkli::sort(vec.begin(), vec.end(), 
-			[](iterator iter1, iterator iter2)->bool {return iter1->value < iter2->value; });
+		kkli::sort(vec.begin(), vec.end(),
+			[=](iterator iter1, iterator iter2)->bool {return comp(iter1->value, iter2->value); });
+
+		//重新链接
+		size_type size = vec.size();
+		for (size_type i = 0; i < size - 1; ++i)
+			vec[i]->next = vec[i + 1].get();
+		vec[size - 1]->next = nullptr;
+		__head->next = vec[0].get();
 	}
 
 	//print
@@ -645,8 +658,11 @@ namespace kkli {
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
 		auto end2 = rhs.end();
-		while (iter1 != end1 && iter2 != end2)
+		while (iter1 != end1 && iter2 != end2) {
 			if ((*iter1) != (*iter2)) return false;
+			++iter1;
+			++iter2;
+		}
 		if (iter1 != end1) return false;
 		if (iter2 != end2) return false;
 		return true;
@@ -659,8 +675,13 @@ namespace kkli {
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
 		auto end2 = rhs.end();
-		while (iter1 != end1 && iter2 != end2)
+		while (iter1 != end1 && iter2 != end2) {
 			if ((*iter1) < (*iter2)) return true;
+			if ((*iter2) < (*iter1)) return false;
+			++iter1;
+			++iter2;
+		}
+		if (iter2 != end2) return true; //lhs短
 		return false;
 	}
 
@@ -671,8 +692,13 @@ namespace kkli {
 		auto iter2 = rhs.begin();
 		auto end1 = lhs.end();
 		auto end2 = rhs.end();
-		while (iter1 != end1 && iter2 != end2)
+		while (iter1 != end1 && iter2 != end2) {
 			if ((*iter2) < (*iter1)) return true;
+			if ((*iter1) < (*iter2)) return false;
+			++iter1;
+			++iter2;
+		}
+		if (iter1 != end1) return true; //lhs长
 		return false;
 	}
 

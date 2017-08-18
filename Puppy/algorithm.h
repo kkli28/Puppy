@@ -713,9 +713,9 @@ namespace kkli {
 		//三数中值法
 		auto end = last - 1;
 		auto mid = first + (last - first) / 2;
-		if (*first > *mid) kkli::swap(*first, *mid);
-		if (*end > *mid) kkli::swap(*mid, *end);
-		if (*first > *end) kkli::swap(*first, *end);
+		if (comp(*mid, *first)) kkli::swap(*first, *mid);
+		if (comp(*mid, *end)) kkli::swap(*mid, *end);
+		if (comp(*end, *first)) kkli::swap(*first, *end);
 
 		//定位守卫
 		auto iter = first - 1;

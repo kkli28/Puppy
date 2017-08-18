@@ -32,16 +32,35 @@ namespace kkli {
 			return *this;
 		}
 
-		//operator ==
+		//operator < / == / !=
+		bool operator<(const list_node<T>& rhs) { return value < rhs.value; }
 		bool operator==(const list_node<T>& rhs) {
 			return (value == rhs.value && next == rhs.next && prev == rhs.prev);
 		}
+		bool operator!=(const list_node<T>& rhs) {
+			return !(*this == rhs);
+		}
 	};
+
+	//operator < / == / !=
+	template<typename T>
+	bool operator<(const list_node<T>& lhs, const list_node<T>& rhs) { return lhs < rhs; }
+
+	template<typename T>
+	bool operator==(const list_node<T>& lhs, const list_node<T>& rhs) {
+		return lhs == rhs;
+	}
+
+	template<typename T>
+	bool operator!=(const list_node<T>& lhs, const list_node<T>& rhs) {
+		return !(lhs == rhs);
+	}
 }
 
 //================================================================================
 // list<T> 类定义
 //================================================================================
+
 namespace kkli {
 
 	template<typename T>
@@ -54,18 +73,20 @@ namespace kkli {
 			//typedef
 			typedef T				value_type;
 			typedef T&				reference;
+			typedef const T&		const_reference;
 			typedef T*				pointer;
+			typedef const T*		const_pointer;
+			typedef std::size_t		size_type;
 			typedef std::ptrdiff_t	difference_type;
 			typedef kkli::bidirectional_iterator_tag iterator_category;
 
 		private:
 			list_node<T>* iter;
 
-			//不允许外部使用
-			__iterator(list_node<T>* ptr) :iter(ptr) {}
 		public:
 			//constructor
 			__iterator() = default;
+			explicit __iterator(list_node<T>* ptr) :iter(ptr) {}
 			__iterator(const T& t) :iter(new list_node<T>(t)) {}
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
