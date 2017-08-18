@@ -89,8 +89,8 @@ namespace kkli {
 			//constructor
 			__iterator() :iter(nullptr) {}
 			explicit __iterator(list_node<T>* ptr) :iter(ptr) {}
-			__iterator(const T& t) :iter(new list_node<T>(t)) {}
-			__iterator(T&& t) :iter(new list_node<T>(std::move(t))) {}
+			__iterator(const T& value) :iter(new list_node<T>(value)) {}
+			__iterator(T&& value) :iter(new list_node<T>(std::move(value))) {}
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
 			//operator =
@@ -460,7 +460,8 @@ namespace kkli {
 		//创建由count个值为value的节点链
 		list_node<T>* ptr = head_node;
 		size_type size = 0;
-		for (auto iter = il.begin(); iter != il.end(); ++iter) {
+		auto end = init.end();
+		for (auto iter = init.begin(); iter != end; ++iter) {
 			ptr->next = new list_node<T>(*iter);
 			ptr->next->prev = ptr;
 			ptr = ptr->next;
@@ -740,7 +741,7 @@ namespace kkli {
 		auto end = this->end();
 		for (auto iter = this->begin(); iter != end; ++iter)
 			vec[index++] = iter;
-		kkli::sort(vec.begin(), vec.end(), [](iterator iter1, iterator iter2)->bool {return comp(iter1->value, iter2->value); });
+		kkli::sort(vec.begin(), vec.end(), [=](iterator iter1, iterator iter2)->bool {return comp(iter1->value, iter2->value); });
 		
 		//重新建立节点间的链接
 		auto head = __head;
@@ -809,7 +810,7 @@ namespace kkli {
 			++rhs_beg;
 		}
 		if (lhs_beg == lhs_end) return true;		//lhs更短
-		return false
+		return false;
 	}
 
 	//operator >

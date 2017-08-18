@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "test.h"
 #include "list.h"
 
 namespace test {
@@ -13,11 +14,11 @@ namespace test {
 		//∫Ø ˝…˘√˜
 		void test_iterator();
 		void test_constructor();
-		void test_destructor();
 		void test_op_assign();			//operator =
 		void test_assign();
 		void test_front_and_back();
 		void test_begin_and_end();
+		void test_rbegin_and_rend();
 		void test_empty();
 		void test_size();
 		void test_clear();
@@ -32,7 +33,6 @@ namespace test {
 		void test_merge();
 		void test_splice();
 		void test_remove();
-		void test_remove_if();
 		void test_reverse();
 		void test_unique();
 		void test_sort();
@@ -46,89 +46,128 @@ namespace test {
 
 			test_iterator();
 			test_constructor();
-			test_destructor();
-			test_op_assign();			//operator =
+			test_op_assign();
 			test_assign();
-			test_front_and_back();
-			test_begin_and_end();
-			test_empty();
-			test_size();
-			test_clear();
-			test_insert();
-			test_erase();
-			test_push_back();
-			test_pop_back();
-			test_push_front();
-			test_pop_front();
-			test_resize();
-			test_swap();
-			test_merge();
-			test_splice();
-			test_remove();
-			test_remove_if();
-			test_reverse();
-			test_unique();
-			test_sort();
-			test_operators();			//operator == / != / < / <= / > / >=
+			//test_front_and_back();
+			//test_begin_and_end();
+			//test_rbegin_and_rend();
+			//test_empty();
+			//test_size();
+			//test_clear();
+			//test_insert();
+			//test_erase();
+			//test_push_back();
+			//test_pop_back();
+			//test_push_front();
+			//test_pop_front();
+			//test_resize();
+			//test_swap();
+			//test_merge();
+			//test_splice();
+			//test_remove();
+			//test_reverse();
+			//test_unique();
+			//test_sort();
+			//test_operators();
 		}
 
 		//≤‚ ‘ iterator
 		void test_iterator() {
-			cout << "\ntest_iterator()" << endl;
+			cout << "test: iterator()" << endl;
 
 			//constructors
-			list<int>::iterator it1 = 1;
-			cout << *it1 << endl;				//1
-			list<int>::iterator it2 = it1;
-			cout << *it2 << endl;				//1
+			list<int>::iterator iter1; //iterator()
+			EXPECT_EQ_VAL(iter1.get(), nullptr); //get()
 
-			//operator =
-			list<int>::iterator it3 = 3;
-			it3 = it1;
-			cout << *it3 << endl;				//1
+			list<int>::iterator iter2(new kkli::list_node<int>(1)); //iterator(ptr)
+			EXPECT_EQ_VAL(*iter2, 1); //operator *
 
-			//get
-			cout << it1.get()->value << endl;	//1
+			list<int>::iterator iter3(1); //iterator(value)
+			EXPECT_EQ_VAL(*iter3, 1);
+
+			list<int>::iterator iter4(std::move(2)); //iterator(&&value)
+			EXPECT_EQ_VAL(*iter4, 2);
+
+			iter1 = iter2; //operator =
+			EXPECT_EQ_VAL(*iter1, 1); //iterator(rhs)
 
 			//operator ++
-			it1->next = new kkli::list_node<int>(2);
-			it1->next->prev = it1.get();
-			++it1;
-			cout << *it1 << endl;				//2
+			list<int>::iterator iter5(1);
+			iter5->next = new kkli::list_node<int>(2); //operator ->
+			list<int>::iterator iter6 = iter5;
+			++iter6;
+			iter6->prev = iter5.get();
+			EXPECT_EQ_VAL(*iter6, 2);
 
 			//operator ++(int)
-			it1 = it2;
-			cout << *(it1++) << endl;			//1
-			cout << *it1 << endl;				//2
+			EXPECT_EQ_VAL(*(iter6++), 2);
+			EXPECT_EQ_VAL(iter6.get(), nullptr);
 
 			//operator --
-			--it1;
-			cout << *it1 << endl;				//1
-			
+			iter6 = kkli::next(iter5);
+			--iter6;
+			EXPECT_EQ_VAL(*iter6, 1);
+
 			//operator --(int)
-			++it1;
-			cout << (*it1--) << endl;			//2
+			EXPECT_EQ_VAL(*(iter6--), 1);
+			EXPECT_EQ_VAL(iter6.get(), nullptr);
 
 			//operator ==
-			list<int>::iterator it4(1);
-			cout << (it1 == it4 ? "true" : "false") << endl;	//false
-			list<int>::iterator it5(it4);
-			cout << (it4 == it5 ? "true" : "false") << endl;	//true
-
-			//operator *
-			const list<int>::iterator it6(2);
-			cout << *it4 << endl;		//1
-			cout << *it6 << endl;		//2
-			*it4 = 2;
-			cout << *it4 << endl;		//2
-
-			//operator ->
-			cout << it4->value << endl;		//2
-			cout << it6->value << endl;		//2
-			it4->value = 1;
-			cout << it4->value << endl;		//1
+			iter6 = iter5;
+			EXPECT_EQ_VAL(iter6 == iter5, true);
+			++iter6;
+			EXPECT_EQ_VAL(iter6 == iter5, false);
 		}
 
+		//≤‚ ‘ constructor
+		void test_constructor() {
+			cout << "test: constructor()" << endl;
+
+			list<int> lst1; //list()
+			EXPECT_EQ_VAL(lst1.empty(), true);
+
+			list<int> lst2(4, 1); //list(count, value)
+			EXPECT_EQ_ITERVAL(lst2.begin(), lst2.end(), 1);
+
+			list<int> lst3(4); //list(count)
+			EXPECT_EQ_ITERVAL(lst3.begin(), lst3.end(), 0);
+
+			list<int> lst4(lst2); //list(rhs)
+			EXPECT_EQ_ITERVAL(lst4.begin(), lst4.end(), 1);
+
+			list<int> lst5(std::move(lst3)); //list(&&rhs)
+			EXPECT_EQ_ITERVAL(lst5.begin(), lst5.end(), 0);
+
+			list<int> lst6{ 1,2,3,4 };
+			EXPECT_EQ_ITERLIST(lst6.begin(), lst6.end(), { 1,2,3,4 });
+		}
+
+		//≤‚ ‘ operator=
+		void test_op_assign() {
+			cout << "test: operator=" << endl;
+
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			list<int> lst3{ 5,6,7,8 };
+			list<int> lst4;
+
+			lst1 = lst2; //operator(rhs)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
+			
+			lst1 = lst4;
+			EXPECT_EQ_VAL(lst1.empty(), true);
+
+			lst1 = std::move(lst3); //operator(&&rhs)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 5,6,7,8 });
+
+			lst1 = std::move(lst4);
+			EXPECT_EQ_VAL(lst1.empty(), true);
+		}
+
+		//≤‚ ‘ assign
+		//TODO: 
+		
+		/*
 		//≤‚ ‘ constructor
 		void test_constructor() {
 			cout << "\ntest_constructor()" << endl;
@@ -596,5 +635,6 @@ namespace test {
 			cout << (list4 >= list3 ? "true" : "false") << endl;		//true
 			cout << (list3 >= list5 ? "true" : "false") << endl;		//false
 		}
+		*/
 	}
 }
