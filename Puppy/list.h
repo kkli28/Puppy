@@ -1,6 +1,8 @@
 #pragma once
 
 #include "stdafx.h"
+#include "iterator.h"
+#include "functional.h"
 #include "vector.h"
 #include "algorithm.h"
 
@@ -85,16 +87,18 @@ namespace kkli {
 
 		public:
 			//constructor
-			__iterator() = default;
+			__iterator() :iter(nullptr) {}
 			explicit __iterator(list_node<T>* ptr) :iter(ptr) {}
 			__iterator(const T& t) :iter(new list_node<T>(t)) {}
+			__iterator(T&& t) :iter(new list_node<T>(std::move(t))) {}
 			__iterator(const __iterator& it) :iter(it.iter) {}
 
 			//operator =
 			__iterator& operator=(const __iterator& it) = default;
 
 			//get
-			list_node<T>* get()const { return iter; }
+			list_node<T>*& get() { return iter; }
+			const list_node<T>*& get()const { return iter; }
 
 			//operator ++
 			__iterator& operator++() {
@@ -149,39 +153,37 @@ namespace kkli {
 		typedef value_type*					pointer;
 		typedef const value_type*			const_pointer;
 		typedef __iterator					iterator;
+		typedef __iterator					const_iterator; //注意！
+		typedef kkli::reverse_iterator<iterator>		reverse_iterator;
+		typedef kkli::reverse_iterator<const_iterator>	const_reverse_iterator;
 		typedef std::size_t					size_type;
 		typedef std::ptrdiff_t				difference_type;
 		typedef std::forward_iterator_tag	iterator_category;
-
-		//************************************************************
-		// WRONG! const_iterator应该实现为指向常量的指针，而不是常量指针
-		//************************************************************
-		//typedef const iterator				const_iterator;
-		typedef __iterator						const_iterator;
 
 	private:
 		iterator __head;		//头节点指针
 		size_type __size;		//链表有效长度
 
-		//创建头节点，设置__size为0，并设置好__head的next与prev
+		//创建头节点，并设置__size
 		void create_head_node();
+		
+		//从链表中偷取元素
+		void cheat_from_rhs(list&& rhs);
 
+	public:
 		//获取[first, last)指示范围的长度
 		static size_type get_size(iterator first, iterator last);
 
-		//从链表中偷取
-		void cheat_from_rhs(list&& rhs);
-	public:
 		//constructor
 		list() { create_head_node(); }
 		list(size_type count, const value_type& value);
 		list(size_type count) :list(count, value_type()) {}
 		list(const list& rhs);
 		list(list&& rhs);
-		list(std::initializer_list<T> il);
+		list(std::initializer_list<T> init);
 
 		/*
-		//需要SFINAE，暂时不会，故没有实现该构造函数
+		//需要SFINAE，暂时不会
 		template< class InputIt >
 		list(InputIt first, InputIt last);
 		*/
@@ -193,10 +195,11 @@ namespace kkli {
 		list& operator=(const list& rhs);
 		list& operator=(list&& rhs);
 
-		//其他成员函数
-		std::allocator<T> get_allocator()const { return std::allocator<T>(); }
+		//assign
 		void assign(size_type count, const value_type& value);
 		void assign(std::initializer_list<T> il);
+
+		//others
 		reference front() {
 			if (__size == 0) throw std::runtime_error("list is empty!");
 			return __head->next->value;
@@ -213,10 +216,15 @@ namespace kkli {
 			if (__size == 0) throw std::runtime_error("list is empty!");
 			return __head->prev->value;
 		}
-		iterator begin() { return ++iterator(__head); }
-		const_iterator cbegin()const { return ++iterator(__head); }
+		iterator begin() { return kkli::next(__head); }
+		const_iterator cbegin()const { return kkli::next(__head); }
 		iterator end() { return __head; }
 		const_iterator cend()const { return __head; }
+		reverse_iterator rbegin() { return reverse_iterator(this->end()); }
+		const_reverse_iterator crbegin() { return const_reverse_iterator(this->cend()); }
+		reverse_iterator rend() { return reverse_iterator(this->begin()); }
+		const_reverse_iterator crend() { return const_reverse_iterator(this->cbegin()); }
+
 		bool empty()const { return __size == 0; }
 		size_type size()const { return __size; }
 		constexpr static size_type max_size() { return std::numeric_limits<size_type>::max(); }
@@ -226,26 +234,10 @@ namespace kkli {
 		iterator insert(iterator pos, const value_type& value) {
 			return insert(pos, 1, value);
 		}
-		iterator insert(iterator pos, std::initializer_list<value_type> il);
-
-		/*
-		//不想写emplace相关函数
-		template<typename... Args>
-		iterator emplace(const_iterator pos, Args&&... args);
-
-		template<typename... Args>
-		void emplace_back(Args&&... args);
-
-		template<typename... Args>
-		void emplace_front(Args&&... args);
-		*/
+		iterator insert(iterator pos, std::initializer_list<value_type> init);
 
 		iterator erase(iterator first, iterator last);
-		iterator erase(iterator pos) {
-			iterator iter = pos;
-			++iter;
-			return erase(pos, iter);
-		}
+		iterator erase(iterator pos) { return erase(pos, kkli::next(pos)); }
 		void push_back(const value_type& value);
 		void push_back(value_type&& value);
 		void pop_back();
@@ -257,8 +249,8 @@ namespace kkli {
 		void swap(list& rhs);
 
 		template<typename Compare>
-		void merge(list&& rhs, Compare comp);
-		void merge(list&& rhs) { merge(std::move(rhs), std::less<T>()); }
+		void merge(list& rhs, Compare comp);
+		void merge(list& rhs) { merge(rhs, kkli::less<T>()); }
 
 		void splice(iterator pos, list& rhs, iterator first, iterator last);
 		void splice(iterator pos, list& rhs, iterator it) {
@@ -273,20 +265,19 @@ namespace kkli {
 		void remove(const value_type& value) {
 			remove_if([&value](const value_type& val) ->bool {return val == value; });
 		}
-
 		void reverse();
-		
+
 		template<typename BinaryPredicate>
 		void unique(BinaryPredicate pred);
 		void unique() {
-			unique([](const T& t1, const T& t2)->bool {return t1 == t2; });
+			unique(kkli::equal_to<value_type>());
 		}
 
 		template<typename Compare>
-		void sort(Compare comp = std::less<T>());
-		void sort() { sort(std::less<T>()); }
+		void sort(Compare comp);
+		void sort() { sort(kkli::less<value_type>()); }
 
-		void print(const std::string& obj_name = "")const;
+		void print(const kkli::string& prefix)const;
 	};
 }
 
@@ -308,14 +299,14 @@ namespace kkli {
 	template<typename T>
 	typename list<T>::size_type list<T>::get_size(iterator first, iterator last) {
 		size_type size = 0;
-		for (auto iter = first; iter != last; ++iter)
-			++size;
+		for (auto iter = first; iter != last; ++iter, ++size);
 		return size;
 	}
 
 	//cheat_from_rhs(&&rhs)
 	template<typename T>
 	void list<T>::cheat_from_rhs(list&& rhs) {
+		clear();
 		__head->next = rhs.__head->next;
 		__head->next->prev = __head.get();
 		__head->prev = rhs.__head->prev;
@@ -331,8 +322,8 @@ namespace kkli {
 	list<T>::list(size_type count, const value_type& value) {
 		if (count == 0) return;
 		create_head_node();			//创建头节点，不算入有效节点
-		for (size_type i = 0; i < count; ++i)
-			push_back(value);
+		for (; count > 0; --count)
+			this->push_back(value);
 	}
 
 	//list(rhs)
@@ -340,7 +331,7 @@ namespace kkli {
 	list<T>::list(const list& rhs) {
 		create_head_node();
 		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter)
-			push_back(*iter);
+			this->push_back(*iter);
 	}
 
 	//list(&&rhs)
@@ -352,35 +343,35 @@ namespace kkli {
 
 	//list(il)
 	template<typename T>
-	list<T>::list(std::initializer_list<T> il) {
+	list<T>::list(std::initializer_list<T> init) {
 		create_head_node();
-		for (auto iter = il.begin(); iter != il.end(); ++iter)
-			push_back(*iter);
+		auto end = init.end();
+		for (auto iter = init.begin(); iter != end; ++iter)
+			this->push_back(*iter);
 	}
 
 	//~list()
 	template<typename T>
 	list<T>::~list() {
 		clear();				//清空有效节点
-		__head->next = nullptr;
-		__head->prev = nullptr;
 		delete __head.get();	//删除头节点
 	}
 
-	//operator =
+	//operator =(rhs)
 	template<typename T>
 	list<T>& list<T>::operator=(const list& rhs) {
-		if (this == &rhs) return *this;				//避免自我赋值
-		clear();									//清空原有节点（保留头节点）
+		if (this == &rhs) return *this;		//避免自我赋值
+		clear();
 		for (auto iter = rhs.cbegin(); iter != rhs.cend(); ++iter)
 			push_back(*iter);
 		return *this;
 	}
 
+	//operator =(&&rhs)
 	template<typename T>
 	list<T>& list<T>::operator=(list&& rhs) {
-		if (this == &rhs) return *this;				//避免自我赋值
-		clear();									//清空原有节点（会保留头节点）
+		if (this == &rhs) return *this;
+		clear();
 		cheat_from_rhs(std::move(rhs));
 		return *this;
 	}
@@ -389,14 +380,15 @@ namespace kkli {
 	template<typename T>
 	void list<T>::assign(size_type count, const value_type& value) {
 		clear();
-		for (size_type i = 0; i < count; ++i)
-			push_back(value);
+		for (; count > 0; --count) push_back(value);
 	}
 
+	//assign(init)
 	template<typename T>
-	void list<T>::assign(std::initializer_list<value_type> il) {
+	void list<T>::assign(std::initializer_list<value_type> init) {
 		clear();
-		for (auto iter = il.begin(); iter != il.end(); ++iter)
+		auto end = init.end();
+		for (auto iter = init.begin(); iter != end; ++iter)
 			push_back(*iter);
 	}
 
@@ -408,8 +400,9 @@ namespace kkli {
 		__head->prev->next = nullptr;			//末尾节点的next置空，作为循环结束条件
 
 		auto ptr = __head->next;				//删除非__head的所有节点
+		auto del_ptr = ptr;
 		while (ptr != nullptr) {
-			auto del_ptr = ptr;
+			del_ptr = ptr;
 			ptr = ptr->next;
 			delete del_ptr;
 		}
@@ -428,8 +421,8 @@ namespace kkli {
 		node->prev = pos.get();
 		pos->next = node;
 		node->next->prev = node;
-		++__size;	//差点忘了
-		return pos;
+		++__size;
+		return ++pos;
 	}
 
 	//insert(pos, count, value)
@@ -454,14 +447,14 @@ namespace kkli {
 		pos->next->prev = head_node->prev;
 		pos->next = head_node->next;
 		delete head_node;
-		__size += size;		//差点忘了
+		__size += size;
 
-		return pos;
+		return ++pos;
 	}
 
-	//insert(pos, il)
+	//insert(pos, init)
 	template<typename T>
-	typename list<T>::iterator list<T>::insert(iterator pos, std::initializer_list<value_type> il) {
+	typename list<T>::iterator list<T>::insert(iterator pos, std::initializer_list<value_type> init) {
 		list_node<T>* head_node = new list_node<T>();
 
 		//创建由count个值为value的节点链
@@ -481,33 +474,29 @@ namespace kkli {
 		pos->next->prev = head_node->prev;
 		pos->next = head_node->next;
 		delete head_node;
-		__size += size;			//差点忘了
+		__size += size;
 
-		return pos;
+		return ++pos;
 	}
 
 	//erase(first, last)
 	template<typename T>
 	typename list<T>::iterator list<T>::erase(iterator first, iterator last) {
-		iterator prev_first = first;		//first的前一个节点
-		--prev_first;
-		iterator prev_last = last;			//last的前一个节点
-		--prev_last;
-
-		//跳过[first,prev_last]，重新链接，[first,prev_last]链所有元素都需要删除
-		prev_first->next = prev_last->next;
-		prev_first->next->prev = prev_first.get();
+		//跳过[first, last)重新链接
+		first->prev->next = last.get();
+		last->prev = first->prev;
 
 		//删除[first, prev_last]所指元素，注意，last指向的元素在this上，不在待删除链上
-		list_node<T>* ptr = first.get();			//指向待删除节点的循环指针
-		list_node<T>* end_ptr = prev_last->next;	//最末待删除节点的next指针
+		list_node<T>* ptr = first.get(); //循环指针
+		list_node<T>* end_ptr = last.get();
+		list_node<T>* del_ptr = ptr;
 		while (ptr != end_ptr) {
-			list_node<T>* del_ptr = ptr;
+			del_ptr = ptr;
 			ptr = ptr->next;
 			delete del_ptr;
 			--__size;
 		}
-		return ++prev_first;
+		return last;
 	}
 
 	//push_back(value)
@@ -581,173 +570,8 @@ namespace kkli {
 	void list<T>::resize(size_type count, const value_type& value) {
 		if (count <= __size) return;		//不能减少元素
 		count -= __size;
-		for (size_type i = 0; i < count; ++i)
+		for (; count > 0; --count)
 			push_back(value);
-	}
-
-	//merge(&&rhs)
-	template<typename T>
-	template<typename Compare>
-	void list<T>::merge(list&& rhs,Compare comp) {
-		iterator lhs_beg = this->begin();
-		iterator lhs_end = this->end();
-		iterator rhs_beg = rhs.begin();
-		iterator rhs_end = rhs.end();
-
-		//对两链表节点进行比较，并将满足条件者插入到__head后
-		iterator iter = __head;
-		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
-			if (comp(*lhs_beg, *rhs_beg)) {
-				iter->next = lhs_beg.get();
-				iter->next->prev = iter.get();
-				++lhs_beg;
-			}
-			else {
-				iter->next = rhs_beg.get();
-				iter->next->prev = iter.get();
-				++rhs_beg;
-			}
-			++iter;
-		}
-
-		//rhs的末尾节点是否作为最终末尾节点
-		bool tail_rhs = (rhs_beg != rhs_end ? true : false);
-
-		//将剩余节点添加到链表中
-		while (lhs_beg != lhs_end) {
-			iter->next = lhs_beg.get();
-			iter->next->prev = iter.get();
-			++lhs_beg;
-			++iter;
-		}
-		while (rhs_beg != rhs_end) {
-			iter->next = rhs_beg.get();
-			iter->next->prev = iter.get();
-			++rhs_beg;
-			++iter;
-		}
-
-		//如果rhs的末尾节点作为最终末尾节点
-		if (tail_rhs) {
-			rhs.__head->prev->next = __head.get();
-			__head->prev = rhs.__head->prev;
-		}
-
-		//更新rhs的__head
-		rhs.__head->prev = rhs.__head.get();
-		rhs.__head->next = rhs.__head.get();
-
-		//更新__size
-		__size += rhs.__size;
-		rhs.__size = 0;
-	}
-
-	//splice(pos, rhs, first, last)
-	template<typename T>
-	void list<T>::splice(iterator pos, list& rhs, iterator first, iterator last) {
-		size_type size = get_size(first, last);			//获取[first, last)的长度
-
-		--last;			//更改last指向
-
-		//将first的前一个节点连到last后一个节点上
-		first->prev->next = last->next;
-		last->next->prev = first->prev;
-
-		//将[first, last]指示节点插入到pos后
-		last->next = pos->next;
-		pos->next->prev = last.get();
-		first->prev = pos.get();
-		pos->next = first.get();
-
-		__size += size;
-		rhs.__size -= size;
-	}
-
-	//remove_if(pred)
-	template<typename T>
-	template<typename UnaryPredicate>
-	void list<T>::remove_if(UnaryPredicate pred) {
-		iterator iter = this->begin();
-		while (iter != end()) {
-			if (pred(*iter)) {
-				list_node<T>* del_ptr = iter.get();
-				--iter;
-				iter->next = iter->next->next;
-				iter->next->prev = iter.get();
-				delete del_ptr;
-				--__size;
-			}
-			++iter;
-		}
-	}
-
-	//reverse()
-	template<typename T>
-	void list<T>::reverse() {
-		//先反转__head的next与prev
-		iterator iter = __head;
-		iterator end = __head;
-		list_node<T>* temp_ptr = iter->next;
-		iter->next = iter->prev;
-		iter->prev = temp_ptr;
-
-		--iter;				//注意，__head的next与prev交换后，要找到下一个元素，需要--
-		while (iter != end) {
-			temp_ptr = iter->next;
-			iter->next = iter->prev;
-			iter->prev = temp_ptr;
-			--iter;
-		}
-	}
-
-	//unique(pred)
-	template<typename T>
-	template<typename BinaryPredicate>
-	void list<T>::unique(BinaryPredicate pred) {
-		if (__size == 0 || __size == 1) return;
-
-		//默认list已排序
-		iterator iter = begin();
-		++iter;					//跳过第一个元素
-
-		//将this中重复的元素放到head_node所指链表中
-		for (; iter != end(); ++iter) {
-			iterator prev_iter = iter;
-			--prev_iter;
-			if (pred(*iter,*prev_iter)) {
-				//iter前一个元素连接iter后一个元素
-				prev_iter->next = prev_iter->next->next;
-				prev_iter->next->prev = prev_iter.get();
-
-				//删除iter所指元素
-				list_node<T>* del_ptr = iter.get();
-				delete del_ptr;
-				--__size;
-				iter = prev_iter;
-			}
-		}
-	}
-
-	//sort(comp)
-	template<typename T>
-	template<typename Compare>
-	void list<T>::sort(Compare comp=std::less<T>()) {
-		//将所有节点存入vector，进行排序
-		kkli::vector<list_node<T>*> vec(__size);
-		int index = 0;
-		for (auto iter = this->begin(); iter != this->end(); ++iter)
-			vec[index++] = iter.get();
-		kkli::sort(vec.begin(), vec.end(), [=](list_node<T>* ptr1, list_node<T>* ptr2)->bool {return comp(ptr1->value, ptr2->value); });
-		
-		//重新建立节点间的链接
-		auto head = __head;
-		for (auto iter = vec.begin(); iter != vec.end(); ++iter) {
-			head->next = *iter;
-			(*iter)->prev = head.get();
-			++head;
-		}
-		head->next = __head.get();
-		__head->prev = head.get();
 	}
 
 	//swap(rhs)
@@ -773,18 +597,168 @@ namespace kkli {
 		//rhs头结点prev指向this最后一个节点
 		rhs.__head->prev = temp_end.get();
 		temp_end->next = rhs.__head.get();
-		 
+
 		//更新__size
-		size_type temp_size = __size;
-		__size = rhs.__size;
-		rhs.__size = temp_size;
+		kkli::swap(__size, rhs.__size);
+	}
+
+	//merge(&&rhs)
+	template<typename T>
+	template<typename Compare>
+	void list<T>::merge(list& rhs,Compare comp) {
+		iterator lhs_beg = this->begin();
+		iterator lhs_end = this->end();
+		iterator rhs_beg = rhs.begin();
+		iterator rhs_end = rhs.end();
+
+		//对两链表节点进行比较，并将满足条件者插入到__head后
+		iterator iter = __head;
+		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (comp(*lhs_beg, *rhs_beg)) {
+				iter->next = lhs_beg.get();
+				iter->next->prev = iter.get();
+				++lhs_beg;
+			}
+			else {
+				iter->next = rhs_beg.get();
+				iter->next->prev = iter.get();
+				++rhs_beg;
+			}
+			++iter;
+		}
+
+		//将剩余节点添加到链表中
+		while (lhs_beg != lhs_end) {
+			iter->next = lhs_beg.get();
+			iter->next->prev = iter.get();
+			++lhs_beg;
+			++iter;
+		}
+		while (rhs_beg != rhs_end) {
+			iter->next = rhs_beg.get();
+			iter->next->prev = iter.get();
+			++rhs_beg;
+			++iter;
+		}
+
+		iter->next = __head.get();
+		__head->prev = iter.get();
+
+		//更新rhs的__head
+		rhs.__head->prev = rhs.__head.get();
+		rhs.__head->next = rhs.__head.get();
+
+		//更新__size
+		__size += rhs.__size;
+		rhs.__size = 0;
+	}
+
+	//splice(pos, rhs, first, last)
+	template<typename T>
+	void list<T>::splice(iterator pos, list& rhs, iterator first, iterator last) {
+		size_type size = get_size(first, last);			//获取[first, last)的长度
+		//将first的前一个节点连到last后一个节点上
+		first->prev->next = last.get();
+		last->prev = first->prev;
+
+		//更改last指向，并将[first, last]指示节点插入到pos后
+		--last;
+		last->next = pos->next;
+		pos->next->prev = last.get();
+		first->prev = pos.get();
+		pos->next = first.get();
+
+		__size += size;
+		rhs.__size -= size;
+	}
+
+	//remove_if(pred)
+	template<typename T>
+	template<typename UnaryPredicate>
+	void list<T>::remove_if(UnaryPredicate pred) {
+		iterator iter = this->begin();
+		iterator end = this->end();
+		while (iter != end) {
+			if (pred(*iter)) {
+				list_node<T>* del_ptr = iter.get();
+				--iter;
+				iter->next = iter->next->next;
+				iter->next->prev = iter.get();
+				delete del_ptr;
+				--__size;
+			}
+			++iter;
+		}
+	}
+
+	//reverse()
+	template<typename T>
+	void list<T>::reverse() {
+		//先反转__head的next与prev
+		iterator iter = __head;
+		iterator end = __head;
+		kkli::swap(iter->next, iter->prev);
+
+		--iter;				//注意，__head的next与prev交换后，要找到下一个元素，需要--
+		while (--iter != end) {
+			kkli::swap(iter->next, iter->prev);
+		}
+	}
+
+	//unique(pred)
+	template<typename T>
+	template<typename BinaryPredicate>
+	void list<T>::unique(BinaryPredicate pred) {
+		if (__size == 0 || __size == 1) return;
+
+		iterator iter = kkli::next(this->begin());
+		auto end = this->end();
+
+		//将this中重复的元素放到head_node所指链表中
+		for (; iter != end; ++iter) {
+			iterator prev_iter = kkli::prev(iter);
+			if (pred(*iter,*prev_iter)) {
+				//iter前一个元素连接iter后一个元素
+				prev_iter->next = prev_iter->next->next;
+				prev_iter->next->prev = prev_iter.get();
+
+				//删除iter所指元素
+				delete iter.get();
+				--__size;
+				iter = prev_iter;
+			}
+		}
+	}
+
+	//sort(comp)
+	template<typename T>
+	template<typename Compare>
+	void list<T>::sort(Compare comp) {
+		//将所有节点对应的迭代器存入vector，进行排序
+		kkli::vector<iterator> vec(__size);
+		int index = 0;
+		auto end = this->end();
+		for (auto iter = this->begin(); iter != end; ++iter)
+			vec[index++] = iter;
+		kkli::sort(vec.begin(), vec.end(), [](iterator iter1, iterator iter2)->bool {return comp(iter1->value, iter2->value); });
+		
+		//重新建立节点间的链接
+		auto head = __head;
+		for (auto iter = vec.begin(); iter != vec.end(); ++iter) {
+			head->next = (*iter).get();
+			(*iter)->prev = head.get();
+			++head;
+		}
+		head->next = __head.get();
+		__head->prev = head.get();
 	}
 
 	//print(prefix)
 	template<typename T>
-	void list<T>::print(const std::string& obj_name)const {
-		std::cout << obj_name << ": ";
-		for (auto iter = this->cbegin(); iter != this->cend(); ++iter)
+	void list<T>::print(const kkli::string& prefix)const {
+		std::cout << prefix << ": ";
+		auto cend = this->cend();
+		for (auto iter = this->cbegin(); iter != cend; ++iter)
 			std::cout << *iter << " ";
 		std::cout << std::endl;
 		std::cout << "size: " << __size << std::endl;
@@ -829,15 +803,13 @@ namespace kkli {
 		auto rhs_end = rhs.cend();
 		bool smaller = false;
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
-			if (*lhs_beg > *rhs_beg) return false;
-			else if (*lhs_beg < *rhs_beg) smaller = true;
+			if (*lhs_beg < *rhs_beg) return true;
+			if (*rhs_beg < *lhs_beg) return false;
 			++lhs_beg;
 			++rhs_beg;
 		}
-		if (lhs_beg != lhs_end) return false;		//lhs更长，false
-		if (rhs_beg != rhs_end) return true;		//rhs更长，true
-		if (smaller) return true;					//两者等长，则需要lhs中有元素小于rhs中对应元素
-		return false;
+		if (lhs_beg == lhs_end) return true;		//lhs更短
+		return false
 	}
 
 	//operator >
@@ -847,17 +819,14 @@ namespace kkli {
 		auto lhs_end = lhs.cend();
 		auto rhs_beg = rhs.cbegin();
 		auto rhs_end = rhs.cend();
-		bool greater = false;
 		while (lhs_beg != lhs_end && rhs_beg != rhs_end) {
+			if (*rhs_beg < *lhs_beg) return true;
 			if (*lhs_beg < *rhs_beg) return false;
-			else if (*lhs_beg > *rhs_beg) greater = true;
 			++lhs_beg;
 			++rhs_beg;
 		}
-		if (lhs_beg != lhs_end) return true;		//lhs更长，true
-		if (rhs_beg != rhs_end) return false;		//rhs更长，false
-		if (greater) return true;					//两者等长，则需要lhs中有元素大于rhs中对应元素
-		return false;
+		if (lhs_beg == lhs_end) return false; //lhs更短
+		return true;
 	}
 
 	//operator <=
