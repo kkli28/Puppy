@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "test.h"
 #include "vector.h"
 
 namespace test {
@@ -8,22 +9,23 @@ namespace test {
 
 		using std::cout;
 		using std::endl;
-		using std::string;
 		using kkli::vector;
 
 		//«∞÷√…˘√˜
 		void test_constructor();
 		void test_destructor();
-		void test_op_assign();				//test: operator =
+		void test_op_assign();			//test: operator =
 		void test_assign();
-		void test_op_square_bracket();		//test: operator []
-		void test_begin_and_end();
+		void test_at();
+		void test_op_square_bracket();	//test: operator []
 		void test_front_and_back();
 		void test_data();
+		void test_begin_and_end();
+		void test_rbegin_and_rend();
 		void test_empty();
 		void test_size();
 		void test_reserve();
-		void test_shrink_to_fit();
+		void tset_capacity();
 		void test_clear();
 		void test_insert();
 		void test_erase();
@@ -31,334 +33,79 @@ namespace test {
 		void test_pop_back();
 		void test_resize();
 		void test_swap();
-		void test_op_compare();				//test: operator == / != ...
+		void test_operators();		//test: operator == / != ...
 
 		//’˚ÃÂ≤‚ ‘
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: vector " << endl;
+			cout << "          test: vector.h " << endl;
 			cout << "========================================" << endl;
 
 			test_constructor();
-			test_destructor();
-			test_op_assign();
-			test_assign();
-			test_op_square_bracket();
-			test_begin_and_end();
-			test_front_and_back();
-			test_data();
-			test_empty();
-			test_size();
-			test_reserve();
-			test_shrink_to_fit();
-			test_clear();
-			test_insert();
-			test_erase();
-			test_push_back();
-			test_pop_back();
-			test_resize();
-			test_swap();
-			test_op_compare();
+			//test_destructor();
+			//test_op_assign();
+			//test_assign();
+			//test_at();
+			//test_op_square_bracket();
+			//test_front_and_back();
+			//test_data();
+			//test_begin_and_end();
+			//test_rbegin_and_rend();
+			//test_empty();
+			//test_size();
+			//test_reserve();
+			//tset_capacity();
+			//test_clear();
+			//test_insert();
+			//test_erase();
+			//test_push_back();
+			//test_pop_back();
+			//test_resize();
+			//test_swap();
+			//test_operators();
 		}
 
 		//≤‚ ‘ constructor
 		void test_constructor() {
-			cout << "\ntest_constructor()" << endl;
+			cout << "test: constructor()" << endl;
 
-			//vector()
-			vector<int> vec1;
-			vec1.print("vec1: ");
+			vector<int> vec1; //vector()
+			EXPECT_EQ_VAL(vec1.empty(), true);
+			EXPECT_EQ_VAL(vec1.size(), 0);
+			EXPECT_EQ_VAL(vec1.capacity(), 0);
 
-			//vector(size_type, const T&, const Allocator&)
-			vector<int> vec2(4);
-			vec2.print("vec2: ");
-			vector<int> vec3(4, 1);
-			vec3.print("vec3: ");
-			vector<int,std::allocator<int>> vec4(4, 2, std::allocator<int>());
-			vec4.print("vec4: ");
+			vector<int> vec2{ kkli::allocator<int>() }; //vector(alloc)
+			EXPECT_EQ_VAL(vec2.empty(), true);
+			EXPECT_EQ_VAL(vec2.size(), 0);
+			EXPECT_EQ_VAL(vec2.capacity(), 0);
 
-			//vector(InputIterator, InputIterator) -- ∏√ππ‘Ï√ª”–∂®“Â£¨–Ë“™ π”√SFINAE£¨≤ªª·£°£°£°
-			//vector<int> vec(vec3.begin(), vec3.end());
-			//vec.print("vec5: ");
+			vector<int> vec3(4, 1); //vector(count, value)
+			EXPECT_EQ_ITERVAL(vec3.begin(), vec3.end(), 1);
+			EXPECT_EQ_VAL(vec3.size(), 4);
+			EXPECT_EQ_VAL(vec3.capacity(), 4);
 
-			//vector(const vector&)
-			vector<int> vec5(vec1);
-			vec5.print("vec5: ");
-			vector<int> vec6(vec3);
-			vec6.print("vec6: ");
-			
-			//vector(vector&&)
-			vector<int> vec7(std::move(vec6));
-			vec7.print("vec7: ");
-			vec6.print("vec6: ");
+			vector<int> vec4(4); //vector(count)
+			EXPECT_EQ_ITERVAL(vec4.begin(), vec4.end(), 0);
+			EXPECT_EQ_VAL(vec4.size(), 4);
+			EXPECT_EQ_VAL(vec4.capacity(), 4);
 
-			//vector(initializer_list)
-			vector<int> vec8{ 1,2,3,4 };
-			vec8.print("vec8: ");
-		}
+			vector<int> vec5(vec3); //vector(rhs)
+			EXPECT_EQ_ITERVAL(vec5.begin(), vec5.end(), 1);
+			EXPECT_EQ_VAL(vec5.size(), 4);
+			EXPECT_EQ_VAL(vec5.capacity(), 4);
 
-		//≤‚ ‘ destructor
-		void test_destructor() {
-			cout << "\ntest_destructor()" << endl;
+			vector<int> vec6(std::move(vec3)); //vector(&&rhs)
+			EXPECT_EQ_ITERVAL(vec6.begin(), vec6.end(), 1);
+			EXPECT_EQ_VAL(vec6.size(), 4);
+			EXPECT_EQ_VAL(vec6.capacity(), 4);
+			EXPECT_EQ_VAL(vec3.empty(), true);
+			EXPECT_EQ_VAL(vec3.size(), 0);
+			EXPECT_EQ_VAL(vec3.capacity(), 0);
 
-			vector<int> vec{ 1,2,3,4 };
-			vec.~vector();
-			if (vec.data() == nullptr) cout << "Œˆππ≥…π¶" << endl;
-		}
-
-		//≤‚ ‘ operator =
-		void test_op_assign() {
-			cout << "\ntest_op_assign()" << endl;
-
-			vector<int> vec1;
-			vector<int> vec2;
-			vec2 = vec1;
-			vec2.print("vec2: ");
-
-			vector<int> vec3{ 1,2,3,4 };
-			vec2 = vec3;
-			vec2.print("vec2: ");
-			
-			vec3 = vec1;
-			vec3.print("vec3: ");
-		}
-
-		//≤‚ ‘ assign
-		void test_assign() {
-			cout << "\ntest_assign()" << endl;
-
-			vector<int> vec1;
-			vec1.assign(4, 1);
-			vec1.print("vec1: ");
-
-			vec1.assign({ 1,2,3,4 });
-			vec1.print("vec1: ");
-		}
-
-		//≤‚ ‘ operator []
-		void test_op_square_bracket() {
-			cout << "\ntest_op_square_bracket()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			cout << vec[0] << " " << vec[1] << " ";
-			cout << vec[2] << " " << vec[3] << endl;
-		}
-
-		//≤‚ ‘ begin / cbegin / end / cend
-		void test_begin_and_end() {
-			cout << "\ntest_begin_and_end()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			cout << "vec: ";
-			for (auto iter = vec.begin(); iter != vec.end(); ++iter)
-				cout << *iter << " ";
-			cout << endl;
-
-			cout << "vec: ";
-			for (auto iter = vec.cbegin(); iter != vec.cend(); ++iter)
-				cout << *iter << " ";
-			cout << endl;
-		}
-
-		//≤‚ ‘ front / back
-		void test_front_and_back() {
-			cout << "\ntest_front_and_back()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			cout << vec.front() << "  " << vec.back() << endl;
-		}
-
-		//≤‚ ‘ data
-		void test_data() {
-			cout << "\ntest_data()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			auto ptr = vec.data();
-			for (int i = 0; i < vec.size(); ++i)
-				cout << ptr[i] << " ";
-			cout << endl;
-		}
-
-		//≤‚ ‘ empty
-		void test_empty() {
-			cout << "\ntest_empty()" << endl;
-
-			cout << "vec1: " << (vector<int>().empty() ? "empty" : "non-empty") << endl;
-			cout << "vec2: " << (vector<int>{1, 2, 3, 4}.empty() ? "empty" : "not empty") << endl;
-		}
-
-		//≤‚ ‘ size
-		void test_size() {
-			cout << "\ntest_size()" << endl;
-
-			cout << vector<int>().size() << endl;
-			cout << vector<int>{1, 2, 3, 4}.size() << endl;
-		}
-
-		//≤‚ ‘ reserve
-		void test_reserve() {
-			cout << "\ntest_reserve()" << endl;
-
-			vector<int> vec1;
-			vector<int> vec2{ 1,2,3,4 };
-			vec1.reserve(4);
-			vec1.print("vec1: ");
-			vec2.reserve(2);
-			vec2.print("vec2: ");
-			auto old_data = vec2.data();
-			vec2.reserve(8);
-			vec2.print("vec2: ");
-			auto new_data = vec2.data();
-			cout << (old_data == new_data ? "not allocate memory" : "allocate memory") << endl;
-		}
-
-		//≤‚ ‘ shrink_to_fit
-		void test_shrink_to_fit() {
-			cout << "\ntest_shrink_to_fit()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			vec.shrink_to_fit();
-			vec.print("vec: ");
-
-			vec.push_back(5);
-			vec.print("vec: ");
-
-			vec.shrink_to_fit();
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ clear
-		void test_clear() {
-			cout << "\ntest_clear()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			vec.clear();
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ insert
-		void test_insert() {
-			cout << "\ntest_insert()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-
-			//insert(pos, il);
-			vec.insert(vec.begin(), { 1,2,3,4 });
-			vec.print("vec: ");
-			
-			//insert(pos, n, val)
-			vec.insert(vec.begin(), 4, 1);
-			vec.print("vec: ");
-
-			//insert(pos, val);
-			vec.insert(vec.begin(), 4);
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ erase
-		void test_erase() {
-			cout << "\ntest_erase()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			vec.erase(vec.begin(), vec.begin() + 2);
-			vec.print("vec: ");
-			vec.erase(vec.begin(), vec.end());
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ push_back
-		void test_push_back() {
-			cout << "\ntset_push_back()" << endl;
-
-			vector<int> vec;
-			vec.print("vec: ");
-
-			vec.push_back(1);
-			vec.print("vec: ");
-			
-			vec.push_back(2);
-			vec.print("vec: ");
-			
-			for (int i = 3; i < 9; ++i)
-				vec.push_back(i);
-			vec.print("vec: ");
-
-			vec.push_back(9);
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ pop_back
-		void test_pop_back() {
-			cout << "\ntest_pop_back()" << endl;
-
-			vector<int> vec{ 1,2,3,4 };
-			for (int i = 0; i < 4; ++i) {
-				vec.pop_back();
-				vec.print("vec: ");
-			}
-		}
-
-		//≤‚ ‘ resize
-		void test_resize() {
-			cout << "\ntest_resize()" << endl;
-
-			vector<int> vec;
-			vec.resize(4);
-			vec.print("vec: ");
-			vec.resize(2);
-			vec.print("vec: ");
-			vec.resize(8, 1);
-			vec.print("vec: ");
-		}
-
-		//≤‚ ‘ swap
-		void test_swap() {
-			cout << "\ntest_swap()" << endl;
-
-			vector<int> vec1;
-			vector<int> vec2{ 1,2,3,4 };
-			vec1.swap(vec2);
-			vec1.print("vec1: ");
-			vec2.print("vec2: ");
-			kkli::swap(vec1, vec2);
-			vec1.print("vec1: ");
-			vec2.print("vec2: ");
-
-			vector<int> vec3{ 5,6,7,8 };
-			vec2.swap(vec3);
-			vec2.print("vec2: ");
-			vec3.print("vec3: ");
-
-			kkli::swap(vec2, vec3);
-			vec2.print("vec2: ");
-			vec3.print("vec3: ");
-		}
-
-		//≤‚ ‘ compare
-		void test_op_compare() {
-			cout << "\ntest_compare()" << endl;
-
-			vector<int> vec1;
-			vector<int> vec2{ 1,2,3,4 };
-			vector<int> vec3{ 1,3,4,5 };
-			vector<int> vec4{ 1,2,3,4,5 };
-
-			//operator == / !=
-			cout << (vec1 == vec1 ? "==" : "!=") << endl;
-			cout << (vec1 == vec2 ? "==" : "!=") << endl;
-			cout << (vec2 == vec3 ? "==" : "!=") << endl;
-
-			//operator < / >=
-			cout << (vec1 < vec1 ? "< " : ">=") << endl;
-			cout << (vec1 < vec2 ? "< " : ">=") << endl;
-			cout << (vec2 < vec3 ? "< " : ">=") << endl;
-			cout << (vec2 < vec4 ? "< " : ">=") << endl;
-
-			//operator > / <=
-			cout << (vec1 > vec1 ? "> " : "<=") << endl;
-			cout << (vec1 > vec2 ? "> " : "<=") << endl;
-			cout << (vec2 > vec3 ? "> " : "<=") << endl;
-			cout << (vec2 > vec4 ? "> " : "<=") << endl;
+			vector<int> vec7{ 1,2,3,4 }; //vector(init)
+			EXPECT_EQ_ITERLIST(vec7.begin(), vec7.end(), { 1,2,3,4 });
+			EXPECT_EQ_VAL(vec7.size(), 4);
+			EXPECT_EQ_VAL(vec7.capacity(), 4);
 		}
 	}
 }

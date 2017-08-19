@@ -14,7 +14,6 @@ namespace kkli {
 	template<typename T, typename Allocator = kkli::allocator<T>>
 	class vector {
 	public:
-
 		//typedefs
 		typedef	T							value_type;
 		typedef Allocator					allocator_type;
@@ -78,7 +77,6 @@ namespace kkli {
 		}
 
 	public:
-
 		//constructors
 		vector() = default;
 		vector(const Allocator& alloc) :__alloc(alloc) {}
@@ -191,6 +189,7 @@ namespace kkli {
 	//__deallocate
 	template<typename T, typename Allocator>
 	void vector<T, Allocator>::__deallocate() {
+		if (this->empty()) return;
 		for (auto iter = __start; iter != __end; ++iter) __alloc.destroy(iter);
 		__alloc.deallocate(__start, __capacity - __start);
 	}
@@ -255,7 +254,7 @@ namespace kkli {
 		__start = rhs.__start;
 		__end = rhs.__end;
 		__capacity = rhs.__capacity;
-		rhs.reset_iterators();
+		rhs.__reset_iterators();
 	}
 
 	//vector(init, alloc)
@@ -363,7 +362,7 @@ namespace kkli {
 			for (; src_iter >= pos; --src_iter, --dst_iter) *dst_iter = *src_iter;
 
 			//写入值到pos
-			auto iter = __start + (pos - __strt);
+			auto iter = __start + (pos - __start);
 			__set_value_by_value(iter, count, value);
 			__end += count;
 			return __start + (pos - __start);
@@ -371,11 +370,11 @@ namespace kkli {
 		else { //剩余空间不足
 			size_type new_cap = (this->size() + count) * 2;
 			auto addr = __alloc.allocate(new_cap);
-			size_type index = __set_value_by_range(addr, __start, pos); //将[0, pos)写入新内存
+			size_type index = __set_value_by_range(addr, __start, iterator(pos)); //将[0, pos)写入新内存
 			auto ret = addr + index; //保存返回值
 			__set_value_by_value(addr, count, value); //写入值
 			index += count;
-			index += __set_value_by_range(addr + index, pos, __end); //将[pos, __end)写入新内存
+			index += __set_value_by_range(addr + index, iterator(pos), __end); //将[pos, __end)写入新内存
 			__deallocate(); //释放原有内存
 			__start = addr;
 			__end = __start + index;
@@ -552,7 +551,7 @@ namespace kkli{
 
 	//operator !=
 	template<typename T, typename Allocator>
-	bool operator==(const vector<T, Allocator> lhs, const vector<T, Allocator>& rhs) {
+	bool operator!=(const vector<T, Allocator> lhs, const vector<T, Allocator>& rhs) {
 		return !(lhs == rhs);
 	}
 
