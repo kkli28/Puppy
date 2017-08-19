@@ -54,7 +54,7 @@ namespace test {
 		//整体测试
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: string " << endl;
+			cout << "            string.h " << endl;
 			cout << "========================================" << endl;
 
 			//测试成员函数

@@ -41,34 +41,34 @@ namespace test {
 		//’˚ÃÂ≤‚ ‘
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: list " << endl;
+			cout << "            list.h " << endl;
 			cout << "========================================" << endl;
 
 			test_iterator();
 			test_constructor();
 			test_op_assign();
 			test_assign();
-			//test_front_and_back();
-			//test_begin_and_end();
-			//test_rbegin_and_rend();
-			//test_empty();
-			//test_size();
-			//test_clear();
-			//test_insert();
-			//test_erase();
-			//test_push_back();
-			//test_pop_back();
-			//test_push_front();
-			//test_pop_front();
-			//test_resize();
-			//test_swap();
-			//test_merge();
-			//test_splice();
-			//test_remove();
-			//test_reverse();
-			//test_unique();
-			//test_sort();
-			//test_operators();
+			test_front_and_back();
+			test_begin_and_end();
+			test_rbegin_and_rend();
+			test_empty();
+			test_size();
+			test_clear();
+			test_insert();
+			test_erase();
+			test_push_back();
+			test_pop_back();
+			test_push_front();
+			test_pop_front();
+			test_resize();
+			test_swap();
+			test_merge();
+			test_splice();
+			test_remove();
+			test_reverse();
+			test_unique();
+			test_sort();
+			test_operators();
 		}
 
 		//≤‚ ‘ iterator
@@ -165,476 +165,462 @@ namespace test {
 		}
 
 		//≤‚ ‘ assign
-		//TODO: 
-		
-		/*
-		//≤‚ ‘ constructor
-		void test_constructor() {
-			cout << "\ntest_constructor()" << endl;
-
-			list<int> list1;			//list()
-			list1.print("list1");
-
-			list<int> list2(4, 1);		//list(count, value)
-			list2.print("list2");
-
-			list<int> list3(2);			//list(count)
-			list3.print("list3");
-
-			list<int> list4(list2);		//list(rhs)
-			list4.print("list4");
-
-			list<int> list5(std::move(list4));		//list(&&rhs)
-			list5.print("list5");
-			list4.print("list4");
-
-			list<int> list6({ 1,2,3,4 });			//list(il)
-			list6.print("list6");
-		}
-
-		//≤‚ ‘ destructor
-		void test_destructor() {
-			cout << "\ntest_destructor()" << endl;
-
-			list<int> list1;
-			list<int> list2{ 1,2,3,4 };
-			list<int> list3(4, 1);
-			list<int> list4 = list2;
-			list<int> list5(std::move(list3));
-		}
-
-		//≤‚ ‘ operator =
-		void test_op_assign() {
-			cout << "\ntest_op_assign()" << endl;
-
-			list<int> list1;
-			list<int> list2;
-			list2 = list1;
-			list1.print("list1");		//list1: 
-			list2.print("list2");		//list2: 
-
-			list<int> list3{ 1,2,3,4 };
-			list2 = list3;
-			list2.print("list2");		//list2: 1 2 3 4
-			list3.print("list3");		//list3: 1 2 3 4
-
-			list1 = std::move(list3);
-			list1.print("list1");		//list1: 1 2 3 4
-			list3.print("list3");		//list3: 
-		}
-
-		//≤‚ ‘ assign
 		void test_assign() {
-			cout << "\ntest_assign()" << endl;
+			cout << "test: assign()" << endl;
 
-			list<int> list1;
-			list1.assign(4, 1);
-			list1.print("list1");			//list1: 1 1 1 1
+			list<int> lst1;
 
-			list1.assign({ 1,2,3,4 });
-			list1.print("list1");			//list1: 1 2 3 4
+			lst1.assign(4, 1); //assign(count, value)
+			EXPECT_EQ_ITERVAL(lst1.begin(), lst1.end(), 1);
+
+			lst1.assign({ 1,2,3,4 }); //assign(init)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
 		}
 
-		//≤‚ ‘ front / back
+		//≤‚ ‘ front ∫Õ back
 		void test_front_and_back() {
-			cout << "\ntest_front_and_back()" << endl;
+			cout << "test: front()" << endl;
+			cout << "test: back()" << endl;
 
-			list<int> list1{ 1,2,3,4 };
-			cout << list1.front() << endl;
-			cout << list1.back() << endl;
+			list<int> lst1{ 1,2,3,4 };
+			const list<int> lst2{ 1,2,3,4 };
+
+			EXPECT_EQ_VAL(lst1.front(), 1); //front
+			EXPECT_EQ_VAL(lst2.front(), 1);
+			
+			EXPECT_EQ_VAL(lst1.back(), 4); //back
+			EXPECT_EQ_VAL(lst2.back(), 4);
 		}
 
-		//≤‚ ‘ begin / end
+		//≤‚ ‘ begin & end & cbegin & cend
 		void test_begin_and_end() {
-			cout << "\ntest_begin_and_end()" << endl;
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			const list<int> lst3{ 5,6,7,8 };
 
-			list<int> list1;
-			cout << "list1: ";
-			for (auto iter = list1.begin(); iter != list1.end(); ++iter)
-				cout << *iter << " ";
-			cout << endl;
+			cout << "test: begin()" << endl;
+			cout << "test: end()" << endl;
+			EXPECT_EQ_VAL(lst1.begin(), lst1.end());
+			EXPECT_EQ_VAL(*(lst2.begin()), 1);
+			EXPECT_EQ_VAL(*(kkli::prev(lst2.end())), 4);
 
-			list<int> list2{ 1,2,3,4 };
-			cout << "list2: ";
-			for (auto iter = list2.begin(); iter != list2.end(); ++iter)
-				cout << *iter << " ";
-			cout << endl;
+			cout << "test: cbegin()" << endl;
+			cout << "test: cend()" << endl;
+			EXPECT_EQ_VAL(*(lst3.cbegin()), 5);
+			EXPECT_EQ_VAL(*(kkli::prev(lst3.cend())), 8);
+		}
 
-			cout << "list2: ";
-			for (auto l : list2) cout << l << " ";
-			cout << endl;
+		//≤‚ ‘ rbegin & rend & crbegin & crend
+		void test_rbegin_and_rend() {
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			const list<int> lst3{ 5,6,7,8 };
+
+			cout << "test: rbegin()" << endl;
+			cout << "test: rend()" << endl;
+			auto riter1 = lst1.rbegin();
+			auto riter2 = lst1.rend();
+			EXPECT_EQ_VAL(riter1, riter2);
+
+			riter1 = lst2.rbegin(); //rbegin
+			EXPECT_EQ_VAL(*(riter1++), 4);
+			EXPECT_EQ_VAL(*(riter1++), 3);
+			EXPECT_EQ_VAL(*(riter1++), 2);
+			EXPECT_EQ_VAL(*(riter1++), 1);
+			EXPECT_EQ_VAL(*(kkli::prev(lst2.rend())), 1); //rend
+
+			cout << "test: crbegin()" << endl;
+			cout << "test: crend()" << endl;
+			auto criter1 = lst3.crbegin(); //crbegin
+			EXPECT_EQ_VAL(*(criter1++), 8);
+			EXPECT_EQ_VAL(*(criter1++), 7);
+			EXPECT_EQ_VAL(*(criter1++), 6);
+			EXPECT_EQ_VAL(*(criter1++), 5);
+			EXPECT_EQ_VAL(*(kkli::prev(lst3.crend())), 5); //crend
 		}
 
 		//≤‚ ‘ empty
 		void test_empty() {
-			cout << "\ntest_empty()" << endl;
+			cout << "test: empty()" << endl;
 
-			list<int> list1;
-			list1.print("list1");
-			cout << "list1: "<< (list1.empty() ? "empty" : "not empty") << endl;
-
-			list<int> list2{ 1,2,3,4 };
-			list2.print("list2");
-			cout << "list2: " << (list2.empty() ? "empty" : "not empty") << endl;
-
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_VAL(lst2.empty(), false);
 		}
 
 		//≤‚ ‘ size
 		void test_size() {
-			cout << "\ntest_size()" << endl;
+			cout << "test: size()" << endl;
 
-			list<int> list1;
-			list<int> list2(4);
-			list<int> list3(4, 1);
-			list<int> list4{ 1,2,3,4 };
-			list<int> list_move{ 1,2,3,4 };
-			list<int> list5(std::move(list_move));
-			list<int> list6;
-			list6 = list5;
-
-			cout << list1.size() << endl;		//0
-			cout << list2.size() << endl;		//4
-			cout << list3.size() << endl;		//4
-			cout << list4.size() << endl;		//4
-			cout << list5.size() << endl;		//4
-			cout << list6.size() << endl;		//4
-
-			cout << "list's max_size: " << list<int>::max_size() << endl;
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			EXPECT_EQ_VAL(lst1.size(), 0);
+			EXPECT_EQ_VAL(lst2.size(), 4);
 		}
 
 		//≤‚ ‘ clear
 		void test_clear() {
-			cout << "\ntest_clear()" << endl;
+			cout << "test: clear()" << endl;
 
-			list<int> list1;
-			list<int> list2{ 1,2,3,4 };
-			list1.print("list1");
-			list2.print("list2");
-			list1.clear();
-			list2.clear();
-			list1.print("list1");
-			list2.print("list2");
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+
+			lst1.clear();
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_VAL(lst1.size(), 0);
+
+			lst2.clear();
+			EXPECT_EQ_VAL(lst2.empty(), true);
+			EXPECT_EQ_VAL(lst2.size(), 0);
 		}
 
 		//≤‚ ‘ insert
 		void test_insert() {
-			cout << "\ntest_insert()" << endl;
+			cout << "test: insert()" << endl;
 
-			list<int> list1{ 1,2,3,4 };
+			list<int> lst1{ 1,2,3,4 };
 
-			list1.insert(list1.begin(), 1);		//insert(pos, value)
-			list1.print("list1");				//list1: 1 1 2 3 4 
-			list1.insert(list1.begin(), 4, 1);	//insert(pos, count, value)
-			list1.print("list1");				//1ist1: 1 1 1 1 1 1 2 3 4
-			list<int>::iterator iter = list1.begin();
-			++(++(++(++iter)));
-			list1.insert(iter, 1);				//list1: 1 1 1 1 1 1 1 2 3 4 
-			list1.print("list1");
-			list1.insert(iter, { 1,2,3,4 });	//list1: 1 1 1 1 1 1 2 3 4 1 1 2 3 4 
-			list1.print("list1");
+			lst1.insert(lst1.begin(), std::move(1)); //insert(pos, &&value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,1,2,3,4 });
+
+			lst1.insert(kkli::next(lst1.begin(), 2), 2, 4); //insert(pos, count, value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,1,2,4,4,3,4 });
+
+			lst1.insert(kkli::next(lst1.begin(), 6), 5); //insert(pos, value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,1,2,4,4,3,4,5 });
+
+			lst1.insert(lst1.begin(), { 1,2,3,4 }); //insert(pos, init)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,1,2,3,4,1,2,4,4,3,4,5 });
 		}
 
 		//≤‚ ‘ erase
 		void test_erase() {
-			cout << "\ntest_erase()" << endl;
+			cout << "test: erase()" << endl;
 
-			list<int> list1;
-			list1.erase(list1.begin(), list1.end());
-			list1.print("list1");				//list1: 
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4,5,6,7,8 };
 
-			list<int> list2{ 1,2,3,4 };
-			list<int>::iterator iter = list2.begin();
-			++iter;
-			list2.erase(iter, list2.end());
-			list2.print("list2");				//list2: 1
+			lst1.erase(lst1.begin(), lst1.end()); //erase(first, last)
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_VAL(lst1.size(), 0);
+			lst2.erase(lst2.begin(), kkli::next(lst2.begin(), 2)); 
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 3,4,5,6,7,8 });
 
-			list<int> list3{ 1,2,3,4 };
-			list3.erase(list3.begin());
-			list3.print("list3");				//list3: 2 3 4
+			lst2.erase(lst2.begin()); //erase(pos)
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 4,5,6,7,8 });
+			lst2.erase(kkli::next(lst2.begin(), 2));
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 4,5,7,8 });
 		}
 
 		//≤‚ ‘ push_back
 		void test_push_back() {
-			cout << "\ntest_push_back()" << endl;
+			cout << "test: push_back()" << endl;
 
-			list<int> list1;
-			for (int i = 1; i < 5; ++i) {
-				list1.push_back(i);				//push_back(value)
-				list1.print("list1");			//1 2 3 4
-			}
-			cout << endl;
+			list<int> lst1;
+			
+			lst1.push_back(1); //push_back(value)
+			EXPECT_EQ_VAL(*(lst1.begin()), 1);
+			lst1.push_back(2);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2 });
 
-			int i = 5;
-			list1.push_back(std::move(i));		//push_back(&&value)
-			list1.print("list1");				//1 2 3 4 5
+			lst1.push_back(std::move(3)); //push_back(&&value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3 });
 		}
 
 		//≤‚ ‘ pop_back
 		void test_pop_back() {
-			cout << "\ntest_pop_back()" << endl;
+			cout << "test: pop_back()" << endl;
 
-			list<int> list1{ 1,2,3,4 };
-			for (int i = 0; i < 4; ++i) {
-				list1.pop_back();
-				list1.print("list1");
-			}
+			list<int> lst1{ 1,2,3,4 };
+			lst1.pop_back();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3 });
+			lst1.pop_back();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2 });
+			lst1.pop_back();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1 });
+			lst1.pop_back();
+			EXPECT_EQ_VAL(lst1.empty(), true);
 		}
 
 		//≤‚ ‘ push_front
 		void test_push_front() {
-			cout << "\ntest_push_front()" << endl;
+			cout << "test: push_front()" << endl;
 
-			list<int> list1;
-			for (int i = 1; i < 5; ++i) {
-				list1.push_front(i);
-				list1.print("list1");			//4 3 2 1
-			}
+			list<int> lst1;
 
-			list1.push_front(5);
-			list1.print("list1");				//5 4 3 2 1
+			lst1.push_front(4); //push_front(value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 4 });
+			lst1.push_front(3);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 3,4 });
+
+			lst1.push_front(std::move(2)); //push_front(&&value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 2,3,4 });
+			lst1.push_front(std::move(1));
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
 		}
 
 		//≤‚ ‘ pop_front
 		void test_pop_front() {
-			cout << "\ntest_pop_front()" << endl;
+			cout << "test: pop_front()" << endl;
 
-			list<int> list1{ 1,2,3,4 };
-			for (int i = 0; i < 4; ++i) {
-				list1.pop_front();
-				list1.print("list1");
-			}
+			list<int> lst1{ 1,2,3,4 };
+			lst1.pop_front();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 2,3,4 });
+			lst1.pop_front();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 3,4 });
+			lst1.pop_front();
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 4 });
+			lst1.pop_front();
+			EXPECT_EQ_VAL(lst1.empty(), true);
 		}
-
+		
 		//≤‚ ‘ resize
 		void test_resize() {
-			cout << "\ntest_resize()" << endl;
+			cout << "test: resize()" << endl;
 
-			list<int> list1;
-			list1.resize(4);				//resize(count)
-			list1.print("list1");			//0 0 0 0
-			list1.resize(2);
-			list1.print("list1");			//0 0 0 0
+			list<int> lst1;
 
-			list1.resize(8, 1);				//0 0 0 0 1 1 1 1
-			list1.print("list1");
-			list1.resize(4, 1);				//0 0 0 0 1 1 1 1
-			list1.print("list1");
+			lst1.resize(4);  //resize(count)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 0,0,0,0 });
+			lst1.resize(2);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 0,0,0,0 });
+
+			lst1.resize(8, 1); //resize(count, value)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 0,0,0,0,1,1,1,1 });
+			lst1.resize(4, 1);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 0,0,0,0,1,1,1,1 });
 		}
 
 		//≤‚ ‘ swap
 		void test_swap() {
-			cout << "\ntest_swap()" << endl;
+			cout << "test: swap()" << endl;
 
-			list<int> list1;
-			list<int> list2{ 1,2,3,4 };
-			list1.swap(list2);
-			list1.print("list1");
-			list2.print("list2");
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			list<int> lst3{ 5,6,7,8 };
+			
+			lst1.swap(lst2); //member function: swap(rhs)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
+			EXPECT_EQ_VAL(lst2.empty(), true);
+			lst1.swap(lst3);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 5,6,7,8 });
+			EXPECT_EQ_ITERLIST(lst3.begin(), lst3.end(), { 1,2,3,4 });
 
-			kkli::swap(list1, list2);
-			list1.print("list1");
-			list2.print("list2");
+			kkli::swap(lst2, lst3);
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 1,2,3,4 });
+			EXPECT_EQ_VAL(lst3.empty(), true);
+			kkli::swap(lst1, lst2);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 5,6,7,8 });
 		}
 
 		//≤‚ ‘ merge
 		void test_merge() {
-			cout << "\ntest_merge()" << endl;
+			cout << "test: merge()" << endl;
 
-			list<int> list1;
-			list<int> list2{ 1,2,3,4 };
-			list1.merge(std::move(list2));
-			list1.print("list1");			//list1: 1 2 3 4
-			list2.print("list2");			//list2: 
-			
-			list<int> list3{ 1,3,5,7 };
-			list<int> list4{ 2,4,6,8 };
-			list3.merge(std::move(list4), [](int val1, int val2)->bool {return val1 < val2; });
-			list3.print("list3");
-			list4.print("list4");
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
+			list<int> lst3{ 1,3,5,7 };
+			list<int> lst4{ 2,4,6,8 };
+			list<int> lst5{ 1,3,5,8 };
+			list<int> lst6{ 2,4,6,7 };
 
-			list1.merge(std::move(list3));
-			list1.print("list1");
-			list3.print("list3");
+			lst1.merge(lst2); //merge(rhs)
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,4 });
+			lst3.merge(lst4);
+			EXPECT_EQ_ITERLIST(lst3.begin(), lst3.end(), { 1,2,3,4,5,6,7,8 });
+			lst5.merge(lst6);
+			EXPECT_EQ_ITERLIST(lst5.begin(), lst5.end(), { 1,2,3,4,5,6,7,8 });
+
+			list<int> lst7{ 8,6,4,2 };
+			list<int> lst8{ 7,5,3,3 };
+			auto lmd1 = [](int i, int j)->bool {return i > j; };
+			lst7.merge(lst8, lmd1); //merge(rhs, comp)
+			EXPECT_EQ_ITERLIST(lst7.begin(), lst7.end(), { 8,7,6,5,4,3,3,2 });
 		}
 
 		//≤‚ ‘ splice
 		void test_splice() {
-			cout << "\ntest_splice()" << endl;
+			cout << "test: splice()" << endl;
 
-			list<int> list1{ 1 };
-			list<int> list2{ 1,2,3,4 };
-			list1.splice(list1.begin(), list2, list2.begin(), list2.end());
-			list1.print("list1");			//list1: 1 1 2 3 4
-			list2.print("list2");			//list2: 
+			list<int> lst1{ 1,2,3,4 };
+			list<int> lst2{ 1,2,3,4,5,6,7,8 };
 
-			list<int> list3{ 1,2,3,4 };
-			list<int>::iterator l3_iter = list3.begin();
-			++l3_iter;
-			list<int>::iterator l1_iter = list1.begin();
-			++++++++l1_iter;
-			list1.splice(l1_iter, list3, l3_iter, list3.end());
-			list3.print("list3");			//list3: 1
-			list1.print("list1");			//list1: 1 1 2 3 4 2 3 4
+			//splice(pos, rhs, first, last)
+			lst1.splice(lst1.begin(), lst2, kkli::next(lst2.begin()), kkli::next(lst2.begin(), 3));
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,2,3,4 });
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 1,4,5,6,7,8 });
+
+			//splice(pos, rhs, it)
+			lst1.splice(kkli::next(lst1.begin(), 4), lst2, lst2.begin(), kkli::next(lst2.begin(), 2));
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,2,3,2,3,1,4,4 });
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 5,6,7,8 });
+			
+			//splice(pos, rhs)
+			lst1.splice(lst1.begin(), lst2);
+			EXPECT_EQ_ITERLIST(lst1.begin(), lst1.end(), { 1,5,6,7,8,2,3,2,3,1,4,4 });
+			EXPECT_EQ_VAL(lst2.empty(), true);
 		}
 
 		//≤‚ ‘ remove
 		void test_remove() {
-			cout << "\ntest_remove()" << endl;
+			list<int> lst1;
+			list<int> lst2{ 1,1,2,2,3,3,4,5, };
+			
+			cout << "test: remove()" << endl;
+			lst1.remove(2); //remove(value)
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			lst2.remove(2);
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 1,1,3,3,4,5, });
 
-			list<int> list1{ 1,2,3,4 };
-			for (int i = 1; i < 5; ++i) {
-				list1.remove(i);
-				list1.print("list1");
-			}
-			list1.remove(1);
-			list1.print("list1");		//list1: 
-		}
-
-		//≤‚ ‘ remove_if
-		void test_remove_if() {
-			cout << "\ntest_remove_if()" << endl;
-
-			list<int> list1{ 1,1,2,2,3,3,4,4 };
-			list1.remove_if([](int i)->bool {return i % 2; });		//“∆≥˝∆Ê ˝
-			list1.print("list1");		//list1: 2 2 4 4
-			list1.remove_if([](int i)->bool {return i == 2; });		//“∆≥˝2
-			list1.print("list1");		//list1: 4 4
+			cout << "test: remove_if()" << endl;
+			auto lmd1 = [](int i)->bool {return i % 2; };
+			lst2.remove_if(lmd1); //remove_if(pred)
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 4 });
 		}
 
 		//≤‚ ‘ reverse
 		void test_reverse() {
-			cout << "\ntest_reverse()" << endl;
+			cout << "test: reverse()" << endl;
 
-			list<int> list1;
-			list1.reverse();
-			list1.print("list1");		//list1: 
+			list<int> lst1;
+			list<int> lst2{ 1,2,3,4 };
 
-			list<int> list2{ 1,2,3,4 };
-			list2.reverse();
-			list2.print("list2");		//list2: 4 3 2 1
+			lst1.reverse();
+			lst2.reverse();
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 4,3,2,1 });
 		}
 
 		//≤‚ ‘ unique
 		void test_unique() {
-			cout << "\ntest_unique()" << endl;
+			cout << "test: unique()" << endl;
 
-			list<int> list1;
-			list1.unique();
-			list1.print("list1");		//list1: 
+			list<int> lst1;
+			list<int> lst2{ 1,1,2,2,3,3,4,4 };
 
-			list<int> list2{ 1,1,2,2,3,3,4,5,6,6,7,8,8 };
-			list2.unique();
-			list2.print("list2");		//list2: 1 2 3 4 5 6 7 8
+			lst1.unique(); //unique()
+			lst2.unique();
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 1,2,3,4 });
 
-			list<int> list3{ 1,2,3,4 };
-			list3.unique();
-			list3.print("list3");		//list3: 1 2 3 4
+			list<int> lst3{ 1,3,5,6,7,7,9,10 };
+			auto lmd1 = [](int i, int j)->bool {return i % 2 && j % 2; }; //¡¨–¯∆Ê ˝
+			lst3.unique(lmd1); //unique(pred)
+			EXPECT_EQ_ITERLIST(lst3.begin(), lst3.end(), { 1,6,7,10 });
 		}
 
 		//≤‚ ‘ sort
 		void test_sort() {
-			cout << "\ntest_sort()" << endl;
+			cout << "test: sort()" << endl;
 
-			list<int> list1;
-			list1.sort();
-			list1.print("list1");		//list1: 
+			list<int> lst1;
+			list<int> lst2{ 1,3,7,5,8,4,6,2 };
 
-			list<int> list2{ 1,3,4,2 };
-			list2.sort();
-			list2.print("list2");		//list2: 1 2 3 4
+			lst1.sort(); //sort()
+			lst2.sort();
+			EXPECT_EQ_VAL(lst1.empty(), true);
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 1,2,3,4,5,6,7,8 });
 
-			list<int> list3{ 1,1,4,3,3,4,2,2 };
-			list3.sort();
-			list3.print("list3");		//list3: 1 1 2 2 3 3 4 4
-
-			list<int> list4{
-				1,2,3,4,7,6,5,8,10,9
-				,1,2,3,4,7,6,5,8,10,9
-				,1,2,3,4,7,6,5,8,10,9
-				,1,2,3,4,7,6,5,8,10,9
-				,1,2,3,4,7,6,5,8,10,9
-			};
-			list4.sort();
-			list4.print("list4");
+			auto lmd1 = [](int i, int j)->bool { return i > j; };
+			lst2.sort(lmd1); //sort(comp)
+			EXPECT_EQ_ITERLIST(lst2.begin(), lst2.end(), { 8,7,6,5,4,3,2,1 });
 		}
-
+		
 		//≤‚ ‘ operator == / != / < / <= / > / >=
 		void test_operators() {
-			cout << "\ntest_operators()" << endl;
-
-
 			list<int> list1;
 			list<int> list2{ 1,1,1,1 };
 			list<int> list3{ 1,2,3,4 };
 			list<int> list4{ 1,2,3,4,5 };
 			list<int> list5{ 1,3,5,7,9 };
 
-			//operator ==
-			cout << "operator==" << endl;
-			cout << (list1 == list1 ? "true" : "false") << endl;		//true
-			cout << (list2 == list2 ? "true" : "false") << endl;		//true
-			cout << (list1 == list2 ? "true" : "false") << endl;		//false;
-			cout << (list2 == list3 ? "true" : "false") << endl;		//false
-			cout << (list3 == list4 ? "true" : "false") << endl;		//false
-			cout << endl;
+			cout << "test: operator==" << endl;
+			cout << "test: operator!=" << endl; //”…operator== µœ÷
+			EXPECT_EQ_VAL(list1 == list1, true);
+			EXPECT_EQ_VAL(list1 == list2, false);
+			EXPECT_EQ_VAL(list1 == list3, false);
+			EXPECT_EQ_VAL(list1 == list4, false);
+			EXPECT_EQ_VAL(list1 == list5, false);
+			EXPECT_EQ_VAL(list2 == list1, false);
+			EXPECT_EQ_VAL(list2 == list2, true);
+			EXPECT_EQ_VAL(list2 == list3, false);
+			EXPECT_EQ_VAL(list2 == list4, false);
+			EXPECT_EQ_VAL(list2 == list5, false);
+			EXPECT_EQ_VAL(list3 == list1, false);
+			EXPECT_EQ_VAL(list3 == list2, false);
+			EXPECT_EQ_VAL(list3 == list3, true);
+			EXPECT_EQ_VAL(list3 == list4, false);
+			EXPECT_EQ_VAL(list3 == list5, false);
+			EXPECT_EQ_VAL(list4 == list1, false);
+			EXPECT_EQ_VAL(list4 == list2, false);
+			EXPECT_EQ_VAL(list4 == list3, false);
+			EXPECT_EQ_VAL(list4 == list4, true);
+			EXPECT_EQ_VAL(list4 == list5, false);
+			EXPECT_EQ_VAL(list5 == list1, false);
+			EXPECT_EQ_VAL(list5 == list2, false);
+			EXPECT_EQ_VAL(list5 == list3, false);
+			EXPECT_EQ_VAL(list5 == list4, false);
+			EXPECT_EQ_VAL(list5 == list5, true);
 			
-			//operator !=
-			cout << "operator!=" << endl;
-			cout << (list1 != list1 ? "true" : "false") << endl;		//fals
-			cout << (list2 != list2 ? "true" : "false") << endl;		//false
-			cout << (list1 != list2 ? "true" : "false") << endl;		//true
-			cout << (list2 != list3 ? "true" : "false") << endl;		//true
-			cout << (list3 != list4 ? "true" : "false") << endl;		//true
-			cout << endl;
 
-			//operator <
-			cout << "operator<" << endl;
-			cout << (list1 < list1 ? "true" : "false") << endl;			//false
-			cout << (list1 < list2 ? "true" : "false") << endl;			//true
-			cout << (list2 < list2 ? "true" : "false") << endl;			//false
-			cout << (list2 < list3 ? "true" : "false") << endl;			//true
-			cout << (list2 < list1 ? "true" : "false") << endl;			//false
-			cout << (list3 < list2 ? "true" : "false") << endl;			//false
-			cout << (list3 < list4 ? "true" : "false") << endl;			//true
-			cout << (list4 < list3 ? "true" : "false") << endl;			//false
-			cout << (list3 < list5 ? "true" : "false") << endl;			//true
-			cout << endl;
-
-			//operator <=
-			cout << "operator<=" << endl;
-			cout << (list1 <= list1 ? "true" : "false") << endl;		//true
-			cout << (list1 <= list2 ? "true" : "false") << endl;		//true
-			cout << (list2 <= list3 ? "true" : "false") << endl;		//true
-			cout << (list2 <= list1 ? "true" : "false") << endl;		//false
-			cout << (list3 <= list2 ? "true" : "false") << endl;		//false
-			cout << (list3 <= list5 ? "true" : "false") << endl;		//true
-			cout << endl;
+			cout << "test: operator<" << endl;
+			cout << "test: operator>=" << endl;
+			EXPECT_EQ_VAL(list1 < list1, false);
+			EXPECT_EQ_VAL(list1 < list2, true);
+			EXPECT_EQ_VAL(list1 < list3, true);
+			EXPECT_EQ_VAL(list1 < list4, true);
+			EXPECT_EQ_VAL(list1 < list5, true);
+			EXPECT_EQ_VAL(list2 < list1, false);
+			EXPECT_EQ_VAL(list2 < list2, false);
+			EXPECT_EQ_VAL(list2 < list3, true);
+			EXPECT_EQ_VAL(list2 < list4, true);
+			EXPECT_EQ_VAL(list2 < list5, true);
+			EXPECT_EQ_VAL(list3 < list1, false);
+			EXPECT_EQ_VAL(list3 < list2, false);
+			EXPECT_EQ_VAL(list3 < list3, false);
+			EXPECT_EQ_VAL(list3 < list4, true);
+			EXPECT_EQ_VAL(list3 < list5, true);
+			EXPECT_EQ_VAL(list4 < list1, false);
+			EXPECT_EQ_VAL(list4 < list2, false);
+			EXPECT_EQ_VAL(list4 < list3, false);
+			EXPECT_EQ_VAL(list4 < list4, false);
+			EXPECT_EQ_VAL(list4 < list5, true);
+			EXPECT_EQ_VAL(list5 < list1, false);
+			EXPECT_EQ_VAL(list5 < list2, false);
+			EXPECT_EQ_VAL(list5 < list3, false);
+			EXPECT_EQ_VAL(list5 < list4, false);
+			EXPECT_EQ_VAL(list5 < list5, false);
 
 			//operator >
-			cout << "operator>" << endl;
-			cout << (list1 > list1 ? "true" : "false") << endl;			//false
-			cout << (list1 > list2 ? "true" : "false") << endl;			//false
-			cout << (list2 > list2 ? "true" : "false") << endl;			//false
-			cout << (list2 > list3 ? "true" : "false") << endl;			//false
-			cout << (list2 > list1 ? "true" : "false") << endl;			//true
-			cout << (list3 > list2 ? "true" : "false") << endl;			//true
-			cout << (list3 > list4 ? "true" : "false") << endl;			//false
-			cout << (list4 > list3 ? "true" : "false") << endl;			//true
-			cout << (list3 > list5 ? "true" : "false") << endl;			//false
-			cout << endl;
-
-			//operator >=
-			cout << "operator>=" << endl;
-			cout << (list1 >= list1 ? "true" : "false") << endl;		//true
-			cout << (list1 >= list2 ? "true" : "false") << endl;		//false
-			cout << (list2 >= list2 ? "true" : "false") << endl;		//true
-			cout << (list2 >= list3 ? "true" : "false") << endl;		//false
-			cout << (list2 >= list1 ? "true" : "false") << endl;		//true
-			cout << (list3 >= list2 ? "true" : "false") << endl;		//true
-			cout << (list3 >= list4 ? "true" : "false") << endl;		//false
-			cout << (list4 >= list3 ? "true" : "false") << endl;		//true
-			cout << (list3 >= list5 ? "true" : "false") << endl;		//false
+			cout << "test: operator>" << endl;
+			cout << "test: operator<=" << endl;
+			EXPECT_EQ_VAL(list1 > list1, false);
+			EXPECT_EQ_VAL(list1 > list2, false);
+			EXPECT_EQ_VAL(list1 > list3, false);
+			EXPECT_EQ_VAL(list1 > list4, false);
+			EXPECT_EQ_VAL(list1 > list5, false);
+			EXPECT_EQ_VAL(list2 > list1, true);
+			EXPECT_EQ_VAL(list2 > list2, false);
+			EXPECT_EQ_VAL(list2 > list3, false);
+			EXPECT_EQ_VAL(list2 > list4, false);
+			EXPECT_EQ_VAL(list2 > list5, false);
+			EXPECT_EQ_VAL(list3 > list1, true);
+			EXPECT_EQ_VAL(list3 > list2, true);
+			EXPECT_EQ_VAL(list3 > list3, false);
+			EXPECT_EQ_VAL(list3 > list4, false);
+			EXPECT_EQ_VAL(list3 > list5, false);
+			EXPECT_EQ_VAL(list4 > list1, true);
+			EXPECT_EQ_VAL(list4 > list2, true);
+			EXPECT_EQ_VAL(list4 > list3, true);
+			EXPECT_EQ_VAL(list4 > list4, false);
+			EXPECT_EQ_VAL(list4 > list5, false);
+			EXPECT_EQ_VAL(list5 > list1, true);
+			EXPECT_EQ_VAL(list5 > list2, true);
+			EXPECT_EQ_VAL(list5 > list3, true);
+			EXPECT_EQ_VAL(list5 > list4, true);
+			EXPECT_EQ_VAL(list5 > list5, false);
 		}
-		*/
 	}
 }

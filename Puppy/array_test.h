@@ -29,7 +29,7 @@ namespace test {
 		//ÕûÌå²âÊÔ
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: array " << endl;
+			cout << "            array.h " << endl;
 			cout << "========================================" << endl;
 
 			test_constructor();

@@ -41,7 +41,7 @@ namespace test {
 		//ÕûÌå²âÊÔ
 		void test() {
 			cout << "\n========================================" << endl;
-			cout << "          test: forward_list " << endl;
+			cout << "            forward_list.h " << endl;
 			cout << "========================================" << endl;
 
 			test_iterator();

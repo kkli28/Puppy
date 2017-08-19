@@ -22,7 +22,9 @@ namespace test {
 
 		//ÕûÌå²âÊÔ
 		void test() {
-			cout << "\n========== test: functional.h ==========" << endl;
+			cout << "\n========================================" << endl;
+			cout << "            functional.h " << endl;
+			cout << "========================================" << endl;
 
 			test_less();
 			test_equal_to();

@@ -25,7 +25,9 @@ namespace test {
 
 		//ÕûÌå²âÊÔ
 		void test() {
-			cout << "\n========== test: pair.h ==========" << endl;
+			cout << "\n========================================" << endl;
+			cout << "            pair.h " << endl;
+			cout << "========================================" << endl;
 
 			test_constructor();
 			test_op_equal();

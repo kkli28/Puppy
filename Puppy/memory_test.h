@@ -40,7 +40,9 @@ namespace test {
 
 		//ÕûÌå²âÊÔ
 		void test() {
-			cout << "\n========== test: memory.h ==========" << endl;
+			cout << "\n========================================" << endl;
+			cout << "            memory.h " << endl;
+			cout << "========================================" << endl;
 
 			test_shared_ptr();
 			test_weak_ptr();

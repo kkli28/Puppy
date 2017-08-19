@@ -221,9 +221,9 @@ namespace kkli {
 		iterator end() { return __head; }
 		const_iterator cend()const { return __head; }
 		reverse_iterator rbegin() { return reverse_iterator(this->end()); }
-		const_reverse_iterator crbegin() { return const_reverse_iterator(this->cend()); }
+		const_reverse_iterator crbegin()const { return const_reverse_iterator(this->cend()); }
 		reverse_iterator rend() { return reverse_iterator(this->begin()); }
-		const_reverse_iterator crend() { return const_reverse_iterator(this->cbegin()); }
+		const_reverse_iterator crend()const { return const_reverse_iterator(this->cbegin()); }
 
 		bool empty()const { return __size == 0; }
 		size_type size()const { return __size; }
@@ -254,11 +254,9 @@ namespace kkli {
 
 		void splice(iterator pos, list& rhs, iterator first, iterator last);
 		void splice(iterator pos, list& rhs, iterator it) {
-			iterator iter(it);
-			++iter;
-			splice(pos, rhs, it, iter);
+			splice(pos, rhs, it, kkli::next(it));
 		}
-		void splice(iterator pos, list& rhs) { splice(pos, rhs, begin(), end()); }
+		void splice(iterator pos, list& rhs) { splice(pos, rhs, rhs.begin(), rhs.end()); }
 
 		template<typename UnaryPredicate>
 		void remove_if(UnaryPredicate pred);
@@ -578,10 +576,20 @@ namespace kkli {
 	//swap(rhs)
 	template<typename T>
 	void list<T>::swap(list& rhs) {
+		//下方的指针交换无法用于空的list，故需单独解决空list
+		if (this->empty()) {
+			cheat_from_rhs(std::move(rhs));
+			return;
+		}
+		else if (rhs.empty()) {
+			rhs.cheat_from_rhs(std::move(*this));
+			return;
+		}
+
+
 		//保存指向第一个和最后一个节点的迭代器
 		iterator temp_beg = this->begin();
-		iterator temp_end = this->end();
-		--temp_end;
+		iterator temp_end = kkli::prev(this->end());
 
 		//this头结点next指向rhs的第一个节点
 		__head->next = rhs.__head->next;
@@ -658,12 +666,12 @@ namespace kkli {
 	template<typename T>
 	void list<T>::splice(iterator pos, list& rhs, iterator first, iterator last) {
 		size_type size = get_size(first, last);			//获取[first, last)的长度
+		--last; //last指向rhs中被取走的最后一个元素
 		//将first的前一个节点连到last后一个节点上
-		first->prev->next = last.get();
-		last->prev = first->prev;
+		first->prev->next = last->next;
+		last->next->prev = first->prev;
 
-		//更改last指向，并将[first, last]指示节点插入到pos后
-		--last;
+		//将[first, last]指示节点插入到pos后
 		last->next = pos->next;
 		pos->next->prev = last.get();
 		first->prev = pos.get();
@@ -700,7 +708,6 @@ namespace kkli {
 		iterator end = __head;
 		kkli::swap(iter->next, iter->prev);
 
-		--iter;				//注意，__head的next与prev交换后，要找到下一个元素，需要--
 		while (--iter != end) {
 			kkli::swap(iter->next, iter->prev);
 		}
@@ -809,7 +816,7 @@ namespace kkli {
 			++lhs_beg;
 			++rhs_beg;
 		}
-		if (lhs_beg == lhs_end) return true;		//lhs更短
+		if (lhs_beg == lhs_end && rhs_beg!=rhs_end) return true;		//lhs更短
 		return false;
 	}
 
@@ -826,8 +833,8 @@ namespace kkli {
 			++lhs_beg;
 			++rhs_beg;
 		}
-		if (lhs_beg == lhs_end) return false; //lhs更短
-		return true;
+		if (lhs_beg != lhs_end && rhs_beg==rhs_end) return true; //lhs更短
+		return false;
 	}
 
 	//operator <=

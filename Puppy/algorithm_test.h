@@ -19,7 +19,9 @@ namespace test {
 
 		//ÕûÌå²âÊÔ
 		void test() {
-			cout << "\n========== test: algorithm.h ==========" << endl;
+			cout << "\n========================================" << endl;
+			cout << "            algorithm.h " << endl;
+			cout << "========================================" << endl;
 
 			test_part1();
 			test_part2();
