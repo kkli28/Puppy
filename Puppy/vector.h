@@ -65,7 +65,7 @@ namespace kkli {
 		}
 		//__aux_get_size（__get_size的辅助函数）
 		template<typename RandomIt>
-		size_type __aux_get_size(RandomIt firt, RandomIt last,kkli::random_access_iterator_tag){
+		size_type __aux_get_size(RandomIt first, RandomIt last,kkli::random_access_iterator_tag){
 			return last - first;
 		}
 		//__aux_get_size（__get_size的辅助函数）
@@ -78,7 +78,7 @@ namespace kkli {
 
 	public:
 		//constructors
-		vector() = default;
+		vector() :__start(nullptr), __end(nullptr), __capacity(nullptr) {}
 		vector(const Allocator& alloc) :__alloc(alloc) {}
 		vector(size_type count, const value_type& value, const Allocator& alloc = Allocator());
 		vector(size_type count, const Allocator& alloc = Allocator()) :vector(count, value_type(), alloc) {}
@@ -317,24 +317,38 @@ namespace kkli {
 	//assign(count, value)
 	template<typename T, typename Allocator>
 	void vector<T, Allocator>::assign(size_type count, const value_type& value) {
-		__deallocate();		//释放原有内存
+		if (this->capacity() >= count) { //空间足够
+			this->clear();
+			__set_value_by_value(__start, count, value);
+			__end = __start + count;
+		}
+		else { //空间不够
+			__deallocate();		//释放原有内存
 
-		__start = __alloc.allocate(count);
-		__construct_value_by_value(__start, count, value);
-		__end = __start + count;
-		__capacity = __end;
+			__start = __alloc.allocate(count);
+			__construct_value_by_value(__start, count, value);
+			__end = __start + count;
+			__capacity = __end;
+		}
 	}
 
 	//assign_range(first, last)
 	template<typename T, typename Allocator>
 	template<typename InputIt>
 	void vector<T, Allocator>::assign_range(InputIt first, InputIt last) {
-		__deallocate();
-		size_type new_cap = __get_size(first, last);
-		__start = __alloc.allocate(new_cap);
-		__construct_value_by_range(__start, first, last);
-		__end = __start + new_cap;
-		__capacity = __end;
+		size_type count = __get_size(first, last);
+		if (this->capacity() >= count) { //空间足够
+			this->clear();
+			__set_value_by_range(__start, first, last);
+			__end = __start + count;
+		}
+		else { //空间不够
+			__deallocate();
+			__start = __alloc.allocate(count);
+			__construct_value_by_range(__start, first, last);
+			__end = __start + count;
+			__capacity = __end;
+		}
 	}
 
 	//at(pos)
@@ -370,11 +384,11 @@ namespace kkli {
 		else { //剩余空间不足
 			size_type new_cap = (this->size() + count) * 2;
 			auto addr = __alloc.allocate(new_cap);
-			size_type index = __set_value_by_range(addr, __start, iterator(pos)); //将[0, pos)写入新内存
+			size_type index = __construct_value_by_range(addr, __start, iterator(pos)); //将[0, pos)写入新内存
 			auto ret = addr + index; //保存返回值
-			__set_value_by_value(addr, count, value); //写入值
+			__construct_value_by_value(ret, count, value); //写入值
 			index += count;
-			index += __set_value_by_range(addr + index, iterator(pos), __end); //将[pos, __end)写入新内存
+			index += __construct_value_by_range(addr + index, iterator(pos), __end); //将[pos, __end)写入新内存
 			__deallocate(); //释放原有内存
 			__start = addr;
 			__end = __start + index;
@@ -394,7 +408,7 @@ namespace kkli {
 			for (; src_iter >= pos; --src_iter, --dst_iter) *dst_iter = *src_iter;
 
 			//写入值到pos
-			auto iter = __start + (pos - __strt);
+			auto iter = __start + (pos - __start);
 			*iter = std::move(value); //修改处
 			__end += count;
 			return __start + (pos - __start);
@@ -402,11 +416,11 @@ namespace kkli {
 		else { //剩余空间不足
 			size_type new_cap = (this->size() + count) * 2;
 			auto addr = __alloc.allocate(new_cap);
-			size_type index = __set_value_by_range(addr, __start, pos); //将[0, pos)写入新内存
+			size_type index = __construct_value_by_range(addr, __start, iterator(pos)); //将[0, pos)写入新内存
 			auto ret = addr + index; //保存返回值
 			*ret = std::move(value); //修改处
 			index += count;
-			index += __set_value_by_range(addr + index, pos, __end); //将[pos, __end)写入新内存
+			index += __construct_value_by_range(addr + index, iterator(pos), __end); //将[pos, __end)写入新内存
 			__deallocate(); //释放原有内存
 			__start = addr;
 			__end = __start + index;
@@ -420,7 +434,7 @@ namespace kkli {
 	template<typename InputIt>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert_range(
 		const_iterator pos, InputIt first, InputIt last) {
-		if (first == last) return;
+		if (first == last) return iterator(first);
 		size_type count = __get_size(first, last);
 		if (__capacity - __end >= count) { //剩余空间足够
 			//将[pos, __end)的元素后移count个位置
@@ -429,7 +443,7 @@ namespace kkli {
 			for (; src_iter >= pos; --src_iter, --dst_iter) *dst_iter = *src_iter;
 
 			//写入值到pos
-			auto iter = __start + (pos - __strt);
+			auto iter = __start + (pos - __start);
 			__set_value_by_range(iter, first, last);
 			__end += count;
 			return __start + (pos - __start);
@@ -437,11 +451,11 @@ namespace kkli {
 		else { //剩余空间不足
 			size_type new_cap = (this->size() + count) * 2;
 			auto addr = __alloc.allocate(new_cap);
-			size_type index = __set_value_by_range(addr, __start, pos); //将[0, pos)写入新内存
+			size_type index = __construct_value_by_range(addr, __start, iterator(pos)); //将[0, pos)写入新内存
 			auto ret = addr + index; //保存返回值
-			__set_value_by_range(addr, first, last); //写入值
+			__construct_value_by_range(ret, first, last); //写入值
 			index += count;
-			index += __set_value_by_range(addr + index, pos, __end); //将[pos, __end)写入新内存
+			index += __construct_value_by_range(addr + index, iterator(pos), __end); //将[pos, __end)写入新内存
 			__deallocate(); //释放原有内存
 			__start = addr;
 			__end = __start + index;
@@ -487,7 +501,7 @@ namespace kkli {
 		//需要申请内存
 		else {
 			size_type size = this->size();
-			reallocate_and_copy(count);
+			__reallocate_and_copy(count);
 
 			//将末尾未构造元素用value构造
 			while (size != count) {
@@ -508,8 +522,8 @@ namespace kkli {
 	//clear
 	template<typename T, typename Allocator>
 	void vector<T, Allocator>::clear() {
-		for (auto iter = __star; iter != __end; ++iter)
-			__alloc.destory(iter);
+		for (auto iter = __start; iter != __end; ++iter)
+			__alloc.destroy(iter);
 		__end = __start;
 	}
 

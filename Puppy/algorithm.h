@@ -1,7 +1,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include "utility.h"
 #include "iterator.h"
 #include "functional.h"
 #include "pair.h"
