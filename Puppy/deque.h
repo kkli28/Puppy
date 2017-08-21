@@ -29,6 +29,7 @@ namespace kkli {
 		typedef __deque_iterator<T, const T&, const T*, BufSize> const_iterator;
 
 		static size_type buffer_size() { return BufSize > 8 ? BufSize : 8; }
+
 	public:
 		T* first;
 		T* curr;
@@ -156,11 +157,13 @@ namespace kkli {
 		typedef kkli::allocator<pointer> map_allocator;
 
 	private:
+		//数据成员
 		iterator start;
 		iterator finish;
 		map_pointer map;
 		size_type map_size;
 
+		//辅助函数
 		constexpr static size_type buffer_size = 8;		//node容量
 		constexpr static size_type init_map_size = 8;	//最小map_size
 		pointer allocate_node() { return data_allocator.allocate(buffer_size); } //分配node
@@ -180,23 +183,26 @@ namespace kkli {
 		void push_back_aux(const value_type& value); //当前node只有一个剩余空间，需要在后新建node
 		void pop_front_aux(); //需要释放node
 		void pop_back_aux(); //需要释放node
-
-		//获取区间长度
+		void destroy(pointer first, pointer last); //销毁[first, last)内的元素
+		iterator insert_aux(const_iterator pos, size_type count, const value_type& value);
 		template<typename InputIt>
+		iterator insert_range_aux(const_iterator pos, InputIt first, InputIt last);
+
+		template<typename InputIt> //get_size
+		size_type get_size(InputIt first, InputIt last) {
+			return get_size(first, last, typename kkli::iterator_traits<InputIt>::iterator_category());
+		}
+		template<typename InputIt> //get_size对input iterator的重载
 		size_type get_size(InputIt first, InputIt last, kkli::input_iterator_tag) {
 			size_type size = 0;
 			for (; first != last; ++first, ++size);
 			return size;
 		}
-		template<typename RandomIt>
+		template<typename RandomIt> //get_size对random access iterator的重载
 		size_type get_size(RandomIt first, RandomIt last, kkli::random_access_iterator_tag) {
 			return last - first;
 		}
-		template<typename InputIt>
-		size_type get_size(InputIt first, InputIt last) {
-			return get_size(first, last, typename kkli::iterator_traits<InputIt>::iterator_category());
-		}
-
+		
 	public:
 		//constructor
 		explicit deque(const allocator_type& alloc)
@@ -233,19 +239,16 @@ namespace kkli {
 		deque& operator=(const deque& rhs);
 		deque& operator=(deque&& rhs);
 		deque& operator=(std::initializer_list<value_type> init) {
-			assign_range(init.begin(), init.end(), init.size());
+			assign_range(init.begin(), init.end());
 		}
 
 		//assign
 		void assign(size_type count, const value_type& value);
 		template<typename InputIt>
-		void assign_range(InputIt first, InputIt last, size_type size = 0);
+		void assign_range(InputIt first, InputIt last);
 		void assign(std::initializer_list<value_type> init) {
-			assign_range(init.begin(), init.end(),init.size());
+			assign_range(init.begin(), init.end());
 		}
-
-		//get_allocator
-		allocator_type get_allocator()const { return allocator_type(); }
 
 		//at
 		reference at(size_type pos) {
@@ -279,24 +282,11 @@ namespace kkli {
 		const_reverse_iterator crbegin()const { return const_reverse_iterator(finish); }
 		const_reverse_iterator crend()const { return const_reverse_iterator(start); }
 
-		//empty
-		bool empty()const { return start == finish; }
-
-		//size
-		size_type size()const { return finish - start; }
-
-		//max_size
-		constexpr size_type max_size() { return std::numeric_limits<size_type>::max(); }
-
-		//clear
-		void clear();
-
 		//insert
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
 		iterator insert(const_iterator pos, const value_type& value) {
 			return insert(pos, 1, value);
 		}
-		iterator insert(const_iterator pos, value_type&& value);
 		template<typename InputIt>
 		iterator insert_range(const_iterator pos, InputIt first, InputIt last);
 		iterator insert(const_iterator pos, std::initializer_list<value_type> init) {
@@ -309,23 +299,23 @@ namespace kkli {
 			return erase(pos, kkli::next(pos));
 		}
 
-		//push_front
-		void push_front(const value_type& value);
-
-		//push_back
-		void push_back(const value_type& value);
-
-		//pop_front
-		void pop_front();
-
-		//pop_back
-		void pop_back();
-
 		//resize
-		void resize(size_type count, value_type value);
+		void resize(size_type count, value_type value) {
+			if (count <= this->size()) return;
+			insert(finish, count - this->size(), value);
+		}
 		void resize(size_type count) { resize(count, value_type()); }
-
-		//swap
+		
+		//others
+		allocator_type get_allocator()const { return allocator_type(); }
+		bool empty()const { return start == finish; }
+		size_type size()const { return finish - start; }
+		constexpr size_type max_size() { return std::numeric_limits<size_type>::max(); }
+		void clear();
+		void push_front(const value_type& value);
+		void push_back(const value_type& value);
+		void pop_front();
+		void pop_back();
 		void swap(deque& rhs);
 	};
 }
@@ -382,14 +372,14 @@ namespace kkli {
 		if (map_size > 2 * new_nums) { //原本空间足够
 			new_nstart = map + (map_size - new_nums) / 2 + (add_at_front ? nodes_to_add : 0);
 			//将new_nstart移到正确地位置
-			if (new_nstart < start.node) copy(start.node, finish.node + 1, new_nstart);
-			else copy_backward(start.node, finish.node + 1, new_nstart + old_nums);
+			if (new_nstart < start.node) kkli::copy(start.node, finish.node + 1, new_nstart);
+			else kkli::copy_backward(start.node, finish.node + 1, new_nstart + old_nums);
 		}
 		else { //原本空间不够
 			size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
 			map_pointer new_map = map_allocator.allocate(new_map_size);
 			new_nstart = new_map + (new_map_size - new_nums) / 2 + (add_at_front ? nodes_to_add : 0);
-			copy(start.node, finish.node + 1, new_nstart);
+			kkli::copy(start.node, finish.node + 1, new_nstart);
 			map_allocator.deallocate(map, map_size);
 			map = new_map;
 			map_size = new_map_size;
@@ -446,6 +436,39 @@ namespace kkli {
 		data_allocator.destroy(finish.curr);
 	}
 
+	//destroy
+	template<typename T, typename Allocator>
+	void deque<T, Allocator>::destroy(pointer first, pointer last) {
+		for (auto iter = first; iter != last; ++iter)
+			data_allocator.destroy(iter);
+	}
+
+	//insert_aux
+	template<typename T,typename Allocator>
+	typename deque<T,Allocator>::iterator deque<T, Allocator>::insert_aux(
+		const_iterator pos, size_type count, const value_type& value) {
+		auto iter = iterator(pos);
+		kkli::move_backward(iter, finish, finish + count); //[pos, finish)后移count个位置
+		finish += count;
+		auto end = iter + count;
+		for (; iter != end; ++iter) //构建[pos, pos+count)的元素
+			data_allocator.construct(iter, value);
+	}
+
+	//insert_range_aux
+	template<typename T,typename Allocator>
+	template<typename InputIt>
+	typename deque<T, Allocator>::iterator deque<T, Allocator>::insert_range_aux(
+		const_iterator pos, InputIt first, InputIt last) {
+		auto iter = iterator(pos);
+		size_type count = get_size(first, last);
+		kkli::move_backward(iter, finish, finish + count); //[pos, finish)后移count个位置
+		finish += count;
+		auto end = iter + count;
+		for (; first != last; ++iter, ++first) //构建[pos, pos+count)的元素
+			data_allocator.construct(iter, *first);
+	}
+
 	//operator =(rhs)
 	template<typename T, typename Allocator>
 	deque<T, Allocator>& deque<T, Allocator>::operator=(const deque& rhs) {
@@ -472,27 +495,100 @@ namespace kkli {
 	//assign
 	template<typename T, typename Allocator>
 	void deque<T, Allocator>::assign(size_type count, const value_type& value) {
-		 //TODO:
+		this->clear();
+		for (; count > 0; --count) this->push_back(value);
 	}
 
 	//assign_range
 	template<typename T,typename Allocator>
 	template<typename InputIt>
-	void deque<T, Allocator>::assign_range(InputIt first, InputIt last, size_type size = 0) {
+	void deque<T, Allocator>::assign_range(InputIt first, InputIt last) {
 		if (first == last) return;
-		//TODO: 
+		for (; first != last) this->push_back(*first);
 	}
 
 	//clear
 	template<typename T, typename Allocator>
 	void deque<T, Allocator>::clear() {
-		for (auto iter = start; iter != finish; ++iter)
-			data_allocator.destroy(iter.curr); //析构所有元素
-		finish = start;
-		map_size = 0;
+		//释放除首尾以外的所有缓冲区（它们一定是满的）
+		for (map_pointer node = start.node + 1; node < finish.node; ++node) {
+			auto end = *node + buffer_size;
+			destroy(*node, *node + buffer_size); //销毁缓冲区中的元素
+			data_allocator.deallocate(*node, buffer_size); //释放缓冲区
+		}
+		if (start.node != finish.node) { //还有两个缓冲区
+			destroy(start.curr, start.last);
+			destroy(finish.first, finish.curr);
+			data_allocator.deallocate(finish.first, buffer_size);
+		}
+		else { //只有一个缓冲区
+			destroy(start.curr, finish.curr);
+		}
+		finish = start; //调整状态
 	}
 
-	
+	//insert
+	template<typename T,typename Allocator>
+	typename deque<T, Allocator>::iterator deque<T, Allocator>::insert(
+		const_iterator pos, size_type count, const value_type& value) {
+		if (pos.curr == start.curr) { //插入点是deque最前端
+			for (; count > 0; --count) this->push_front(value);
+			return start;
+		}
+		else if (pos.curr == finish.curr) { //插入点是deque最尾端
+			auto temp = finish;
+			for (; count > 0; --count) this->push_back(value);
+			return temp;
+		}
+		else  return insert_aux(pos, count, value); //插入点是deque中间
+	}
+
+	//insert_range
+	template<typename T,typename Allocator>
+	template<typename InputIt>
+	typename deque<T, Allocator>::iterator deque<T, Allocator>::insert_range(
+		const_iterator pos, InputIt first, InputIt last) {
+		if (pos.curr == start.curr) { //插入点是deque最前端
+			for (; first != last;++first) this->push_front(*first);
+			return start;
+		}
+		else if (pos.curr == finish.curr) { //插入点是deque最尾端
+			auto temp = finish;
+			for (; first != last; ++first) this->push_back(*first;);
+			return temp;
+		}
+		else  return insert_range_aux(pos, first, last); //插入点是deque中间
+	}
+
+	//erase
+	template<typename T,typename Allocator>
+	typename deque<T, Allocator>::iterator deque<T, Allocator>::erase(
+		const_iterator first, const_iterator last) {
+		if (first == start && last == finish) { //清除区间为整个deque
+			clear();
+			return finish;
+		}
+		
+		difference_type len = last - first; //待清除的区间长度
+		difference_type before = first - start; //清除点前方的元素个数
+		if (before < (this->size() - len) / 2) { //前方元素较少，后移
+			move_backward(start, first, last);
+			iterator new_start = start + len;
+			destroy(start, new_start); //析构冗余元素
+			for (auto iter = start.node; iter < new_start.node; ++iter)
+				data_allocator.deallocate(*iter, buffer_size);
+			start = new_start;
+		}
+		else { //后方元素较少，前移
+			kkli::move(last, finish, first);
+			iterator new_finish = finish - len;
+			destroy(new_finish, finish);
+			for (auto iter = new_finish.node + 1; iter <= finish.node; ++iter)
+				data_allocator.deallocate(*iter, buffer_size);
+			finish = new_finish;
+		}
+		return start + before;
+	}
 
 	//push_front
 	template<typename T, typename Allocator>
@@ -523,6 +619,25 @@ namespace kkli {
 		}
 		else pop_front_aux();
 	}
+
+	//pop_back
+	template<typename T,typename Allocator>
+	void deque<T, Allocator>::pop_back() {
+		if (finish.curr != finish.first) {
+			--finish.curr;
+			data_allocator.destroy(finish.curr);
+		}
+		else pop_back_aux();
+	}
+
+	//swap
+	template<typename T,typename Allocator>
+	void deque<T, Allocator>::swap(deque& rhs) {
+		kkli::swap(start, rhs.start);
+		kkli::swap(finish, rhs.finish);
+		kkli::swap(map, rhs.map);
+		kkli::swap(map_size, rhs.map_size);
+	}
 }
 
 //================================================================================
@@ -534,7 +649,15 @@ namespace kkli {
 	//operator ==
 	template<typename T, typename Allocator>
 	bool operator==(const deque<T, Allocator>& lhs, const deque<T, Allocator>& rhs) {
-		//TODO: 
+		auto beg1 = lhs.begin();
+		auto end1 = lhs.end();
+		auto beg2 = rhs.begin();
+		auto end2 = rhs.end();
+		while (beg1 != end1 && beg2 != end2) {
+			if (*beg1 != *beg2) return false;
+		}
+		if (beg1 == end1 && beg2 == end2) return true;
+		return false;
 	}
 
 	//operator !=
@@ -546,13 +669,31 @@ namespace kkli {
 	//operator <
 	template<typename T, typename Allocator>
 	bool operator<(const deque<T, Allocator>& lhs, const deque<T, Allocator>& rhs) {
-		//TODO: 
+		auto beg1 = lhs.begin();
+		auto end1 = lhs.end();
+		auto beg2 = rhs.begin();
+		auto end2 = rhs.end();
+		while (beg1 != end1 && beg2 != end2) {
+			if (*beg1 < *beg2) return true;
+			if (*beg2 < *beg1) return false;
+		}
+		if (beg1 == end1 && beg2 != end2) return true; //lhs短
+		return false;
 	}
 
 	//operator >
 	template<typename T, typename Allocator>
 	bool operator>(const deque<T, Allocator>& lhs, const deque<T, Allocator>& rhs) {
-		//TODO: 
+		auto beg1 = lhs.begin();
+		auto end1 = lhs.end();
+		auto beg2 = rhs.begin();
+		auto end2 = rhs.end();
+		while (beg1 != end1 && beg2 != end2) {
+			if (*beg1 < *beg2) return false
+			if (*beg2 < *beg1) return true;
+		}
+		if (beg1 != end1 && beg2 == end2) return true; //lhs长
+		return false;
 	}
 
 	//operator <=
