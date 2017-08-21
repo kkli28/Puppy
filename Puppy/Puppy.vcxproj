@@ -154,6 +154,7 @@
     <ClInclude Include="avl_tree_test.h" />
     <ClInclude Include="char_traits.h" />
     <ClInclude Include="deque.h" />
+    <ClInclude Include="deque_test.h" />
     <ClInclude Include="forward_list.h" />
     <ClInclude Include="forward_list_test.h" />
     <ClInclude Include="functional.h" />

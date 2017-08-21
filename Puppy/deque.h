@@ -4,8 +4,7 @@
 #include "memory.h"
 #include "iterator.h"
 #include "algorithm.h"
-
-//__deque_buf_size
+#include "string.h"
 
 //================================================================================
 // __deque_iterator<T> 类定义
@@ -42,7 +41,13 @@ namespace kkli {
 			:first(*mp), curr(ptr), last(*mp + buffer_size()), node(mp) {}
 		__deque_iterator(const iterator& rhs)
 			:first(rhs.first), curr(rhs.curr), last(rhs.last), node(rhs.node) {}
-		self& operator=(const iterator& rhs) = default;
+		self& operator=(const iterator& rhs) {
+			first = rhs.first;
+			curr = rhs.curr;
+			last = rhs.last;
+			node = rhs.node;
+			return *this;
+		}
 
 		void set_node(map_pointer new_node) {
 			node = new_node;
@@ -120,7 +125,7 @@ namespace kkli {
 			return *(*this + n);
 		}
 		
-		bool operator==(const self& rhs)const { return curr = rhs.curr; }
+		bool operator==(const self& rhs)const { return curr == rhs.curr; }
 		bool operator!=(const self& rhs)const { return !(*this == rhs); }
 		bool operator<(const self& rhs)const {
 			return (node == rhs.node) ? (curr < rhs.curr) : (node < rhs.node);
@@ -153,8 +158,6 @@ namespace kkli {
 
 	public:
 		typedef pointer* map_pointer;
-		typedef kkli::allocator<value_type> data_allocator;
-		typedef kkli::allocator<pointer> map_allocator;
 
 	private:
 		//数据成员
@@ -162,6 +165,8 @@ namespace kkli {
 		iterator finish;
 		map_pointer map;
 		size_type map_size;
+		kkli::allocator<value_type>	data_allocator; //产生node和value
+		kkli::allocator<pointer>	map_allocator;	//产生map
 
 		//辅助函数
 		constexpr static size_type buffer_size = 8;		//node容量
@@ -216,7 +221,7 @@ namespace kkli {
 		explicit deque(size_type count) :deque(count, value_type(), allocator_type()) {}
 		deque(const deque& rhs, const allocator_type& alloc) {
 			create_map_and_nodes(rhs.size());
-			kkli::uninitialized_copy(rhs.begin(), rhs.end(), start);
+			kkli::uninitialized_copy(rhs.cbegin(), rhs.cend(), start);
 		}
 		deque(const deque& rhs) :deque(rhs, allocator_type()) {}
 		deque(deque&& rhs, const allocator_type& alloc)
@@ -224,7 +229,7 @@ namespace kkli {
 			rhs.reset_data_members();
 		}
 		deque(deque&& rhs) :deque(std::move(rhs), allocator_type()) {}
-		deque(std::initializer_list<value_type> init, const allocator_type& alloc) {
+		deque(std::initializer_list<value_type> init, const allocator_type& alloc = allocator_type()) {
 			create_map_and_nodes(init.size());
 			kkli::uninitialized_copy(init.begin(), init.end(), start);
 		}
@@ -274,7 +279,7 @@ namespace kkli {
 		iterator begin() { return start; }
 		iterator end() { return finish; }
 		const_iterator cbegin()const { return start; }
-		const_iterator cend() { return finish; }
+		const_iterator cend()const { return finish; }
 
 		//rbegin & rend
 		reverse_iterator rbegin() { return reverse_iterator(finish); }
@@ -317,6 +322,13 @@ namespace kkli {
 		void pop_front();
 		void pop_back();
 		void swap(deque& rhs);
+
+		void print(const kkli::string& prefix)const {
+			std::cout << prefix << ": ";
+			for (iterator iter = start; iter != finish; ++iter)
+				std::cout << *iter << " ";
+			std::cout << std::endl << "size: " << this->size() << std::endl;
+		}
 	};
 }
 
@@ -329,7 +341,7 @@ namespace kkli {
 	//create_map_and_nodes
 	template<typename T, typename Allocator>
 	void deque<T, Allocator>::create_map_and_nodes(size_type num_size) {
-		sizse_type num_nodes = num_size / buffer_size + 1; //计算需要的node个数
+		size_type num_nodes = num_size / buffer_size + 1; //计算需要的node个数
 		map_size = kkli::max(init_map_size, num_nodes + 2);
 		map = map_allocator.allocate(map_size); //分配总控map
 
@@ -394,8 +406,8 @@ namespace kkli {
 		create_map_and_nodes(count);
 		map_pointer curr;
 		for (curr = start.node; curr != finish.node; ++curr) //给前面多个整node赋值
-			kkli::uninitialized_fill(*curr, *curr + buff_size, value);
-		kkli::uninitailized_fill(finish.first, finish.curr, value); //给最后一个node的有效部分赋值
+			kkli::uninitialized_fill(*curr, *curr + buffer_size, value);
+		kkli::uninitialized_fill(finish.first, finish.curr, value); //给最后一个node的有效部分赋值
 	}
 
 	//push_front_aux
