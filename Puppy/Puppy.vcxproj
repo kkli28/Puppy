@@ -167,6 +167,7 @@
     <ClInclude Include="pair.h" />
     <ClInclude Include="pair_test.h" />
     <ClInclude Include="set.h" />
+    <ClInclude Include="stack.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="string_test.h" />

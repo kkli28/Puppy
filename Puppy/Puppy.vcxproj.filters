@@ -135,6 +135,9 @@
     <ClInclude Include="deque_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="stack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
