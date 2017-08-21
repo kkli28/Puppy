@@ -9,6 +9,7 @@ namespace test {
 	template<typename T, typename U>
 	void EXPECT_EQ_VAL(const T& val1, const U& val2) {
 		if (!(val1 == val2)) throw std::runtime_error("EXPECT_EQ_VAL");
+
 	}
 
 	//EXPECT_EQ_ARR: 确保两个数组元素相等
@@ -56,6 +57,7 @@ namespace test {
 		auto iter2 = init.begin();
 		for (; iter1 != last; ++iter1, ++iter2)
 			if (!(*iter1 == *iter2)) throw std::runtime_error("EXPECT_EQ_ITERLIST");
+
 	}
 
 	//PRINT_ARR: 输出数组元素
