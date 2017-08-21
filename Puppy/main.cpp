@@ -13,6 +13,7 @@
 #include "list_test.h"
 #include "vector_test.h"
 #include "deque_test.h"
+#include "stack_test.h"
 
 #include "avl_tree_test.h"
 
@@ -30,6 +31,7 @@ int main() {
 	test::list_test::test();
 	test::vector_test::test();
 	test::deque_test::test();
+	test::stack_test::test();
 
 	/*
 	test::avl_tree_test::test();

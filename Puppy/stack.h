@@ -31,7 +31,11 @@ namespace kkli {
 		~stack() {}
 
 		//operator =
-		stack operator=(stack&& rhs) {
+		stack& operator=(const stack& rhs) {
+			cont = rhs.cont;
+			return *this;
+		}
+		stack& operator=(stack&& rhs) {
 			cont = std::move(rhs.cont);
 			return *this;
 		}
@@ -43,7 +47,7 @@ namespace kkli {
 		bool empty()const { return cont.empty(); }
 		size_type size()const { return cont.size(); }
 		void push(const value_type& value) { cont.push_back(value); }
-		void push(const value_type&& value) { cont.push_back(&&value); }
+		void push(value_type&& value) { cont.push_back(std::move(value)); }
 		void pop() { cont.pop_back(); }
 		void swap(stack& rhs) {
 			kkli::swap(cont, rhs.cont);
@@ -59,37 +63,37 @@ namespace kkli {
 
 	//operator ==
 	template<typename T, typename Container>
-	bool operator==(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator==( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return lhs.get_container() == rhs.get_container();
 	}
 	
 	//operator !=
 	template<typename T, typename Container>
-	bool operator!=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator!=( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	//operator <
 	template<typename T, typename Container>
-	bool operator<(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator<( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return lhs.get_container() < rhs.get_container();
 	}
 
 	//operator >
 	template<typename T, typename Container>
-	bool operator>(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator>( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return rhs < lhs;
 	}
 
 	//operator <=
 	template<typename T, typename Container>
-	bool operator<=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator<=( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	//operator >=
 	template<typename T, typename Container>
-	bool operator>=(const stack<T, Container>& lhs, const stack<T, Container>& rhs)const {
+	bool operator>=( stack<T, Container>& lhs,  stack<T, Container>& rhs) {
 		return !(lhs < rhs);
 	}
 
