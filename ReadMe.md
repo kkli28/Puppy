@@ -16,8 +16,6 @@ alorithm.h
 
 char_traits.h
 
-pair.h
-
 array.h
 
 string.h
@@ -28,7 +26,19 @@ list.h
 
 vector.h
 
-deque.h -- 未完成
+deque.h
+
+stack.h
+
+queue.h
+
+priority_queue.h
+
+avl_tree.h
+
+rb_tree.h -- 未完成
+
+hash_table.h -- 未完成
 
 set.h -- 未完成
 
@@ -37,9 +47,3 @@ map.h -- 未完成
 unordered_set.h -- 未完成
 
 unordered_map.h -- 未完成
-
-stack.h -- 未完成
-
-queue.h -- 未完成
-
-priority_queue.h -- 未完成
