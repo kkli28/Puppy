@@ -4,7 +4,7 @@
 #include "vector.h"
 #include "string.h"
 #include "memory.h"
-#include "test.h"
+#include "test_utility.h"
 
 namespace test {
 	namespace memory_test {

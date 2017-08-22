@@ -38,7 +38,7 @@ namespace kkli {
 			return *this;
 		}
 
-		const container_type& get_container()const { return cont; }
+		container_type get_container()const { return cont; }
 		reference front() { return cont.front(); }
 		const_reference front()const { return cont.front(); }
 		reference back() { return cont.back(); }
@@ -48,7 +48,7 @@ namespace kkli {
 		void push(const value_type& value) { cont.push_back(value); }
 		void push(value_type&& value) { cont.push_back(std::move(value)); }
 		void pop() { cont.pop_front(); }
-		void swap(deque& rhs) {
+		void swap(queue& rhs) {
 			kkli::swap(cont, rhs.cont);
 		}
 	};
@@ -62,37 +62,37 @@ namespace kkli {
 
 	//operator ==
 	template<typename T,typename Container>
-	bool operator==(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator==(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return lhs.get_container() == rhs.get_container();
 	}
 
 	//operator !=
 	template<typename T, typename Container>
-	bool operator!=(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator!=(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return !(lhs == rhs);
 	}
 
 	//operator <
 	template<typename T, typename Container>
-	bool operator<(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator<(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return lhs.get_container() < rhs.get_container();
 	}
 
 	//operator >
 	template<typename T, typename Container>
-	bool operator>(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator>(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return rhs < lhs;
 	}
 
 	//operator <=
 	template<typename T, typename Container>
-	bool operator<=(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator<=(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return !(lhs > rhs);
 	}
 
 	//operator >=
 	template<typename T, typename Container>
-	bool operator>=(const deque<T, Container>& lhs, const deque<T, Container>& rhs) {
+	bool operator>=(const queue<T, Container>& lhs, const queue<T, Container>& rhs) {
 		return !(lhs < rhs);
 	}
 }

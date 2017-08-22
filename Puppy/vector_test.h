@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "test.h"
+#include "test_utility.h"
 #include "vector.h"
 
 namespace test {

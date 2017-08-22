@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "functional.h"
 #include "string.h"
-#include "test.h"
+#include "test_utility.h"
 
 namespace test {
 	namespace functional_test {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "test.h"
+#include "test_utility.h"
 #include "string.h"
 #include "pair.h"
 #include "algorithm_test_part1.h"

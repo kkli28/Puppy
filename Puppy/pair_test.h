@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "pair.h"
 #include "string.h"
-#include "test.h"
+#include "test_utility.h"
 
 namespace test {
 	namespace pair_test {

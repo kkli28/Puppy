@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "test_utility.h"
 #include "array.h"
 
 namespace test {

@@ -144,6 +144,12 @@
     <ClInclude Include="queue.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="queue_test.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
+    <ClInclude Include="test_utility.h">
+      <Filter>头文件\test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

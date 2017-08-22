@@ -7,7 +7,7 @@
 #include "char_traits.h"
 #include "memory.h"
 #include "iterator.h"
-#include "test.h"
+#include "test_utility.h"
 #include "algorithm.h"
 
 namespace test {

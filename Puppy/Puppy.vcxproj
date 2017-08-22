@@ -167,6 +167,7 @@
     <ClInclude Include="pair.h" />
     <ClInclude Include="pair_test.h" />
     <ClInclude Include="queue.h" />
+    <ClInclude Include="queue_test.h" />
     <ClInclude Include="set.h" />
     <ClInclude Include="stack.h" />
     <ClInclude Include="stack_test.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="memory.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="algorithm_test.h" />
+    <ClInclude Include="test_utility.h" />
     <ClInclude Include="vector.h" />
     <ClInclude Include="vector_test.h" />
   </ItemGroup>
