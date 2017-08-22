@@ -18,10 +18,10 @@ namespace kkli {
 		public:
 			typedef Container	container_type;
 			typedef Compare		value_compare;
-			typedef Container::value_type		value_type;
-			typedef Container::reference		reference;
-			typedef Container::const_reference	const_reference;
-			typedef Container::size_type		size_type;
+			typedef typename Container::value_type		value_type;
+			typedef typename Container::reference		reference;
+			typedef typename Container::const_reference	const_reference;
+			typedef typename Container::size_type		size_type;
 
 		private:
 			container_type cont;
@@ -29,11 +29,16 @@ namespace kkli {
 
 		public:
 			//constructor
-			explicit priority_queue(const value_compare& cmp = value_compare(),
-				const container_type& c = container_type()) :cont(c), comp(cmp) {}
-			explicit priority_queue(const container_type& c) :cont(c), comp() {}
-			priority_queue(const priority_type& rhs) :cont(rhs.cont), comp(rhs.comp) {}
-			priority_queue(priority_type&& rhs) :cont(std::move(rhs.cont)), comp(std::move(rhs.comp)) {}
+			priority_queue() :cont(), comp() {}
+			explicit priority_queue(const value_compare& cmp, const container_type& c) :cont(c), comp(cmp) {
+				kkli::make_heap(cont.begin(), cont.end(), comp);
+			}
+			explicit priority_queue(const value_compare& cmp) :cont(), comp(cmp) {}
+			explicit priority_queue(const container_type& c) :cont(c), comp() {
+				kkli::make_heap(cont.begin(), cont.end());
+			}
+			priority_queue(const priority_queue& rhs) :cont(rhs.cont), comp(rhs.comp) {}
+			priority_queue(priority_queue&& rhs) :cont(std::move(rhs.cont)), comp(std::move(rhs.comp)) {}
 
 			//operator =
 			priority_queue& operator=(const priority_queue& rhs) {

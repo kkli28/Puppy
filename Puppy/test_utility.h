@@ -63,6 +63,16 @@ namespace test {
 
 	}
 
+	//EXPECT_EQ_COMP: 确保迭代器范围内的元素满足条件
+	template<typename InputIt, typename Compare>
+	void EXPECT_EQ_COMP(InputIt first, InputIt last, Compare comp) {
+		if (first == last) return; //没有元素
+		if (kkli::next(first) == last) return; //只有一个元素
+		for (auto iter = kkli::next(first); iter != last; ++first, ++iter) {
+			if (!comp(*first, *iter)) throw std::runtime_error("EXPECT_EQ_COMP");
+		}
+	}
+
 	//PRINT_ARR: 输出数组元素
 	template<typename T, typename Size>
 	void PRINT_ARR(T* arr, Size N) {
