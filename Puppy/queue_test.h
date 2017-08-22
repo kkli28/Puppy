@@ -123,7 +123,7 @@ namespace test {
 			EXPECT_EQ_VAL(d1.empty(), false);
 		}
 
-		//≤‚ ‘ size
+		//≤‚ ‘ size & push & pop
 		void test_size_push_pop() {
 			cout << "test: size()" << endl;
 

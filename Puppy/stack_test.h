@@ -118,7 +118,7 @@ namespace test {
 			EXPECT_EQ_VAL(s2.empty(), false);
 		}
 
-		//≤‚ ‘ size
+		//≤‚ ‘ size & push & pop
 		void test_size_push_pop() {
 			cout << "test: size()" << endl;
 
