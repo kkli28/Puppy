@@ -166,6 +166,7 @@
     <ClInclude Include="memory_test.h" />
     <ClInclude Include="pair.h" />
     <ClInclude Include="pair_test.h" />
+    <ClInclude Include="priority_queue.h" />
     <ClInclude Include="queue.h" />
     <ClInclude Include="queue_test.h" />
     <ClInclude Include="set.h" />
