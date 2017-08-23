@@ -9,14 +9,13 @@
 
 namespace kkli {
 
+	typedef bool rb_tree_color_type; //颜色类型
+	constexpr static rb_tree_color_type RB_TREE_RED = false;
+	constexpr static rb_tree_color_type RB_TREE_BLACK = true;
 
 	template<typename T>
 	class rb_tree_node {
 	public:
-		typedef bool rb_tree_color_type; //颜色类型
-		constexpr static rb_tree_color_type RB_TREE_RED = false;
-		constexpr static rb_tree_color_type RB_TREE_BLACK = true;
-
 		typedef T value_type;
 		typedef T* pointer;
 		typedef T& reference;
