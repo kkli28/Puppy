@@ -170,6 +170,7 @@
     <ClInclude Include="priority_queue_test.h" />
     <ClInclude Include="queue.h" />
     <ClInclude Include="queue_test.h" />
+    <ClInclude Include="rb_tree_iterator.h" />
     <ClInclude Include="set.h" />
     <ClInclude Include="stack.h" />
     <ClInclude Include="stack_test.h" />

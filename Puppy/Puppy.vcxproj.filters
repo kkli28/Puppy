@@ -156,6 +156,9 @@
     <ClInclude Include="priority_queue_test.h">
       <Filter>头文件\test</Filter>
     </ClInclude>
+    <ClInclude Include="rb_tree_iterator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
