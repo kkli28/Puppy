@@ -37,11 +37,11 @@ namespace kkli {
 		link_type* right;
 
 	public:
-		static pointer* min(pointer* ptr) {
+		static link_type* min(link_type* ptr) {
 			while (ptr->left != nullptr) ptr = ptr->left;
 			return ptr;
 		}
-		static pointer* max(pointer* ptr) {
+		static link_type* max(link_type* ptr) {
 			while (ptr->right != nullptr) ptr = ptr->right;
 			return ptr;
 		}

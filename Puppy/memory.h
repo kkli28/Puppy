@@ -512,7 +512,7 @@ namespace kkli {
 			return expired() ? shared_ptr<T>() : shared_ptr<T>(*__sp);
 		}
 
-		//owner_before
+		//owner_before: ÊÇÊ²Ã´¹í£¿
 		template<typename U>
 		bool owner_before(const weak_ptr<U>& rhs)const;
 

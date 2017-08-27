@@ -74,6 +74,7 @@ namespace kkli {
 				head->parent = nullptr;
 			}
 			void destroy_tree(link_type ptr);
+			iterator __insert(link_type x, link_type y, const value_type& value); //弃坑，写不下去了！！！
 
 		public:
 			//constructor
@@ -96,7 +97,7 @@ namespace kkli {
 			rb_tree& operator=(const rb_tree& rhs);
 			rb_tree& operator=(rb_tree&& rhs);
 
-			compare_type key_comp()const { return comp; }
+			compare_type key_compare()const { return comp; }
 			iterator begin() { return left_most(); }
 			iterator end() { return head; }
 			const_iterator cbegin()const { return left_most(); }
@@ -195,6 +196,23 @@ namespace kkli {
 		root() = nullptr;
 		node_count = 0;
 	}
+
+	template<typename K, typename T, typename KOV, typename Compare>
+	kkli::pair<typename rb_tree<K,T,KOV,Compare>::iterator, bool> 
+		rb_tree<K, T, KOV, Compare>::insert_unique(const value_type& value) {
+		link_type pre_ptr = head;
+		link_type ptr = root();
+		bool comp_res = true;
+		while (ptr != nullptr) {
+			ptr_ptr = ptr;
+			comp_res = key_compare(KOV()(value), key(ptr));
+			ptr = comp_res ? left(ptr) : right(ptr);
+		}
+		iterator iter = iterator(pre_ptr);
+		if (comp) {
+			//TODO: 已弃坑，写不下去了！！！怀疑人生
+		}
+	}
 }
 
 //================================================================================
@@ -202,6 +220,6 @@ namespace kkli {
 //================================================================================
 
 namespace kkli {
-	template<typename K,typename T,typename KOV,typename Compare>
+	//template<typename K,typename T,typename KOV,typename Compare>
 
 }
