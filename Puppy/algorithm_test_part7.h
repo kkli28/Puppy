@@ -107,8 +107,6 @@ namespace test {
 
 		//≤‚ ‘ make_heap_normal
 		void test_make_heap_normal() {
-			cout << "test: make_heap()" << endl;
-
 			int arr1[4] = { 1,2,3,4 };
 			int arr2[4] = { 1,3,2,4 };
 			int arr3[4] = { 4,3,2,1 };
@@ -166,14 +164,14 @@ namespace test {
 			EXPECT_EQ_ARR(arr2, comp2, 4);
 
 			kkli::make_heap(arr3, arr3 + 4, lmd1);
-			EXPECT_EQ_ARR(arr3, comp2, 8);
+			EXPECT_EQ_ARR(arr3, comp2, 4);
 
 			kkli::make_heap(arr4, arr4 + 8, lmd1);
 			EXPECT_EQ_ARR(arr4, comp4, 8);
 
 			kkli::make_heap(arr5, arr5 + 8, lmd1);
 			EXPECT_EQ_ARR(arr5, comp5, 8);
-			
+
 			kkli::make_heap(arr6, arr6 + 8, lmd1);
 			EXPECT_EQ_ARR(arr6, comp6, 8);
 		}

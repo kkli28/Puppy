@@ -99,7 +99,7 @@ namespace test {
 			EXPECT_EQ_VAL(vec3.empty(), true);
 			EXPECT_EQ_VAL(vec3.size(), 0);
 			EXPECT_EQ_VAL(vec3.capacity(), 0);
-
+			
 			vector<int> vec7{ 1,2,3,4 }; //vector(init)
 			EXPECT_EQ_ITERLIST(vec7.begin(), vec7.end(), { 1,2,3,4 });
 			EXPECT_EQ_VAL(vec7.size(), 4);

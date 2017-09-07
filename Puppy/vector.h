@@ -78,7 +78,7 @@ namespace kkli {
 	public:
 		//constructors
 		vector() :__start(nullptr), __end(nullptr), __capacity(nullptr) {}
-		vector(const Allocator& alloc) :__alloc(alloc) {}
+		vector(const Allocator& alloc) :__start(nullptr), __end(nullptr), __capacity(nullptr), __alloc(alloc) {}
 		vector(size_type count, const value_type& value, const Allocator& alloc = Allocator());
 		vector(size_type count, const Allocator& alloc = Allocator()) :vector(count, value_type(), alloc) {}
 		vector(const vector& rhs, const Allocator& alloc);
